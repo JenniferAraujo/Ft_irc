@@ -1,11 +1,13 @@
-#ifndef EXCEPTION_HPP
-# define EXCEPTION_HPP
+#ifndef INCLUDES_HPP
+# define INCLUDES_HPP
 
 # include <iostream>
 # include <string.h>
 # include <unistd.h>
 # include <cstdlib>
 # include <ctime>
+# include <stdexcept>
+#include <cctype>
 # define RED "\033[31m"
 # define GREEN "\033[32m"
 # define PURPLE "\033[35m"
@@ -20,15 +22,8 @@
 # define BOLD_CYAN "\033[1;36m"
 # define RESET "\033[0m"
 
-class Exception {
-public:
-    Exception(); // Constructor
-    Exception(const Exception& copy);//Copy constructor
-    Exception& operator= (const Exception& copy); //Copy assignment constructor
-    ~Exception(); // Destructor
+# include "Client.hpp"
+# include "Server.hpp"
+# include "IRCException.hpp"
 
-private:
-    // Add private members here
-};
-
-#endif // EXCEPTION_HPP
+#endif // INCLUDES_HPP

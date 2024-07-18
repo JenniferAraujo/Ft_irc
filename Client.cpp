@@ -8,6 +8,7 @@ Client::Client() {
 // Copy constructor
 Client::Client(const Client& copy) {
     // Copy stuff
+    (void)copy;
     std::cout << BOLD_WHITE << "Client" << RESET 
     << " copy constructor called" << std::endl;
 }

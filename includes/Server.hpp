@@ -1,17 +1,17 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-# include "Client.hpp"
+# include "Includes.hpp"
 
 class Server {
 public:
     Server(); // Constructor
-    Server(const Server& copy);//Copy constructor
-    Server& operator= (const Server& copy); //Copy assignment constructor
     ~Server(); // Destructor
 
 private:
-    // Add private members here
+    int         _port;
+    std::string _password;
+
 };
 
 #endif // SERVER_HPP
