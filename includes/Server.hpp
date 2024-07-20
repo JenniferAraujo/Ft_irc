@@ -5,8 +5,9 @@
 
 class Server {
 public:
-    Server(); // Constructor
-    ~Server(); // Destructor
+    Server();
+    Server(const int &port, const std::string &password);
+    ~Server();
 
 private:
     int         _port;

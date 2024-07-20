@@ -18,6 +18,7 @@ void validate_input(int argc, char **argv) {
 int main(int argc, char **argv) {
     try {
         validate_input(argc, argv);
+        Server server(std::atoi(argv[1]), argv[2]);
     } catch(const std::exception &e) {
         std::cout << RED << e.what() << RESET << std::endl;
     }
