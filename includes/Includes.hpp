@@ -8,6 +8,10 @@
 # include <ctime>
 # include <stdexcept>
 # include <cctype>
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <netdb.h>
+# include <arpa/inet.h>
 # define RED "\033[31m"
 # define GREEN "\033[32m"
 # define PURPLE "\033[35m"

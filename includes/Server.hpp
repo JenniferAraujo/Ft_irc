@@ -9,9 +9,13 @@ public:
     Server(const int &port, const std::string &password);
     ~Server();
 
+    void run();
+
 private:
-    int         _port;
-    std::string _password;
+    int             _port;
+    std::string     _password;
+    int             _socketFD;
+    sockaddr_in6    _socketInfo;
 
 };
 
