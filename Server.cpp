@@ -20,20 +20,26 @@ void Server::updateNFDs(int fd)
     this->_NFDs.push_back(pfd);
 }
 
+void Server::updateClients(Client *client, int fd)
+{
+    this->_Clients[fd] = client;
+}
+
 // Função para verificar eventos na poll
 void Server::verifyEvent() {
     std::cout << "verifyEvent" << std::endl;
 }
 
 // Função para verificar que evento aconteceu
-void Server::checkEvents() {
+void Server::checkEvents(int nEvents) {
+    (void)nEvents;
     for (std::vector<pollfd>::iterator it = this->_NFDs.begin(); it != this->_NFDs.end(); ++it)
     {
-        if (it->revents != POLLIN)
-            throw IRCException("[ERROR] Unexpected revent happened");
+        //if (it->revents != POLLIN)
+        //    throw IRCException("[ERROR] Unexpected revent happened");
         // Se for no fd da socket é pk é uma nova conecção, caso contrário, alguém enviou dados
         (it->fd == this->_socketFD)
-            ? Client::verifyConnection(*this)
+            ? Client::verifyConnection(*this, it)
             : Server::verifyEvent();
         //std::cout << it;
     }
@@ -66,14 +72,14 @@ void Server::run()
     // Ciclo para correr a poll para esperar eventos
     while (true)
     {
-        switch (poll(this->_NFDs.data(), this->_NFDs.size(), -1))
+        switch (int nEvents = poll(this->_NFDs.data(), this->_NFDs.size(), -1))
         {
         case -1:
             throw IRCException("[ERROR] Poll went wrong");
         case 0:
             throw IRCException("[ERROR] Poll connection timed out");
         default:
-            this->checkEvents();
+            this->checkEvents(nEvents);
             break;
         }
     }

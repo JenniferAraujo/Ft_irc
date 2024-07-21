@@ -12,8 +12,11 @@ public:
 
     void run();
     void updateNFDs(int fd);
-    void checkEvents();
+    void updateClients(Client *client, int fd);
+    void checkEvents(int nEvents);
     void verifyEvent();
+
+    int getSocketFD();
 
 private:
     Server();
