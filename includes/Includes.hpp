@@ -12,6 +12,10 @@
 # include <sys/socket.h>
 # include <netdb.h>
 # include <arpa/inet.h>
+# include <poll.h>
+# include <vector>
+# include <map>
+# include <algorithm>
 # define RED "\033[31m"
 # define GREEN "\033[32m"
 # define PURPLE "\033[35m"

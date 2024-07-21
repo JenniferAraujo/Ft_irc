@@ -3,15 +3,16 @@
 
 # include "Includes.hpp"
 
+class Server;
+
 class Client {
 public:
-    Client(); // Constructor
-    Client(const Client& copy);//Copy constructor
-    Client& operator= (const Client& copy); //Copy assignment constructor
     ~Client(); // Destructor
 
+    static void verifyConnection(Server server);
+
 private:
-    // Add private members here
+    Client(); // Constructor
 };
 
 #endif // CLIENT_HPP

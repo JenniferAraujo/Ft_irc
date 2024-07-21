@@ -23,7 +23,7 @@ NAME 			= ircserv
 INCLUDE			= includes
 OBJDIR			= obj
 
-_FILES 			= Client Server IRCException
+_FILES 			= Client Server IRCException Aux
 
 OBJ				= $(_FILES:%=%.o)
 TARGET			= $(addprefix $(OBJDIR)/, $(OBJ))
