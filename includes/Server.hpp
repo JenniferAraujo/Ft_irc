@@ -17,6 +17,8 @@ public:
     void verifyEvent();
 
     int getSocketFD();
+    int getPort();
+    sockaddr_in6 getSocketInfo();
 
 private:
     Server();

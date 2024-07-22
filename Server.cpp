@@ -8,7 +8,7 @@ Server::Server(const int &port, const std::string &password) : _port(port),
                                                                _password(password)
 {
     memset(&this->_socketInfo, 0, sizeof(this->_socketInfo));
-    _socketInfo.sin6_family = AF_INET6;
+    _socketInfo.sin6_family = AF_INET6; // IPv6
     _socketInfo.sin6_port = htons(this->_port);
     _socketInfo.sin6_addr = in6addr_any;
 }
@@ -35,12 +35,10 @@ void Server::checkEvents(int nEvents) {
     (void)nEvents;
     for (std::vector<pollfd>::iterator it = this->_NFDs.begin(); it != this->_NFDs.end(); ++it)
     {
-        //if (it->revents != POLLIN)
-        //    throw IRCException("[ERROR] Unexpected revent happened");
         // Se for no fd da socket é pk é uma nova conecção, caso contrário, alguém enviou dados
         (it->fd == this->_socketFD)
             ? Client::verifyConnection(*this, it)
-            : Server::verifyEvent();
+            : this->verifyEvent();
         //std::cout << it;
     }
 }
@@ -51,6 +49,11 @@ void Server::run()
     this->_socketFD = socket(AF_INET6, SOCK_STREAM, 0);
     if (this->_socketFD == -1)
         throw IRCException("[ERROR] Opening socket went wrong");
+    int enable = 1;
+    if (setsockopt(this->_socketFD, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) == -1){
+        close(this->_socketFD);
+        throw IRCException("[ERROR] Setting socket options went wrong");
+    }
     // Dá bind aquele mesma socket numa porta específica
     if (bind(this->_socketFD, reinterpret_cast<struct sockaddr *>(&this->_socketInfo), sizeof(this->_socketInfo)) == -1)
     {

@@ -56,6 +56,9 @@ fclean: clean
 
 re: fclean all
 
+run: all
+	clear && ./ircserv 8080 123
+
 .SILENT:
 
 .PHONY: all clean fclean re

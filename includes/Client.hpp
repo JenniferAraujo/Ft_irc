@@ -8,8 +8,10 @@ class Server;
 class Client {
 public:
     ~Client(); // Destructor
+    Client(sockaddr_in6 socketInfo);
 
     static void verifyConnection(Server server, std::vector<pollfd>::iterator it);
+    void getInfo();
 
 private:
     Client(); // Constructor
