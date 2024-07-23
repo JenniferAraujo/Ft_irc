@@ -14,11 +14,11 @@ public:
     void updateNFDs(int fd);
     void updateClients(Client *client, int fd);
     void checkEvents(int nEvents);
-    void verifyEvent();
+    void verifyEvent(std::vector<pollfd>::iterator it);
 
-    int getSocketFD();
-    int getPort();
-    sockaddr_in6 getSocketInfo();
+    int getSocketFD() const;
+    int getPort() const;
+    sockaddr_in6 getSocketInfo() const;
 
 private:
     Server();
@@ -33,6 +33,7 @@ private:
 };
 
 std::ostream &operator<<(std::ostream &out, const std::vector<pollfd>::iterator &it);
-
+std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs);
+std::ostream &operator<<(std::ostream &out, const pollfd &pfd);
 
 #endif // SERVER_HPP

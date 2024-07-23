@@ -26,21 +26,41 @@ void Server::updateClients(Client *client, int fd)
 }
 
 // Função para verificar eventos na poll
-void Server::verifyEvent() {
-    std::cout << "verifyEvent" << std::endl;
+//Verificar it->revents == POLLIN
+//Verificar it-> revents == POLLOUT
+//Isto so itera pelos clientes, se o fd do evento for o do cliente, verifica se é IN ou OUT e printa uma msg
+void Server::verifyEvent(std::vector<pollfd>::iterator poolFd) {
+    for(std::map<int, Client*>::iterator it = _Clients.begin(); it != _Clients.end(); ++it){
+        if(poolFd->fd == it->first){
+            if(poolFd->revents == POLLIN) {
+                std::cout << "Event on client " << GREEN << "[" << poolFd->fd << "]" << RESET <<  std::endl;
+                std::vector<char> buf(5000);
+                int bytes = recv(it->second->getSocketFD(), buf.data(), buf.size(), 0);
+                std::cout << "N Bytes received:" << bytes << std::endl;
+                std::cout << buf.data() << "." << std::endl;
+                // O parser vai começar aqui
+            }
+            if(poolFd-> revents == POLLOUT)
+                std::cout << "pollout event" <<  it->second << std::endl;
+        }
+    }
 }
 
 // Função para verificar que evento aconteceu
 void Server::checkEvents(int nEvents) {
     (void)nEvents;
-    for (std::vector<pollfd>::iterator it = this->_NFDs.begin(); it != this->_NFDs.end(); ++it)
+    std::vector<pollfd> NFDs2 = this->_NFDs;
+    std::cout << "Checking: " << std::endl;
+    for (std::vector<pollfd>::iterator it = NFDs2.begin(); it != NFDs2.end(); ++it)
     {
         // Se for no fd da socket é pk é uma nova conecção, caso contrário, alguém enviou dados
+        std::cout << it;
         (it->fd == this->_socketFD)
             ? Client::verifyConnection(*this, it)
-            : this->verifyEvent();
-        //std::cout << it;
+            : this->verifyEvent(it);
     }
+    // Deixem isto só para ser mais fácil analisar
+    usleep(10000000);
 }
 
 void Server::run()
@@ -89,4 +109,8 @@ void Server::run()
     close(this->_socketFD);
 }
 
-Server::~Server() {}
+Server::~Server() {
+    for (std::map<int, Client*>::iterator it = _Clients.begin(); it != _Clients.end(); ++it) {
+        delete it->second;
+    }
+}
