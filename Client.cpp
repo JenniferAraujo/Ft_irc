@@ -2,14 +2,22 @@
 
 Client::Client(sockaddr_in6 socketInfo): _socketInfo(socketInfo) {}
 
+void    Client::parseInfo(std::vector<char> buf){
+    (void)buf;
+}
+
+//Estudar recv
 void Client::getInfo() {
     std::vector<char> buf(5000);
     int bytes = 1;
-    while (bytes > 0) {
+    //while (bytes > 0) {
         bytes = recv(this->_socketFD, buf.data(), buf.size(), 0);
         std::cout << "N Bytes received:" << bytes << std::endl; 
         std::cout << buf.data() << "." << std::endl;
-    }
+        std::cout << "a ";
+    //}
+    std::cout << "print_data after while:" << buf.data() << "." << std::endl;
+    this->parseInfo(buf);
 }
 
 // Função para verificar a conecção de clientes

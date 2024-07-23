@@ -14,11 +14,11 @@ public:
     void updateNFDs(int fd);
     void updateClients(Client *client, int fd);
     void checkEvents(int nEvents);
-    void verifyEvent();
+    void verifyEvent(std::vector<pollfd>::iterator it);
 
-    int getSocketFD();
-    int getPort();
-    sockaddr_in6 getSocketInfo();
+    int getSocketFD() const;
+    int getPort() const;
+    sockaddr_in6 getSocketInfo() const;
 
 private:
     Server();

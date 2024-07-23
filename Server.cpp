@@ -26,8 +26,18 @@ void Server::updateClients(Client *client, int fd)
 }
 
 // Função para verificar eventos na poll
-void Server::verifyEvent() {
-    std::cout << "verifyEvent" << std::endl;
+//Verificar it->revents == POLLIN 
+//Verificar it-> revents == POLLOUT
+//Isto so itera pelos clientes, se o fd do evento for o doc cliente, verifica se é IN ou OUT e printa uma msg
+void Server::verifyEvent(std::vector<pollfd>::iterator poolFd) {
+    for(std::map<int, Client*>::iterator it = _Clients.begin(); it != _Clients.end(); ++it){
+        if(poolFd->fd == it->first){
+            if(poolFd->revents == POLLIN)
+                std::cout << "pollin event: " << it->second << std::endl;
+            if(poolFd-> revents == POLLOUT)
+                std::cout << "pollout event" <<  it->second << std::endl;
+        }
+    }
 }
 
 // Função para verificar que evento aconteceu
@@ -38,7 +48,7 @@ void Server::checkEvents(int nEvents) {
         // Se for no fd da socket é pk é uma nova conecção, caso contrário, alguém enviou dados
         (it->fd == this->_socketFD)
             ? Client::verifyConnection(*this, it)
-            : this->verifyEvent();
+            : this->verifyEvent(it);
         //std::cout << it;
     }
 }
