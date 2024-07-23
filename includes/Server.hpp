@@ -33,6 +33,7 @@ private:
 };
 
 std::ostream &operator<<(std::ostream &out, const std::vector<pollfd>::iterator &it);
-
+std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs);
+std::ostream &operator<<(std::ostream &out, const pollfd &pfd);
 
 #endif // SERVER_HPP

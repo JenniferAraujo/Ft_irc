@@ -10,10 +10,9 @@ public:
     ~Client(); // Destructor
     Client(sockaddr_in6 socketInfo);
 
-    static void     verifyConnection(Server server, std::vector<pollfd>::iterator it);
+    static void     verifyConnection(Server &server, std::vector<pollfd>::iterator it);
     void            parseInfo(std::vector<char> buf);
     //getters
-    void            getInfo();
     int             getSocketFD() const;
     sockaddr_in6    getSocketInfo() const;
     std::string     getNick() const;
