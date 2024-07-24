@@ -28,7 +28,7 @@ void Server::updateClients(Client *client, int fd)
 //*Proximos passos: canais e mansagens
 //Ideia para executar os cmds
 void    Server::executeCommand(Client &client){
-    //std::string commands[N] = {"JOIN", "MSG", ...}
+    //std::string commands[N] = {"CAP", "JOIN", "MSG", ...}
     //void (Server::*p[])(const Client&) = {&Server::join, &Server::msg};
 /*     for (int i = 0; i < N; i++) {
         if(!commands[i].compare(client.getCommand())){
@@ -37,6 +37,7 @@ void    Server::executeCommand(Client &client){
     std::cout << "Command to execute " << client.getCommand() << RESET <<  std::endl;
 }
 
+//QUIT -> fechar o fd
 // Função para verificar eventos na poll
 //Verificar it->revents == POLLIN
 //Verificar it-> revents == POLLOUT
@@ -48,19 +49,22 @@ void Server::verifyEvent(const pollfd &pfd) {
             if(pfd.revents == POLLIN) {
                 std::cout << "Event on client " << GREEN << "[" << pfd.fd << "]" << RESET <<  std::endl;
                 std::vector<char> buf(5000);
-                int bytes = recv(client->getSocketFD(), buf.data(), buf.size(), 0);
-                std::cout << "N Bytes received: " << bytes << std::endl;
-                std::cout << buf.data() << "." << std::endl;
+                recv(client->getSocketFD(), buf.data(), buf.size(), 0);
+                //int bytes = recv(client->getSocketFD(), buf.data(), buf.size(), 0);
+                //std::cout << "N Bytes received: " << bytes << std::endl;
+                //std::cout << buf.data() << "." << std::endl;
                 client->parseMessage(buf);
                 if(client->getValidCmd() == true){
                     this->executeCommand(*client);
                 }
-                std::cout << "Client's info saved: " << *client  << std::endl;
+                /* if(client->getCommand() == "CAP")
+                    std::cout << "Client's info saved: \n" << *client  << std::endl; */
             }
             if(pfd.events == POLLOUT)
                 std::cout << "pollout event" << *client  << std::endl;
         }
     }
+    std::cout << CYAN <<"----------Print Clients: \n" << RESET;
     printMap(_Clients);
 }
 
@@ -68,7 +72,7 @@ void Server::verifyEvent(const pollfd &pfd) {
 void Server::checkEvents(int nEvents) {
     (void)nEvents;
     std::vector<pollfd> NFDs2 = this->_NFDs;
-    std::cout << "CheckEvents: " << std::endl;
+    std::cout << "\n\nCheckEvents: " << std::endl;
     for (std::vector<pollfd>::iterator it = NFDs2.begin(); it != NFDs2.end(); ++it)
     {
         // Se for no fd da socket é pk é uma nova conecção, caso contrário, alguém enviou dados
@@ -78,7 +82,7 @@ void Server::checkEvents(int nEvents) {
             : this->verifyEvent(*it);
     }
     // Deixem isto só para ser mais fácil analisar
-    usleep(10000000);
+    //usleep(10000000);
 }
 
 void Server::run()

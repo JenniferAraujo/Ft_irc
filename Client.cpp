@@ -1,21 +1,36 @@
 #include "includes/Client.hpp"
 
-Client::Client() {}
+Client::Client(Server &server): _server(server){}
 
-/* void Client::parseCommand(std::istringstream input, std::string cmd){
-        int N = 2;
-        std::string commands[] = {"JOIN", "MSG"};
-        void (Client::*p[])(std::istringstream&) = {&Client::parseJoin, &Client::parseMsg};
-        this->_validCmd = false;
-        for (int i = 0; i < N; i++) {
-            if(!commands[i].compare(cmd))
-                this->_validCmd = (this->*p[i])(input);
+//Se a pass estiver errada invalid command
+//O nick e o user só imprimem com \n e eu n percebo porque
+//VALIDAÇOES - ler documentacao
+bool    Client::parseClient(std::istringstream &input, std::string str){
+        this->_command = str;
+        std::string in;
+        std::getline(input, str); //passa a 1a linha
+        std::getline(input, str, ' '); //linha da pass
+        if(str == "PASS"){
+            std::getline(input, str);
+            if(_server.getPassward() != str)
+                return false;
         }
-} */
-
-/* void    Client::saveInfo(std::istringstream input){
-
-} */
+        else
+            return false;
+        std::getline(input, str, ' ');
+        if(str == "NICK")
+            std::getline(input, this->_nick); 
+        std::getline(input, str, ' ');
+        if(str == "USER"){
+            std::getline(input, this->_user);
+            std::cout << "USER: " << this->_user << "\n";
+            std::istringstream user(this->_user);
+            std::getline(user, this->_name, ' ');
+            std::getline(user, str, ':');
+            std::getline(user, this->_realName);
+        }
+        return(true);
+}
 
 //Client info
 //JOIN
@@ -27,18 +42,20 @@ void    Client::parseMessage(std::vector<char> buf){
     std::istringstream input(str);
     std::string cmd;
     std::getline(input, cmd, ' ');
-    if(cmd == "CAP"){
-        //this->saveInfo(input);
-        this->_validCmd = false;
+    std::string commands[] = {"CAP"};
+    bool (Client::*p[])(std::istringstream&, std::string str) = {&Client::parseClient};
+    this->_validCmd = false;
+    for (int i = 0; i < 1; i++) {
+        if(!commands[i].compare(cmd))
+            this->_validCmd = (this->*p[i])(input, cmd);
     }
-    //else
-        //this->parseCommand();
 }
 
 // Função para verificar a conecção de clientes
 void    Client::verifyConnection(Server &server, const pollfd &pfd) {
     if (pfd.revents & POLLIN) {
-        Client *client = new Client;
+        Client *client = new Client(server);
+        client->_server = server;
         client->_socketFD = accept(server.getSocketFD(), NULL, NULL);
         if (client->_socketFD == -1)
             throw IRCException("[ERROR] Opening client socket went wrong");

@@ -20,6 +20,7 @@ public:
     int getSocketFD() const;
     int getPort() const;
     sockaddr_in6 getSocketInfo() const;
+    std::string getPassward() const { return _password; };
 
 private:
     Server();

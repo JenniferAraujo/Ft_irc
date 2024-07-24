@@ -44,7 +44,7 @@ std::ostream& operator<<(std::ostream& out, const Client &client);
 template <typename K, typename V>
 void printMap(const std::map<K, V>& map) {
     for (typename std::map<K, V>::const_iterator it = map.begin(); it != map.end(); ++it) {
-        std::cout << "Map fd: " << it->first << "\n" << "Client: \n"  << it->second << std::endl;
+        std::cout << GREEN << "[" << it->first << "]" << RESET << " => " << *it->second << std::endl;
     }
 }
 
