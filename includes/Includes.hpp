@@ -17,6 +17,8 @@
 # include <map>
 # include <fstream>
 # include <algorithm>
+# include <fstream> //for parsing
+# include <sstream>
 # define RED "\033[31m"
 # define GREEN "\033[32m"
 # define PURPLE "\033[35m"
@@ -34,5 +36,16 @@
 # include "Client.hpp"
 # include "Server.hpp"
 # include "IRCException.hpp"
+
+std::ostream &operator<<(std::ostream &out, const pollfd &pfd);
+std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs);
+std::ostream& operator<<(std::ostream& out, const Client &client);
+
+template <typename K, typename V>
+void printMap(const std::map<K, V>& map) {
+    for (typename std::map<K, V>::const_iterator it = map.begin(); it != map.end(); ++it) {
+        std::cout << "Map fd: " << it->first << "\n" << "Client: \n"  << it->second << std::endl;
+    }
+}
 
 #endif // INCLUDES_HPP

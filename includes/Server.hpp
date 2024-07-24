@@ -14,7 +14,8 @@ public:
     void updateNFDs(int fd);
     void updateClients(Client *client, int fd);
     void checkEvents(int nEvents);
-    void verifyEvent(std::vector<pollfd>::iterator it);
+    void verifyEvent(const pollfd &pfd);
+    void executeCommand(Client &client);
 
     int getSocketFD() const;
     int getPort() const;
@@ -31,9 +32,5 @@ private:
     std::map<int, Client*>   _Clients;
 
 };
-
-std::ostream &operator<<(std::ostream &out, const std::vector<pollfd>::iterator &it);
-std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs);
-std::ostream &operator<<(std::ostream &out, const pollfd &pfd);
 
 #endif // SERVER_HPP

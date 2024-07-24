@@ -7,27 +7,28 @@ class Server;
 
 class Client {
 public:
+    Client(); // Constructor
     ~Client(); // Destructor
-    Client(sockaddr_in6 socketInfo);
 
-    static void     verifyConnection(Server &server, std::vector<pollfd>::iterator it);
-    void            parseInfo(std::vector<char> buf);
+    static void     verifyConnection(Server &server, const pollfd &pfd);
+    void            parseMessage(std::vector<char> buf);
+
     //getters
     int             getSocketFD() const;
-    sockaddr_in6    getSocketInfo() const;
     std::string     getNick() const;
     std::string     getName() const;
     std::string     getRealName() const;
+    bool            getValidCmd() const { return _validCmd; } ;
+    std::string     getCommand() const { return _command; } ;
 
 private:
-    Client(); // Constructor
 
     int                     _socketFD;
-    sockaddr_in6            _socketInfo;
+    bool                    _validCmd;
     std::string             _nick;
     std::string             _name;
     std::string             _realName;
-
+    std::string             _command;
 };
 
 

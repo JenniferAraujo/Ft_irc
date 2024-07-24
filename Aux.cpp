@@ -1,18 +1,11 @@
 #include "Includes.hpp"
 
-std::ostream &operator<<(std::ostream &out, const std::vector<pollfd>::iterator &it) {
-    out << "FD: " << BOLD_GREEN << it->fd <<
-        RESET << " | Events: " << it->events
-        << " | Revents: " << (it->revents == 0 ? BOLD_YELLOW : BOLD_RED) << it->revents
-        << RESET << " |" << std::endl;
-    return out;
-}
-
 std::ostream &operator<<(std::ostream &out, const pollfd &pfd)
 {
-    out << "FD: " << pfd.fd
-        << " | Events: " << pfd.events
-        << " | Revents: " << pfd.revents << " |" << std::endl;
+    out << "FD: " << BOLD_GREEN << pfd.fd <<
+        RESET << " | Events: " << pfd.events
+        << " | Revents: " << (pfd.revents == 0 ? BOLD_YELLOW : BOLD_RED) << pfd.revents
+        << RESET << " |" << std::endl;
     return out;
 }
 
@@ -26,7 +19,7 @@ std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs)
     return out;
 }
 
-std::ostream& operator<<(std::ostream& out, const Client& client)
+std::ostream& operator<<(std::ostream& out, const Client &client)
 {
     out << "Fd " << client.getSocketFD()
     << "\nNick: " << client.getNick()
