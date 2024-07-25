@@ -17,7 +17,7 @@
 # include <map>
 # include <fstream>
 # include <algorithm>
-# include <fstream> //for parsing
+# include <fstream>
 # include <sstream>
 # define RED "\033[31m"
 # define GREEN "\033[32m"
@@ -32,6 +32,18 @@
 # define BOLD_WHITE 	"\033[1;37m"
 # define BOLD_CYAN "\033[1;36m"
 # define RESET "\033[0m"
+# define RPL_WELCOME(client, networkName, nick) \
+    ":" client " 001 " nick " :Welcome to the <" networkName "> Network, <" nick ">\r\n"
+# define RPL_YOURHOST(client, serverName, nick, version) \
+    ":" client " 002 " nick " :Your host is <" serverName ">, running version <" version ">\r\n"
+
+inline std::string RPL_CREATED(const std::string& client, const std::string& dateTime, const std::string& nick) {
+    return ":" + client + " 003 " + nick + " :This server was created <" + dateTime + ">\r\n";
+}
+
+inline std::string RPL_MOTD(const std::string& client, const std::string& msg, const std::string& nick) {
+    return ":" + client + " 372 " + nick + " :" + msg + "\r\n";
+}
 
 # include "Client.hpp"
 # include "Server.hpp"
@@ -47,5 +59,7 @@ void printMap(const std::map<K, V>& map) {
         std::cout << "Map fd: " << it->first << "\n" << "Client: \n"  << it->second << std::endl;
     }
 }
+
+std::string getCurrentDateTime();
 
 #endif // INCLUDES_HPP
