@@ -23,12 +23,9 @@ public:
     std::string     getRealname() const { return _realname; } ;
     std::string     getCommand() const { return _command; } ;
     //setters
-    void    setCommand(std::string command){this->_command = command;}
-
-    //setters
     void            setSocketFD(int socketFD) { _socketFD = socketFD; } ;
     void            setValidCmd(bool validCmd) { _validCmd = validCmd; } ;
-    void            setValidCmd(bool passward) { _passward = passward; } ;
+    void            setPassword(bool passward) { _passward = passward; } ;
     void            setNick(std::string nick) { _nick = nick; } ;
     void            setUsername(std::string username) { _username = username; } ;
     void            setRealname(std::string realname) { _realname = realname; } ;

@@ -137,7 +137,6 @@ void Server::run()
               << std::endl;
     // Adicionar o FD da socket aqueles que a poll vai poder monitorizar
     this->updateNFDs(this->_socketFD);
-    this->getAddrInfo();
     // Ciclo para correr a poll para esperar eventos
     while (true)
     {
