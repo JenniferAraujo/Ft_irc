@@ -11,14 +11,21 @@ public:
     ~Server();
 
     void run();
+    void getAddrInfo();
     void updateNFDs(int fd);
     void updateClients(Client *client, int fd);
     void checkEvents(int nEvents);
-    void verifyEvent(std::vector<pollfd>::iterator it);
+    void verifyEvent(const pollfd &pfd);
+    void executeCommand(Client &client);
+    void cap(const Client &client);
 
     int getSocketFD() const;
     int getPort() const;
     sockaddr_in6 getSocketInfo() const;
+    std::string getPassward() const { return _password; };
+
+    void    removeClient(int fd);
+    std::string getCreationTime() const {return this->_creationTime;};
 
 private:
     Server();
@@ -26,14 +33,11 @@ private:
     int                     _port;
     std::string             _password;
     int                     _socketFD;
+    std::string             _creationTime;
     sockaddr_in6            _socketInfo;
     std::vector<pollfd>     _NFDs;
     std::map<int, Client*>   _Clients;
 
 };
-
-std::ostream &operator<<(std::ostream &out, const std::vector<pollfd>::iterator &it);
-std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs);
-std::ostream &operator<<(std::ostream &out, const pollfd &pfd);
 
 #endif // SERVER_HPP

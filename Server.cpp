@@ -11,6 +11,7 @@ Server::Server(const int &port, const std::string &password) : _port(port),
     _socketInfo.sin6_family = AF_INET6; // IPv6
     _socketInfo.sin6_port = htons(this->_port);
     _socketInfo.sin6_addr = in6addr_any;
+    this->_creationTime = getCurrentDateTime();
 }
 
 // Função para adicionar fds para a poll monitorizar
@@ -25,42 +26,89 @@ void Server::updateClients(Client *client, int fd)
     this->_Clients[fd] = client;
 }
 
+void Server::cap(const Client &client) {
+    std::cout << "CAP Function" << std::endl;
+    std::string msg;
+    if (client.getPassward()) {
+        msg.append(RPL_WELCOME("IRC_FC", "ei de descobrir", client.getNick()));
+        msg.append(RPL_YOURHOST("IRC_FC", "servername", client.getNick(), "version"));
+        msg.append(RPL_CREATED("IRC_FC", this->getCreationTime(), client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "  ________________", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", " /______________ /|", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "|  ___________  | |", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "| |           | | |", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "| |  ft_irc   | | |", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "| |    by:    | | |", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "| |           | | |", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "| |  r, j, d  | | |", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "| |___________| | |  ___", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "|_______________|/  /  /", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "                   /__/", client.getNick()));
+        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+    } else {
+        msg.append(ERROR("Password incorrect"));
+        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+    }
+}
+
+//*Proximos passos: canais e mansagens
+//Ideia para executar os cmds
+void    Server::executeCommand(Client &client){
+    int N = 1;
+    std::string commands[N] = {"NICK"};
+    void (Server::*p[])(const Client&) = {&Server::cap};
+    for (int i = 0; i < N; i++) {
+        if(!commands[i].compare(client.getCommand()))
+            (this->*p[i])(client);
+    }
+}
+
+//QUIT -> fechar o fd
 // Função para verificar eventos na poll
 //Verificar it->revents == POLLIN
 //Verificar it-> revents == POLLOUT
-//Isto so itera pelos clientes, se o fd do evento for o do cliente, verifica se é IN ou OUT e printa uma msg
-void Server::verifyEvent(std::vector<pollfd>::iterator poolFd) {
+//if _passward = false -> dar handle de alguma forma?
+void Server::verifyEvent(const pollfd &pfd) {
     for(std::map<int, Client*>::iterator it = _Clients.begin(); it != _Clients.end(); ++it){
-        if(poolFd->fd == it->first){
-            if(poolFd->revents == POLLIN) {
-                std::cout << "Event on client " << GREEN << "[" << poolFd->fd << "]" << RESET <<  std::endl;
+        Client *client = it->second;
+        if(pfd.fd == it->first) {
+            if(pfd.revents == POLLIN) {
+                std::cout << "Event on client " << GREEN << "[" << pfd.fd << "]" << RESET <<  std::endl;
                 std::vector<char> buf(5000);
-                int bytes = recv(it->second->getSocketFD(), buf.data(), buf.size(), 0);
-                std::cout << "N Bytes received:" << bytes << std::endl;
+                recv(client->getSocketFD(), buf.data(), buf.size(), 0);
+                //std::cout << "N Bytes received: " << bytes << std::endl;
                 std::cout << buf.data() << "." << std::endl;
-                // O parser vai começar aqui
+                client->parseMessage(buf);
+                if(client->getValidCmd() == true)
+                    this->executeCommand(*client);
+                //else
+                //    std::cout << "Ivalid command...";
+                /* if(client->getCommand() == "CAP")
+                    std::cout << "Client's info saved: \n" << *client  << std::endl; */
             }
-            if(poolFd-> revents == POLLOUT)
-                std::cout << "pollout event" <<  it->second << std::endl;
+            if(pfd.events == POLLOUT)
+                std::cout << "pollout event" << *client  << std::endl;
         }
     }
+    std::cout << CYAN <<"----------Print Clients: \n" << RESET;
+    printMap(_Clients);
 }
 
 // Função para verificar que evento aconteceu
 void Server::checkEvents(int nEvents) {
     (void)nEvents;
     std::vector<pollfd> NFDs2 = this->_NFDs;
-    std::cout << "Checking: " << std::endl;
+    std::cout << "\nCheckEvents: " << std::endl;
     for (std::vector<pollfd>::iterator it = NFDs2.begin(); it != NFDs2.end(); ++it)
     {
         // Se for no fd da socket é pk é uma nova conecção, caso contrário, alguém enviou dados
-        std::cout << it;
+        std::cout << *it;
         (it->fd == this->_socketFD)
-            ? Client::verifyConnection(*this, it)
-            : this->verifyEvent(it);
+            ? Client::verifyConnection(*this, *it)
+            : this->verifyEvent(*it);
     }
     // Deixem isto só para ser mais fácil analisar
-    usleep(10000000);
+    //usleep(10000000);
 }
 
 void Server::run()
@@ -111,6 +159,7 @@ void Server::run()
 
 Server::~Server() {
     for (std::map<int, Client*>::iterator it = _Clients.begin(); it != _Clients.end(); ++it) {
+        close(it->first);
         delete it->second;
     }
 }
