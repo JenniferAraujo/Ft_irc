@@ -22,6 +22,8 @@ public:
     std::string     getUsername() const { return _username; } ;
     std::string     getRealname() const { return _realname; } ;
     std::string     getCommand() const { return _command; } ;
+    //setters
+    void    setCommand(std::string command){this->_command = command;}
 
     //setters
     void            setSocketFD(int socketFD) { _socketFD = socketFD; } ;

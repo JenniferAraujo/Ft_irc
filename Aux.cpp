@@ -36,3 +36,14 @@ std::ostream& operator<<(std::ostream& out, const Client &client)
     << " | Realname: " << client.getRealname() << std::endl;
     return(out);
 }
+
+std::string getCurrentDateTime()
+{
+	char buffer[80];
+	std::time_t rawtime;
+	std::tm *timeinfo;
+	std::time(&rawtime);
+	timeinfo = std::localtime(&rawtime);
+	std::strftime(buffer, 80, "%H:%M:%S %b %d %Y", timeinfo);
+	return std::string(buffer);
+}
