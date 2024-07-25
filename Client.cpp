@@ -1,41 +1,36 @@
 #include "includes/Client.hpp"
 
-Client::Client(Server &server): _server(server){}
+Client::Client(Server &server): _passward(false), _server(server) {}
 
 //Se a pass estiver errada invalid command
 //O nick e o user só imprimem com \n e eu n percebo porque
 //VALIDAÇOES - ler documentacao
-bool    Client::parseClient(std::istringstream &input, std::string str){
-        this->_command = str;
+bool    Client::parsePassword(std::istringstream &input, std::string str){
         std::string in;
-        std::getline(input, str); //passa a 1a linha
-        std::getline(input, str, ' '); //linha da pass
-        if(str == "PASS"){
-            std::getline(input, str, '\r');
-            if(_server.getPassward() != str){
-                _passward = false;
-                return false;
-            }       
-        }
-        else{
+        std::getline(input, str, '\r');
+        if(_server.getPassward() != str){
             _passward = false;
             return false;
         }
         _passward = true;
+        return false;
+}
+
+bool    Client::parseNick(std::istringstream &input, std::string str){
+        this->_command = str;
+        std::getline(input, this->_nick, '\r');
         std::getline(input, str); //pass \n
-        std::getline(input, str, ' ');
-        if(str == "NICK"){
-            std::getline(input, this->_nick, '\r'); 
-            std::getline(input, str); //pass \n
-        }
-        std::getline(input, str, ' ');
-        if(str == "USER"){
-            std::getline(input, this->_username, ' ');
-            std::getline(input, str, ':');
-            std::getline(input, this->_realname, '\r');
-            std::getline(input, str); //pass \n
-        }
         return true;
+}
+
+bool    Client::parseUser(std::istringstream &input, std::string str){
+
+        std::getline(input, this->_username, ' ');
+        std::getline(input, str, ':');
+        std::getline(input, this->_realname, '\r');
+        std::getline(input, str); //pass \n
+        return true;
+
 }
 
 //Client info
@@ -45,14 +40,18 @@ bool    Client::parseClient(std::istringstream &input, std::string str){
 //Se for para guardar as informaçoes guardo a bool validCmd = false
 void    Client::parseMessage(std::vector<char> buf){
     std::string str(buf.begin(), buf.end());
+    std::string commands[] = {"PASS", "NICK", "USER"};
+    bool (Client::*p[])(std::istringstream&, std::string str) = {&Client::parsePassword, &Client::parseNick, &Client::parseUser};
     std::istringstream input(str);
     std::string cmd;
-    std::getline(input, cmd, ' ');
-    std::string commands[] = {"CAP"};
-    bool (Client::*p[])(std::istringstream&, std::string str) = {&Client::parseClient};
-    for (int i = 0; i < 1; i++) {
-        if(!commands[i].compare(cmd)){
-            this->_validCmd = (this->*p[i])(input, cmd);
+    std::string line;
+    while(std::getline(input, line)){
+        std::istringstream  input_line(line);
+        std::getline(input_line, cmd, ' ');
+        for (int i = 0; i < 3; i++) {
+            if(!commands[i].compare(cmd)){
+                this->_validCmd = (this->*p[i])(input_line, cmd);
+            }
         }
     }
 }

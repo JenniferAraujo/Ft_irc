@@ -32,10 +32,14 @@
 # define BOLD_WHITE 	"\033[1;37m"
 # define BOLD_CYAN "\033[1;36m"
 # define RESET "\033[0m"
-# define RPL_WELCOME(client, networkName, nick) \
-    ":" client " 001 " nick " :Welcome to the <" networkName "> Network, <" nick ">\r\n"
-# define RPL_YOURHOST(client, serverName, nick, version) \
-    ":" client " 002 " nick " :Your host is <" serverName ">, running version <" version ">\r\n"
+
+inline std::string RPL_WELCOME(const std::string& client, const std::string& networkName, const std::string& nick) {
+    return ":" + client + " 001 " + nick + " :Welcome to the <" + networkName + "> Network, <" + nick + ">\r\n";
+}
+
+inline std::string RPL_YOURHOST(const std::string& client, const std::string& serverName, const std::string& nick, const std::string& version) {
+    return ":" + client + " 002 " + nick + " :Your host is <" + serverName + ">, running version <" + version + ">\r\n";
+}
 
 inline std::string RPL_CREATED(const std::string& client, const std::string& dateTime, const std::string& nick) {
     return ":" + client + " 003 " + nick + " :This server was created <" + dateTime + ">\r\n";
@@ -43,6 +47,10 @@ inline std::string RPL_CREATED(const std::string& client, const std::string& dat
 
 inline std::string RPL_MOTD(const std::string& client, const std::string& msg, const std::string& nick) {
     return ":" + client + " 372 " + nick + " :" + msg + "\r\n";
+}
+
+inline std::string ERROR(const std::string & msg) {
+    return "ERROR :" + msg + "\r\n";
 }
 
 # include "Client.hpp"

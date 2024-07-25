@@ -28,30 +28,34 @@ void Server::updateClients(Client *client, int fd)
 
 void Server::cap(const Client &client) {
     std::cout << "CAP Function" << std::endl;
-    std::string welcomeMsg;
-    welcomeMsg.append(RPL_WELCOME("IRC_FC", "ei de descobrir", "souzitaaaa"));
-    welcomeMsg.append(RPL_YOURHOST("IRC_FC", "servername", "souzitaaaa", "version"));
-    welcomeMsg.append(RPL_CREATED("IRC_FC", this->getCreationTime(), "souzitaaaa"));
-    welcomeMsg.append(RPL_MOTD("IRC_FC", "  ________________", "souzitaaaa"));
-    welcomeMsg.append(RPL_MOTD("IRC_FC", " /______________ /|", "souzitaaaa"));
-    welcomeMsg.append(RPL_MOTD("IRC_FC", "|  ___________  | |", "souzitaaaa"));
-    welcomeMsg.append(RPL_MOTD("IRC_FC", "| |           | | |", "souzitaaaa"));
-    welcomeMsg.append(RPL_MOTD("IRC_FC", "| |  ft_irc   | | |", "souzitaaaa"));
-    welcomeMsg.append(RPL_MOTD("IRC_FC", "| |    by:    | | |", "souzitaaaa"));
-    welcomeMsg.append(RPL_MOTD("IRC_FC", "| |           | | |", "souzitaaaa"));
-    welcomeMsg.append(RPL_MOTD("IRC_FC", "| |  r, j, d  | | |", "souzitaaaa"));
-    welcomeMsg.append(RPL_MOTD("IRC_FC", "| |___________| | |  ___", "souzitaaaa"));
-    welcomeMsg.append(RPL_MOTD("IRC_FC", "|_______________|/  /  /", "souzitaaaa"));
-    welcomeMsg.append(RPL_MOTD("IRC_FC", "                   /__/", "souzitaaaa"));
-    send(client.getSocketFD(), welcomeMsg.c_str(), welcomeMsg.length(), 0);
+    std::string msg;
+    if (client.getPassward()) {
+        msg.append(RPL_WELCOME("IRC_FC", "ei de descobrir", client.getNick()));
+        msg.append(RPL_YOURHOST("IRC_FC", "servername", client.getNick(), "version"));
+        msg.append(RPL_CREATED("IRC_FC", this->getCreationTime(), client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "  ________________", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", " /______________ /|", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "|  ___________  | |", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "| |           | | |", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "| |  ft_irc   | | |", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "| |    by:    | | |", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "| |           | | |", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "| |  r, j, d  | | |", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "| |___________| | |  ___", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "|_______________|/  /  /", client.getNick()));
+        msg.append(RPL_MOTD("IRC_FC", "                   /__/", client.getNick()));
+        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+    } else {
+        msg.append(ERROR("Password incorrect"));
+        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+    }
 }
 
 //*Proximos passos: canais e mansagens
 //Ideia para executar os cmds
 void    Server::executeCommand(Client &client){
-    client.setCommand("CAP");
     int N = 1;
-    std::string commands[N] = {"CAP"};
+    std::string commands[N] = {"NICK"};
     void (Server::*p[])(const Client&) = {&Server::cap};
     for (int i = 0; i < N; i++) {
         if(!commands[i].compare(client.getCommand()))
@@ -72,11 +76,10 @@ void Server::verifyEvent(const pollfd &pfd) {
                 std::cout << "Event on client " << GREEN << "[" << pfd.fd << "]" << RESET <<  std::endl;
                 std::vector<char> buf(5000);
                 recv(client->getSocketFD(), buf.data(), buf.size(), 0);
-                //int bytes = recv(client->getSocketFD(), buf.data(), buf.size(), 0);
                 //std::cout << "N Bytes received: " << bytes << std::endl;
-                //std::cout << buf.data() << "." << std::endl;
+                std::cout << buf.data() << "." << std::endl;
                 client->parseMessage(buf);
-                //if(client->getValidCmd() == false){
+                if(client->getValidCmd() == true)
                     this->executeCommand(*client);
                 //else
                 //    std::cout << "Ivalid command...";

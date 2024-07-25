@@ -12,7 +12,9 @@ public:
 
     static void     verifyConnection(Server &server, const pollfd &pfd);
     void            parseMessage(std::vector<char> buf);
-    bool            parseClient(std::istringstream &input, std::string str);
+    bool            parsePassword(std::istringstream &input, std::string str);
+    bool            parseNick(std::istringstream &input, std::string str);
+    bool            parseUser(std::istringstream &input, std::string str);
 
     //getters
     int             getSocketFD() const { return _socketFD; } ;
