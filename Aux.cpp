@@ -32,8 +32,7 @@ std::ostream& operator<<(std::ostream& out, const Client &client)
     out << "FD: " << BOLD_GREEN << client.getSocketFD() << RESET
     << " | Command: " << client.getCommand()
     << " | Nick: " << client.getNick()
-    << "\n | User: " << client.getUser()
-    << "\n | Name: " << client.getName()
-    << " | Real Name: " << client.getRealName() << std::endl;
+    << " | Username: " << client.getUsername()
+    << " | Realname: " << client.getRealname() << std::endl;
     return(out);
 }

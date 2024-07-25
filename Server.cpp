@@ -41,7 +41,7 @@ void    Server::executeCommand(Client &client){
 // Função para verificar eventos na poll
 //Verificar it->revents == POLLIN
 //Verificar it-> revents == POLLOUT
-//Isto so itera pelos clientes, se o fd do evento for o do cliente, verifica se é IN ou OUT e printa uma msg
+//if _passward = false -> dar handle de alguma forma?
 void Server::verifyEvent(const pollfd &pfd) {
     for(std::map<int, Client*>::iterator it = _Clients.begin(); it != _Clients.end(); ++it){
         Client *client = it->second;
@@ -57,6 +57,8 @@ void Server::verifyEvent(const pollfd &pfd) {
                 if(client->getValidCmd() == true){
                     this->executeCommand(*client);
                 }
+                else
+                    std::cout << "Ivalid command...";
                 /* if(client->getCommand() == "CAP")
                     std::cout << "Client's info saved: \n" << *client  << std::endl; */
             }
@@ -133,6 +135,7 @@ void Server::run()
 
 Server::~Server() {
     for (std::map<int, Client*>::iterator it = _Clients.begin(); it != _Clients.end(); ++it) {
+        close(it->first);
         delete it->second;
     }
 }

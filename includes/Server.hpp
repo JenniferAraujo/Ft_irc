@@ -22,6 +22,8 @@ public:
     sockaddr_in6 getSocketInfo() const;
     std::string getPassward() const { return _password; };
 
+    void    removeClient(int fd);
+
 private:
     Server();
 

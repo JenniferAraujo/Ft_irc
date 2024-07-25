@@ -37,6 +37,7 @@
 # include "Server.hpp"
 # include "IRCException.hpp"
 
+
 std::ostream &operator<<(std::ostream &out, const pollfd &pfd);
 std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs);
 std::ostream& operator<<(std::ostream& out, const Client &client);

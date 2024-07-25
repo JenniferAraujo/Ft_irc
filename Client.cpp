@@ -11,25 +11,31 @@ bool    Client::parseClient(std::istringstream &input, std::string str){
         std::getline(input, str); //passa a 1a linha
         std::getline(input, str, ' '); //linha da pass
         if(str == "PASS"){
-            std::getline(input, str);
-            if(_server.getPassward() != str)
+            std::getline(input, str, '\r');
+            if(_server.getPassward() != str){
+                _passward = false;
                 return false;
+            }       
         }
-        else
+        else{
+            _passward = false;
             return false;
+        }
+        _passward = true;
+        std::getline(input, str); //pass \n
         std::getline(input, str, ' ');
-        if(str == "NICK")
-            std::getline(input, this->_nick); 
+        if(str == "NICK"){
+            std::getline(input, this->_nick, '\r'); 
+            std::getline(input, str); //pass \n
+        }
         std::getline(input, str, ' ');
         if(str == "USER"){
-            std::getline(input, this->_user);
-            std::cout << "USER: " << this->_user << "\n";
-            std::istringstream user(this->_user);
-            std::getline(user, this->_name, ' ');
-            std::getline(user, str, ':');
-            std::getline(user, this->_realName);
+            std::getline(input, this->_username, ' ');
+            std::getline(input, str, ':');
+            std::getline(input, this->_realname, '\r');
+            std::getline(input, str); //pass \n
         }
-        return(true);
+        return true;
 }
 
 //Client info
@@ -44,10 +50,10 @@ void    Client::parseMessage(std::vector<char> buf){
     std::getline(input, cmd, ' ');
     std::string commands[] = {"CAP"};
     bool (Client::*p[])(std::istringstream&, std::string str) = {&Client::parseClient};
-    this->_validCmd = false;
     for (int i = 0; i < 1; i++) {
-        if(!commands[i].compare(cmd))
+        if(!commands[i].compare(cmd)){
             this->_validCmd = (this->*p[i])(input, cmd);
+        }
     }
 }
 
