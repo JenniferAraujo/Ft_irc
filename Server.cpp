@@ -29,7 +29,10 @@ void Server::updateClients(Client *client, int fd)
 void Server::cap(const Client &client) {
     std::cout << "CAP Function" << std::endl;
     std::string msg;
-    if (client.getPassward()) {
+    if (client.getPassword() == false || client.getAuthError() == INVALIDPASS) {
+        msg.append(ERROR("Password incorrect"));
+        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+    } else {
         msg.append(RPL_WELCOME("IRC_FC", "ei de descobrir", client.getNick()));
         msg.append(RPL_YOURHOST("IRC_FC", "servername", client.getNick(), "version"));
         msg.append(RPL_CREATED("IRC_FC", this->getCreationTime(), client.getNick()));
@@ -45,17 +48,14 @@ void Server::cap(const Client &client) {
         msg.append(RPL_MOTD("IRC_FC", "|_______________|/  /  /", client.getNick()));
         msg.append(RPL_MOTD("IRC_FC", "                   /__/", client.getNick()));
         send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-    } else {
-        msg.append(ERROR("Password incorrect"));
-        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
     }
 }
 
-//*Proximos passos: canais e mansagens
+//*Proximos passos: canais e mensagens
 //Ideia para executar os cmds
 void    Server::executeCommand(Client &client){
     int N = 1;
-    std::string commands[N] = {"NICK"};
+    std::string commands[] = {"CAP"};
     void (Server::*p[])(const Client&) = {&Server::cap};
     for (int i = 0; i < N; i++) {
         if(!commands[i].compare(client.getCommand()))
@@ -79,8 +79,11 @@ void Server::verifyEvent(const pollfd &pfd) {
                 //std::cout << "N Bytes received: " << bytes << std::endl;
                 std::cout << buf.data() << "." << std::endl;
                 client->parseMessage(buf);
-                if(client->getValidCmd() == true)
+                if(client->getValidCmd() == true){
+                    std::cout << "Exec cmd\n";
+                    //std::cout << "Auth over: " << std::boolalpha << client->getAuthOver() << std::endl;
                     this->executeCommand(*client);
+                }
                 //else
                 //    std::cout << "Ivalid command...";
                 /* if(client->getCommand() == "CAP")
@@ -89,6 +92,8 @@ void Server::verifyEvent(const pollfd &pfd) {
             if(pfd.events == POLLOUT)
                 std::cout << "pollout event" << *client  << std::endl;
         }
+    /*std::cout << "Auth error: " << client->getAuthError() << std::endl;
+    std::cout << "Password: " << client->getPassword() << std::endl; */
     }
     std::cout << CYAN <<"----------Print Clients: \n" << RESET;
     printMap(_Clients);

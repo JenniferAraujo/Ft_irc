@@ -33,6 +33,10 @@
 # define BOLD_CYAN "\033[1;36m"
 # define RESET "\033[0m"
 
+# define INVALIDPASS 0
+# define INVALIDNICK 1
+# define INVALIDUSER 2
+
 inline std::string RPL_WELCOME(const std::string& client, const std::string& networkName, const std::string& nick) {
     return ":" + client + " 001 " + nick + " :Welcome to the <" + networkName + "> Network, <" + nick + ">\r\n";
 }
