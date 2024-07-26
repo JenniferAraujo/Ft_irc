@@ -34,6 +34,7 @@ public:
     std::string     getUsername() const { return _username; } ;
     std::string     getRealname() const { return _realname; } ;
     std::string     getCommand() const { return _command; } ;
+    std::map<std::string, std::string>     getFullCmd() const { return _fullCmd; } ;
     //setters
     void            setSocketFD(int socketFD) { _socketFD = socketFD; } ;
     void            setValidCmd(bool validCmd) { _validCmd = validCmd; } ;
@@ -53,6 +54,8 @@ private:
     std::string             _username;
     std::string             _realname;
     std::string             _command;
+    //confirmar com a rita depois como ela vai querer fazer isto
+    std::map<std::string, std::string> _fullCmd;
     Server&                 _server;
 };
 

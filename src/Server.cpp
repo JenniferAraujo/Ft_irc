@@ -27,36 +27,48 @@ void Server::updateClients(Client *client, int fd)
 }
 
 void Server::cap(const Client &client) {
-    std::cout << "CAP Function" << std::endl;
+    std::cout << BOLD_GREEN << "[COMMAND]\t" << RESET << client.getCommand() << std::endl;
     std::string msg;
     if (client.getPassword() == false || client.getAuthError() == INVALIDPASS) {
         msg.append(ERROR("Password incorrect"));
         send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
     } else {
-        msg.append(RPL_WELCOME("IRC_FC", "ei de descobrir", client.getNick()));
-        msg.append(RPL_YOURHOST("IRC_FC", "servername", client.getNick(), "version"));
-        msg.append(RPL_CREATED("IRC_FC", this->getCreationTime(), client.getNick()));
-        msg.append(RPL_MOTD("IRC_FC", "  ________________", client.getNick()));
-        msg.append(RPL_MOTD("IRC_FC", " /______________ /|", client.getNick()));
-        msg.append(RPL_MOTD("IRC_FC", "|  ___________  | |", client.getNick()));
-        msg.append(RPL_MOTD("IRC_FC", "| |           | | |", client.getNick()));
-        msg.append(RPL_MOTD("IRC_FC", "| |  ft_irc   | | |", client.getNick()));
-        msg.append(RPL_MOTD("IRC_FC", "| |    by:    | | |", client.getNick()));
-        msg.append(RPL_MOTD("IRC_FC", "| |           | | |", client.getNick()));
-        msg.append(RPL_MOTD("IRC_FC", "| |  r, j, d  | | |", client.getNick()));
-        msg.append(RPL_MOTD("IRC_FC", "| |___________| | |  ___", client.getNick()));
-        msg.append(RPL_MOTD("IRC_FC", "|_______________|/  /  /", client.getNick()));
-        msg.append(RPL_MOTD("IRC_FC", "                   /__/", client.getNick()));
+        msg.append(RPL_WELCOME(this->_hostName, "Internet Fight Club", client.getNick(), client.getUsername(), "ip_idk"));
+        msg.append(RPL_YOURHOST(this->_hostName, "servername", client.getNick(), "version"));
+        msg.append(RPL_CREATED(this->_hostName, this->getCreationTime(), client.getNick()));
+        msg.append(RPL_MOTD(this->_hostName, "  ________________", client.getNick()));
+        msg.append(RPL_MOTD(this->_hostName, " /______________ /|", client.getNick()));
+        msg.append(RPL_MOTD(this->_hostName, "|  ___________  | |", client.getNick()));
+        msg.append(RPL_MOTD(this->_hostName, "| |           | | |", client.getNick()));
+        msg.append(RPL_MOTD(this->_hostName, "| |  ft_irc   | | |", client.getNick()));
+        msg.append(RPL_MOTD(this->_hostName, "| |    by:    | | |", client.getNick()));
+        msg.append(RPL_MOTD(this->_hostName, "| |           | | |", client.getNick()));
+        msg.append(RPL_MOTD(this->_hostName, "| |  r, j, d  | | |", client.getNick()));
+        msg.append(RPL_MOTD(this->_hostName, "| |___________| | |  ___", client.getNick()));
+        msg.append(RPL_MOTD(this->_hostName, "|_______________|/  /  /", client.getNick()));
+        msg.append(RPL_MOTD(this->_hostName, "                   /__/", client.getNick()));
         send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
     }
+}
+
+void Server::join(const Client &client) {
+    std::cout << BOLD_GREEN << "[COMMAND]\t" << RESET << client.getCommand() << std::endl;
+    std::map<std::string, std::string> temp = client.getFullCmd();
+    std::string cmd = temp[client.getCommand()];
+    std::cout << cmd << std::endl;
+    std::string msg;
+    msg.append(JOIN_CHANNEL(client.getNick(), client.getUsername(), "clienthostidk", cmd));
+    Channel *channel = new Channel(cmd);
+    this->_Channels[cmd] = channel;
+    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
 }
 
 //*Proximos passos: canais e mensagens
 //Ideia para executar os cmds
 void    Server::executeCommand(Client &client){
-    int N = 1;
-    std::string commands[] = {"CAP"};
-    void (Server::*p[])(const Client&) = {&Server::cap};
+    int N = 2;
+    std::string commands[] = {"CAP", "JOIN"};
+    void (Server::*p[])(const Client&) = {&Server::cap, &Server::join};
     for (int i = 0; i < N; i++) {
         if(!commands[i].compare(client.getCommand()))
             (this->*p[i])(client);
@@ -73,47 +85,34 @@ void Server::verifyEvent(const pollfd &pfd) {
         Client *client = it->second;
         if(pfd.fd == it->first) {
             if(pfd.revents == POLLIN) {
-                std::cout << "Event on client " << GREEN << "[" << pfd.fd << "]" << RESET <<  std::endl;
+                std::cout << BOLD_CYAN << "[SERVER]\t" << RESET << "Event on Client " << GREEN << "[" << pfd.fd << "]" << RESET <<  std::endl;
                 std::vector<char> buf(5000);
                 recv(client->getSocketFD(), buf.data(), buf.size(), 0);
-                //std::cout << "N Bytes received: " << bytes << std::endl;
-                std::cout << buf.data() << "." << std::endl;
+                //std::cout << buf.data() << "." << std::endl;
                 client->parseMessage(buf);
-                if(client->getValidCmd() == true){
-                    std::cout << "Exec cmd\n";
-                    //std::cout << "Auth over: " << std::boolalpha << client->getAuthOver() << std::endl;
+                if(client->getValidCmd() == true)
                     this->executeCommand(*client);
-                }
-                //else
-                //    std::cout << "Ivalid command...";
-                /* if(client->getCommand() == "CAP")
-                    std::cout << "Client's info saved: \n" << *client  << std::endl; */
             }
             if(pfd.events == POLLOUT)
                 std::cout << "pollout event" << *client  << std::endl;
         }
-    /*std::cout << "Auth error: " << client->getAuthError() << std::endl;
-    std::cout << "Password: " << client->getPassword() << std::endl; */
     }
-    std::cout << CYAN <<"----------Print Clients: \n" << RESET;
-    printMap(_Clients);
+    //titleInfo("Clients Map");
+    //printMap(_Clients);
 }
 
 // Função para verificar que evento aconteceu
 void Server::checkEvents(int nEvents) {
     (void)nEvents;
     std::vector<pollfd> NFDs2 = this->_NFDs;
-    std::cout << "\nCheckEvents: " << std::endl;
+    //titleInfo("Fds Vector");
+    //std::cout << NFDs2;
     for (std::vector<pollfd>::iterator it = NFDs2.begin(); it != NFDs2.end(); ++it)
     {
-        // Se for no fd da socket é pk é uma nova conecção, caso contrário, alguém enviou dados
-        std::cout << *it;
         (it->fd == this->_socketFD)
             ? Client::verifyConnection(*this, *it)
             : this->verifyEvent(*it);
     }
-    // Deixem isto só para ser mais fácil analisar
-    //usleep(10000000);
 }
 
 void Server::run()
@@ -133,7 +132,7 @@ void Server::run()
         close(this->_socketFD);
         throw IRCException("[ERROR] Binding socket went wrong");
     }
-    std::cout << "Socket with fd " << GREEN "[" << this->_socketFD << "]" << RESET
+    std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Socket with fd " << GREEN "[" << this->_socketFD << "]" << RESET
               << " bound on port " << YELLOW << this->_port << RESET << std::endl;
     // Meter a socket a ouvir aquela porta para um máximo de X conecções
     if (listen(this->_socketFD, 10) == -1)
@@ -141,8 +140,9 @@ void Server::run()
         close(this->_socketFD);
         throw IRCException("[ERROR] Listening socket went wrong");
     }
-    std::cout << "Server listening only " << YELLOW << 10 << RESET << " connections\n"
+    std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Server listening only " << YELLOW << 10 << RESET << " connections"
               << std::endl;
+    this->getServerInfo();
     // Adicionar o FD da socket aqueles que a poll vai poder monitorizar
     this->updateNFDs(this->_socketFD);
     // Ciclo para correr a poll para esperar eventos

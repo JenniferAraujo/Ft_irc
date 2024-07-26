@@ -1,10 +1,10 @@
-#include "includes/Client.hpp"
+#include "Includes.hpp"
 
 Client::Client(Server &server)
     :   _authError(-1),
         _password(false), //initialized as false
         _authOver(false),
-        _validCmd(false),   
+        _validCmd(false),
         _server(server) {
 }
 
@@ -20,9 +20,8 @@ void Client::parsePassword(std::istringstream &input){
     _password = true;
     std::string str;
     std::getline(input, str, '\r');
-    if(_server.getPassward() != str){
+    if(_server.getPassword() != str)
         this->_authError = INVALIDPASS;
-    }
 }
 
 //Esta funcao só guarda o nick, precisa de validacoes futuras
@@ -34,10 +33,22 @@ void Client::parseNick(std::istringstream &input){
 //Esta funcao guarda o username e o realname, precisa de validacoes futuras
 //Se o nick for invalido deverá guardar na variavel _authError o erro respetivo = INVALIDUSER
 void Client::parseUser(std::istringstream &input){
+    this->_authOver = true;
     std::string str;
     std::getline(input, this->_username, ' ');
     std::getline(input, str, ':');
     std::getline(input, this->_realname, '\r');
+}
+
+
+bool    Client::parseJoin(std::istringstream &input, std::string str){
+    (void)str;
+    std::string channel;
+    std::getline(input, channel, '\r');
+    channel.erase(0, 1);
+    this->setCommand("JOIN");
+    this->_fullCmd[this->getCommand()] = channel;
+    return true;
 }
 
 //The parsing functions receive the full line of the command as an input stream, and the command as a string
@@ -69,18 +80,13 @@ bool    Client::parseCap(std::istringstream &input, std::string str){
         }
     }
     //If all tree commands were found, one of them is invalid or there is no command PASS, authentification is over
-    if(cmds_parsed == 3 || _authError != -1 || _password == false)
-        _authOver = true;
+    if(this->_authError != -1)
+        this->_authOver = true;
     this->_command = str;
     //Se a autentificaçao acabou o commando é valido, ou seja, pode ser executado pode ser executado
-    return _authOver;
+    return this->_authOver;
 }
 
-bool    Client::parseJoin(std::istringstream &input, std::string str){
-    (void)input;
-    std::cout << "Parsing join command: " << str << std::endl;
-    return true;
-}
 
 
 //This function takes a buffer with a message sent from a client (the object that calls the function)
@@ -121,16 +127,28 @@ void    Client::parseMessage(std::vector<char> buf){
 }
 
 // Função para verificar a conecção de clientes
-void    Client::verifyConnection(Server &server, const pollfd &pfd) {
+// inet_ntop FUNÇÃO PROIBIDA, PROVAVELMENTE TEMOS DE MUDAR TUDO PARA O IPv4
+void Client::verifyConnection(Server &server, const pollfd &pfd) {
     if (pfd.revents & POLLIN) {
         Client *client = new Client(server);
-        client->_server = server;
-        client->_socketFD = accept(server.getSocketFD(), NULL, NULL);
-        if (client->_socketFD == -1)
+
+        struct sockaddr_in6 client_addr;
+        socklen_t client_addr_len = sizeof(client_addr);
+        memset(&client_addr, 0, sizeof(client_addr));
+
+        client->_socketFD = accept(server.getSocketFD(), (struct sockaddr *)&client_addr, &client_addr_len);
+        if (client->_socketFD == -1) {
+            delete client;
             throw IRCException("[ERROR] Opening client socket went wrong");
+        }
+
+        char client_ip[INET6_ADDRSTRLEN];
+        inet_ntop(AF_INET6, &(client_addr.sin6_addr), client_ip, INET6_ADDRSTRLEN);
+
         server.updateNFDs(client->_socketFD);
         server.updateClients(client, client->_socketFD);
-        std::cout << "Client " << GREEN << "[" << client->_socketFD << "]" << RESET << " connected!" << std::endl;
+        std::cout << BOLD_PURPLE << "[CLIENT]\t" << RESET << "Client " << GREEN << "[" << client->_socketFD << "]" << RESET
+                  << " connected from " << BOLD_CYAN << client_ip << RESET << std::endl;
     }
 }
 
