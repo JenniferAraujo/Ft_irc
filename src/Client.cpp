@@ -145,11 +145,24 @@ void Client::verifyConnection(Server &server, const pollfd &pfd) {
         char client_ip[INET6_ADDRSTRLEN];
         inet_ntop(AF_INET6, &(client_addr.sin6_addr), client_ip, INET6_ADDRSTRLEN);
 
+        struct hostent *host = NULL;
+
+        if (IN6_IS_ADDR_V4MAPPED(&client_addr.sin6_addr)) {
+            struct in_addr ipv4_addr;
+            memcpy(&ipv4_addr, &client_addr.sin6_addr.s6_addr[12], sizeof(ipv4_addr));
+
+            host = gethostbyname(inet_ntoa(ipv4_addr));
+        }
+
+        std::cout << BOLD_PURPLE << "[CLIENT]\t" << RESET << "Client " << GREEN << "[" << client->_socketFD << "]" << RESET
+                  << " connected from " << BOLD_CYAN << host->h_name << RESET << std::endl;
+        client->setIpAddr(host->h_name);
+
         server.updateNFDs(client->_socketFD);
         server.updateClients(client, client->_socketFD);
-        std::cout << BOLD_PURPLE << "[CLIENT]\t" << RESET << "Client " << GREEN << "[" << client->_socketFD << "]" << RESET
-                  << " connected from " << BOLD_CYAN << client_ip << RESET << std::endl;
     }
 }
+
+
 
 Client::~Client() {}

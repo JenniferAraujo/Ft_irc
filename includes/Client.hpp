@@ -11,6 +11,7 @@ public:
     ~Client(); // Destructor
 
     static void     verifyConnection(Server &server, const pollfd &pfd);
+    void            getClientInfo();
 
     //Parsing da mensagem
     void            parseMessage(std::vector<char> buf);
@@ -34,6 +35,7 @@ public:
     std::string     getUsername() const { return _username; } ;
     std::string     getRealname() const { return _realname; } ;
     std::string     getCommand() const { return _command; } ;
+    std::string     getIpaddr() const { return _ipAddr; } ;
     std::map<std::string, std::string>     getFullCmd() const { return _fullCmd; } ;
     //setters
     void            setSocketFD(int socketFD) { _socketFD = socketFD; } ;
@@ -42,6 +44,7 @@ public:
     void            setUsername(std::string username) { _username = username; } ;
     void            setRealname(std::string realname) { _realname = realname; } ;
     void            setCommand(std::string command) { _command = command; } ;
+    void            setIpAddr(std::string ipAddr) { _ipAddr = ipAddr; } ;
 
 private:
     Client();
@@ -50,6 +53,7 @@ private:
     bool                    _password; //initialized as false
     bool                    _authOver; //initialized as false
     bool                    _validCmd; //initialized as false
+    std::string             _ipAddr;
     std::string             _nick;
     std::string             _username;
     std::string             _realname;

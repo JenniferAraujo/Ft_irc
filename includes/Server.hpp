@@ -24,6 +24,7 @@ public:
     //getters
     int getSocketFD() const { return this->_socketFD; };
     int getPort() const { return this->_port; };
+    std::string getHostname() const { return this->_hostName; };
     sockaddr_in6 getSocketInfo() const { return this->_socketInfo; };
     std::string getPassword() const { return _password; };
     std::string getCreationTime() const {return this->_creationTime;};

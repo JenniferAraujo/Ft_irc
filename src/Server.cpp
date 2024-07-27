@@ -33,7 +33,7 @@ void Server::cap(const Client &client) {
         msg.append(ERROR("Password incorrect"));
         send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
     } else {
-        msg.append(RPL_WELCOME(this->_hostName, "Internet Fight Club", client.getNick(), client.getUsername(), "ip_idk"));
+        msg.append(RPL_WELCOME(this->_hostName, "Internet Fight Club", client.getNick(), client.getUsername(), client.getIpaddr()));
         msg.append(RPL_YOURHOST(this->_hostName, "servername", client.getNick(), "version"));
         msg.append(RPL_CREATED(this->_hostName, this->getCreationTime(), client.getNick()));
         msg.append(RPL_MOTD(this->_hostName, "  ________________", client.getNick()));
@@ -53,14 +53,14 @@ void Server::cap(const Client &client) {
 
 void Server::join(const Client &client) {
     std::cout << BOLD_GREEN << "[COMMAND]\t" << RESET << client.getCommand() << std::endl;
-    std::map<std::string, std::string> temp = client.getFullCmd();
+    /*std::map<std::string, std::string> temp = client.getFullCmd();
     std::string cmd = temp[client.getCommand()];
     std::cout << cmd << std::endl;
     std::string msg;
     msg.append(JOIN_CHANNEL(client.getNick(), client.getUsername(), "clienthostidk", cmd));
     Channel *channel = new Channel(cmd);
     this->_Channels[cmd] = channel;
-    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);*/
 }
 
 //*Proximos passos: canais e mensagens
@@ -85,13 +85,15 @@ void Server::verifyEvent(const pollfd &pfd) {
         Client *client = it->second;
         if(pfd.fd == it->first) {
             if(pfd.revents == POLLIN) {
-                std::cout << BOLD_CYAN << "[SERVER]\t" << RESET << "Event on Client " << GREEN << "[" << pfd.fd << "]" << RESET <<  std::endl;
                 std::vector<char> buf(5000);
                 recv(client->getSocketFD(), buf.data(), buf.size(), 0);
                 //std::cout << buf.data() << "." << std::endl;
                 client->parseMessage(buf);
-                if(client->getValidCmd() == true)
+                if(client->getValidCmd() == true) {
+                    std::cout << BOLD_CYAN << "[SERVER]\t" << RESET << "Event on Client " << GREEN << "[" << pfd.fd << "]" << RESET <<  std::endl;
+                    std::cout << BOLD_PURPLE << "[CLIENT INFO]\t" << RESET << *client << std::endl;
                     this->executeCommand(*client);
+                }
             }
             if(pfd.events == POLLOUT)
                 std::cout << "pollout event" << *client  << std::endl;

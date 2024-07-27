@@ -10,7 +10,6 @@ void Server::removeClient(int fd){
 // ISTO ESTÁ ERRADO PK NÃO SE PODE USAR A GETHOSTNAME, MAS SIM A GETHOSTBYNAME
 void Server::getServerInfo() {
     char hostbuffer[256];
-    char *IPbuffer;
     struct hostent *host_entry;
     int hostname;
 
@@ -24,10 +23,14 @@ void Server::getServerInfo() {
         throw IRCException("[ERROR] gethostbyname went wrong");
     }
 
-    IPbuffer = inet_ntoa(*((struct in_addr*) host_entry->h_addr_list[0]));
+    char *IPbuffer = inet_ntoa(*(struct in_addr*) host_entry->h_addr_list[0]);
+    if (IPbuffer == NULL) {
+        throw IRCException("[ERROR] inet_ntoa went wrong");
+    }
 
-    this->_hostName = host_entry->h_name;
+    this->_hostName = strdup(host_entry->h_name);
     this->_hostIP = IPbuffer;
-    std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Hostname: " << host_entry->h_name << std::endl;
-    std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Host IP: " << IPbuffer << "\n" << std::endl;
+
+    std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Hostname: " << this->_hostName << std::endl;
+    std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Host IP: " << this->_hostIP << "\n" << std::endl;
 }
