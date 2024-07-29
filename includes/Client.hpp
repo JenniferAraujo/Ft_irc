@@ -28,7 +28,7 @@ public:
     //getters
     int             getSocketFD() const { return _socketFD; } ;
     int             getAuthError() const { return _authError; } ;
-    bool             getPassword() const { return _password; } ;
+    bool            getPassword() const { return _password; } ;
     bool            getAuthOver() const { return _authOver; } ;
     bool            getValidCmd() const { return _validCmd; } ;
     std::string     getNick() const { return _nick; } ;

@@ -52,8 +52,28 @@ std::string getCurrentDateTime()
 	return std::string(buffer);
 }
 
+std::string getCurrentTime()
+{
+    char buffer[80];
+    std::time_t rawtime;
+    std::tm *timeinfo;
+    std::time(&rawtime);
+    timeinfo = std::localtime(&rawtime);
+    std::strftime(buffer, 80, "%H:%M:%S", timeinfo);
+    return std::string(buffer);
+}
+
 std::string intToString(int value) {
     std::ostringstream oss;
     oss << value;
     return oss.str();
 };
+
+std::string formatServerMessage(const std::string& color, const std::string& label, int clients) {
+    std::ostringstream oss;
+    if (clients == 0)
+        oss << color << "[" << label << "]" << RESET << "[" << getCurrentTime() << "]\t";
+    else
+        oss << color << "[" << label << "]" << RESET << "[" << getCurrentTime() << "][ " << clients << " ] ";
+    return oss.str();
+}

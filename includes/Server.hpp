@@ -16,7 +16,7 @@ public:
     void updateNFDs(int fd);
     void updateClients(Client *client, int fd);
     void checkEvents(int nEvents);
-    void verifyEvent(const pollfd &pfd);
+    void verifyEvent(const pollfd &pfd, std::vector<int> &toRemove);
     void executeCommand(Client &client);
     void cap(const Client &client);
     void join(const Client &client);
@@ -28,10 +28,10 @@ public:
     sockaddr_in6 getSocketInfo() const { return this->_socketInfo; };
     std::string getPassword() const { return _password; };
     std::string getCreationTime() const {return this->_creationTime;};
-
     //aux
     void    removeClient(int fd);
     void    getServerInfo();
+    void    addInChannel(std::string channelName, Client &client);
 
 private:
     Server();

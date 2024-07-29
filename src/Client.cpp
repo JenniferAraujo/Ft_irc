@@ -109,6 +109,7 @@ bool    Client::parseCap(std::istringstream &input, std::string str){
 void    Client::parseMessage(std::vector<char> buf){
     this->_validCmd = false;
     std::string str(buf.begin(), buf.end());
+    //std::cout << "\t" << str << std::endl;
     std::istringstream input(str);
     if(this->_command == "CAP" && this->_authOver == false){
         this->_validCmd = this->parseCap(input, "CAP");
@@ -154,7 +155,7 @@ void Client::verifyConnection(Server &server, const pollfd &pfd) {
             host = gethostbyname(inet_ntoa(ipv4_addr));
         }
 
-        std::cout << BOLD_PURPLE << "[CLIENT]\t" << RESET << "Client " << GREEN << "[" << client->_socketFD << "]" << RESET
+        std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", 0) << "Client " << GREEN << "[" << client->_socketFD << "]" << RESET
                   << " connected from " << BOLD_CYAN << host->h_name << RESET << std::endl;
         client->setIpAddr(host->h_name);
 

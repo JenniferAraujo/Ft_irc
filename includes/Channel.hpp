@@ -3,14 +3,19 @@
 
 # include "Includes.hpp"
 
+class Client;
+
 class Channel {
 public:
-    ~Channel(); // Destructor
     Channel(std::string name);
+    ~Channel(); // Destructor
+
+    void addClient(Client &client);
 
 private:
     Channel();
     std::string _name;
+    std::map<int, Client*>   _Clients;
 
 };
 

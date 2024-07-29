@@ -58,5 +58,6 @@ void printMap(const std::map<K, V>& map) {
 std::string getCurrentDateTime();
 void titleInfo(std::string title);
 std::string intToString(int value);
+std::string formatServerMessage(const std::string& color, const std::string& label, int clients);
 
 #endif // INCLUDES_HPP

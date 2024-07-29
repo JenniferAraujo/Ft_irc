@@ -27,9 +27,9 @@ void Server::updateClients(Client *client, int fd)
 }
 
 void Server::cap(const Client &client) {
-    std::cout << BOLD_GREEN << "[COMMAND]\t" << RESET << client.getCommand() << std::endl;
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << client.getCommand() << std::endl;
     std::string msg;
-    if (client.getPassword() == false || client.getAuthError() == INVALIDPASS) {
+    if (!client.getPassword() || client.getAuthError() == INVALIDPASS) {
         msg.append(ERROR("Password incorrect"));
         send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
     } else {
@@ -52,15 +52,14 @@ void Server::cap(const Client &client) {
 }
 
 void Server::join(const Client &client) {
-    std::cout << BOLD_GREEN << "[COMMAND]\t" << RESET << client.getCommand() << std::endl;
-    /*std::map<std::string, std::string> temp = client.getFullCmd();
-    std::string cmd = temp[client.getCommand()];
-    std::cout << cmd << std::endl;
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << client.getCommand() << std::endl;
     std::string msg;
-    msg.append(JOIN_CHANNEL(client.getNick(), client.getUsername(), "clienthostidk", cmd));
-    Channel *channel = new Channel(cmd);
-    this->_Channels[cmd] = channel;
-    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);*/
+    std::map<std::string, std::string> temp = client.getFullCmd();
+    std::string channelName = temp[client.getCommand()];
+    std::cout << "Channel Name: " << channelName << std::endl;
+    msg.append(JOIN_CHANNEL(client.getNick(), client.getUsername(), client.getIpaddr(), channelName));
+    this->addInChannel(channelName, const_cast<Client&>(client));
+    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
 }
 
 //*Proximos passos: canais e mensagens
@@ -80,8 +79,8 @@ void    Server::executeCommand(Client &client){
 //Verificar it->revents == POLLIN
 //Verificar it-> revents == POLLOUT
 //if _passward = false -> dar handle de alguma forma?
-void Server::verifyEvent(const pollfd &pfd) {
-    for(std::map<int, Client*>::iterator it = _Clients.begin(); it != _Clients.end(); ++it){
+void Server::verifyEvent(const pollfd &pfd, std::vector<int> &toRemove) {
+    for(std::map<int, Client*>::iterator it = this->_Clients.begin(); it != this->_Clients.end(); ++it){
         Client *client = it->second;
         if(pfd.fd == it->first) {
             if(pfd.revents == POLLIN) {
@@ -90,31 +89,35 @@ void Server::verifyEvent(const pollfd &pfd) {
                 //std::cout << buf.data() << "." << std::endl;
                 client->parseMessage(buf);
                 if(client->getValidCmd() == true) {
-                    std::cout << BOLD_CYAN << "[SERVER]\t" << RESET << "Event on Client " << GREEN << "[" << pfd.fd << "]" << RESET <<  std::endl;
-                    std::cout << BOLD_PURPLE << "[CLIENT INFO]\t" << RESET << *client << std::endl;
+                    std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size()) << "Event on Client " << GREEN << "[" << pfd.fd << "]" << RESET <<  std::endl;
+                    std::cout << formatServerMessage(BOLD_PURPLE, "C.INFO", 0) << *client << std::endl;
                     this->executeCommand(*client);
+                    if (!client->getPassword() || client->getAuthError() == INVALIDPASS)
+                        toRemove.push_back(client->getSocketFD());
                 }
             }
             if(pfd.events == POLLOUT)
                 std::cout << "pollout event" << *client  << std::endl;
         }
     }
-    //titleInfo("Clients Map");
-    //printMap(_Clients);
 }
 
 // Função para verificar que evento aconteceu
 void Server::checkEvents(int nEvents) {
     (void)nEvents;
     std::vector<pollfd> NFDs2 = this->_NFDs;
+    std::vector <int> toRemove;
     //titleInfo("Fds Vector");
     //std::cout << NFDs2;
     for (std::vector<pollfd>::iterator it = NFDs2.begin(); it != NFDs2.end(); ++it)
     {
         (it->fd == this->_socketFD)
             ? Client::verifyConnection(*this, *it)
-            : this->verifyEvent(*it);
+            : this->verifyEvent(*it, toRemove);
     }
+    //for (std::vector<int>::iterator it = toRemove.begin(); it != toRemove.end(); ++it) {
+    //    this->removeClient(*it);
+    //}
 }
 
 void Server::run()
@@ -158,6 +161,8 @@ void Server::run()
             throw IRCException("[ERROR] Poll connection timed out");
         default:
             this->checkEvents(nEvents);
+            //titleInfo("Clients Map");
+            //printMap(_Clients);
             break;
         }
     }
