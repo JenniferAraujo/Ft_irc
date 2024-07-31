@@ -20,6 +20,8 @@ public:
     void executeCommand(Client &client);
     void cap(const Client &client);
     void join(const Client &client);
+    void mode(const Client &client);
+    void who(const Client &client);
 
     //getters
     int getSocketFD() const { return this->_socketFD; };

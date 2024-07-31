@@ -24,6 +24,9 @@ public:
     //Parsing de commandos
     bool            parseCap(std::istringstream &input, std::string str);
     bool            parseJoin(std::istringstream &input, std::string str);
+    bool            parseMode(std::istringstream &input, std::string str);
+    bool            parseWho(std::istringstream &input, std::string str);
+
 
     //getters
     int             getSocketFD() const { return _socketFD; } ;

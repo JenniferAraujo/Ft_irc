@@ -62,12 +62,48 @@ void Server::join(const Client &client) {
     send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
 }
 
+void Server::mode(const Client &client) {
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << client.getCommand() << std::endl;
+    std::string msg;
+    std::map<std::string, std::string> temp = client.getFullCmd();
+    std::string channelName = temp[client.getCommand()];
+    std::cout << "Channel Name: " << channelName << std::endl;
+    msg.append(RPL_MODE(this->_hostName, channelName, client.getNick(), "+nt"));
+    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+}
+
+void Server::who(const Client &client) {
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << client.getCommand() << std::endl;
+    std::string msg;
+    std::string names;
+    std::map<std::string, std::string> temp = client.getFullCmd();
+    std::string channelName = temp[client.getCommand()];
+    std::cout << "Channel Name: " << channelName << std::endl;
+    if (this->_Channels.find(channelName) != this->_Channels.end()) {
+        Channel* channel = this->_Channels[channelName];
+        std::map<int, Client*> clients = channel->getClients();
+        for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
+            Client* c = it->second;
+            names.append(c->getNick());
+            names.append(" ");
+            msg = RPL_WHO(this->_hostName, channelName, client.getNick(), *c);
+            send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+        }
+    }
+    msg = RPL_ENDWHO(this->_hostName, channelName, client.getNick());
+    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+    msg = RPL_NAME(this->_hostName, channelName, client.getNick(), names);
+    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+    msg = RPL_ENDNAME(this->_hostName, channelName, client.getNick());
+    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+}
+
 //*Proximos passos: canais e mensagens
 //Ideia para executar os cmds
 void    Server::executeCommand(Client &client){
-    int N = 2;
-    std::string commands[] = {"CAP", "JOIN"};
-    void (Server::*p[])(const Client&) = {&Server::cap, &Server::join};
+    int N = 4;
+    std::string commands[] = {"CAP", "JOIN", "MODE", "WHO"};
+    void (Server::*p[])(const Client&) = {&Server::cap, &Server::join, &Server::mode, &Server::who};
     for (int i = 0; i < N; i++) {
         if(!commands[i].compare(client.getCommand()))
             (this->*p[i])(client);

@@ -106,6 +106,30 @@ bool    Client::parseCap(std::istringstream &input, std::string str){
 //Now we compare the command with our string of commands, if it finds a valid command, the correct parsing function will be called
 //The parsing functions return a boolean that sets the command as valid or invalid
 
+bool Client::parseMode(std::istringstream &input, std::string str){
+        (void)str;
+        //std::cout << "Parse Mode" << std::endl;
+        //std::cout << "\t" << str << std::endl;
+        std::string channel;
+        std::getline(input, channel, '\r');
+        channel.erase(0, 1);
+        this->setCommand("MODE");
+        this->_fullCmd[this->getCommand()] = channel;
+        return true;
+}
+
+bool Client::parseWho(std::istringstream &input, std::string str){
+       (void)str;
+        //std::cout << "Parse Who" << std::endl;
+        //std::cout << "\t" << str << std::endl;
+        std::string channel;
+        std::getline(input, channel, '\r');
+        channel.erase(0, 1);
+        this->setCommand("WHO");
+        this->_fullCmd[this->getCommand()] = channel;
+        return true;
+}
+
 void    Client::parseMessage(std::vector<char> buf){
     this->_validCmd = false;
     std::string str(buf.begin(), buf.end());
@@ -115,11 +139,11 @@ void    Client::parseMessage(std::vector<char> buf){
         this->_validCmd = this->parseCap(input, "CAP");
     }
     else {
-        std::string commands[] = {"CAP", "JOIN"}; //acrescentar commandos a medida que sao tratados
-        bool (Client::*p[])(std::istringstream&, std::string str) = {&Client::parseCap, &Client::parseJoin};
+        std::string commands[] = {"CAP", "JOIN", "MODE", "WHO"}; //acrescentar commandos a medida que sao tratados
+        bool (Client::*p[])(std::istringstream&, std::string str) = {&Client::parseCap, &Client::parseJoin, &Client::parseMode, &Client::parseWho};
         std::string cmd;
         std::getline(input, cmd, ' ');
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 4; i++) {
             if(!commands[i].compare(cmd)) {
                 this->_validCmd = (this->*p[i])(input, cmd);
             }

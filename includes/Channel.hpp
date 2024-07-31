@@ -12,6 +12,9 @@ public:
 
     void addClient(Client &client);
 
+    std::map<int, Client*> getClients() const { return _Clients; } ;
+
+
 private:
     Channel();
     std::string _name;
