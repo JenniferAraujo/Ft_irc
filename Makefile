@@ -22,12 +22,15 @@ NPD				= --no-print-directory
 NAME 			= ircserv
 INCLUDE			= includes
 OBJDIR			= obj
+SRCS 			= src
+_SUBFOLDERS		= Auxs
+VPATH			= $(SRCS) $(addprefix $(SRCS)/, $(_SUBFOLDERS))
 
-_FILES 			= Client Server ServerAux IRCException Aux
+_FILES 			= Client ClientAux Server ServerAux IRCException Aux Channel
 
 OBJ				= $(_FILES:%=%.o)
 TARGET			= $(addprefix $(OBJDIR)/, $(OBJ))
-_HEADERS		= Client.hpp Server.hpp IRCException.hpp Includes.hpp
+_HEADERS		= Client.hpp Server.hpp Channel.hpp IRCException.hpp Includes.hpp Macros.hpp
 HDR				= $(addprefix $(INCLUDE)/, $(_HEADERS))
 
 #---------------------------------  RULES  --------------------------------------

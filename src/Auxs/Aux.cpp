@@ -30,11 +30,15 @@ std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs)
 std::ostream& operator<<(std::ostream& out, const Client &client)
 {
     out << "FD: " << BOLD_GREEN << client.getSocketFD() << RESET
-    << " | Command: " << client.getCommand()
-    << " | Nick: " << client.getNick()
+    << "\t| Command: " << client.getCommand()
+    << "\t| Nick: " << client.getNick()
     << " | Username: " << client.getUsername()
-    << " | Realname: " << client.getRealname() << std::endl;
+    << " | Realname: " << client.getRealname();
     return(out);
+}
+
+void titleInfo(std::string title) {
+    std::cout << BOLD_YELLOW << "[" << title << "]" << RESET << std::endl;
 }
 
 std::string getCurrentDateTime()
@@ -46,4 +50,30 @@ std::string getCurrentDateTime()
 	timeinfo = std::localtime(&rawtime);
 	std::strftime(buffer, 80, "%H:%M:%S %b %d %Y", timeinfo);
 	return std::string(buffer);
+}
+
+std::string getCurrentTime()
+{
+    char buffer[80];
+    std::time_t rawtime;
+    std::tm *timeinfo;
+    std::time(&rawtime);
+    timeinfo = std::localtime(&rawtime);
+    std::strftime(buffer, 80, "%H:%M:%S", timeinfo);
+    return std::string(buffer);
+}
+
+std::string intToString(int value) {
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+};
+
+std::string formatServerMessage(const std::string& color, const std::string& label, int clients) {
+    std::ostringstream oss;
+    if (clients == 0)
+        oss << color << "[" << label << "]" << RESET << "[" << getCurrentTime() << "]\t";
+    else
+        oss << color << "[" << label << "]" << RESET << "[" << getCurrentTime() << "][ " << clients << " ] ";
+    return oss.str();
 }
