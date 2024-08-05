@@ -31,7 +31,7 @@ inline std::string RPL_NAME(const std::string& client, const std::string& channe
     return ":" + client + " 353 " + nick + " = #" + channel + " :" + nicks + "\r\n";
 }
 inline std::string RPL_ENDNAME(const std::string& client, const std::string& channel, const std::string& nick) {
-    return ":" + client + " 366 " + nick + " #" + channel + ":End of NAMES list\r\n";
+    return ":" + client + " 366 " + nick + " #" + channel + " :End of NAMES list\r\n";
 }
 
 //? SERVER MESSAGES

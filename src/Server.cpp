@@ -8,7 +8,7 @@ Server::Server(const int &port, const std::string &password) : _port(port),
                                                                _password(password)
 {
     memset(&this->_socketInfo, 0, sizeof(this->_socketInfo));
-    _socketInfo.sin6_family = AF_INET6; // IPv6
+    _socketInfo.sin6_family = AF_INET6;
     _socketInfo.sin6_port = htons(this->_port);
     _socketInfo.sin6_addr = in6addr_any;
     this->_creationTime = getCurrentDateTime();
@@ -56,7 +56,6 @@ void Server::join(const Client &client) {
     std::string msg;
     std::map<std::string, std::string> temp = client.getFullCmd();
     std::string channelName = temp[client.getCommand()];
-    std::cout << "Channel Name: " << channelName << std::endl;
     msg.append(JOIN_CHANNEL(client.getNick(), client.getUsername(), client.getIpaddr(), channelName));
     this->addInChannel(channelName, const_cast<Client&>(client));
     send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
@@ -67,7 +66,6 @@ void Server::mode(const Client &client) {
     std::string msg;
     std::map<std::string, std::string> temp = client.getFullCmd();
     std::string channelName = temp[client.getCommand()];
-    std::cout << "Channel Name: " << channelName << std::endl;
     msg.append(RPL_MODE(this->_hostName, channelName, client.getNick(), "+nt"));
     send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
 }
@@ -78,7 +76,6 @@ void Server::who(const Client &client) {
     std::string names;
     std::map<std::string, std::string> temp = client.getFullCmd();
     std::string channelName = temp[client.getCommand()];
-    std::cout << "Channel Name: " << channelName << std::endl;
     if (this->_Channels.find(channelName) != this->_Channels.end()) {
         Channel* channel = this->_Channels[channelName];
         std::map<int, Client*> clients = channel->getClients();

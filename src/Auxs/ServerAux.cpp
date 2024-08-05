@@ -46,11 +46,11 @@ void Server::getServerInfo() {
 
 void Server::addInChannel(std::string channelName, Client &client) {
     if (this->_Channels.find(channelName) != this->_Channels.end()) {
-        std::cout << "\tAdding Client " << client.getNick() << " to existing channel: " << channelName << std::endl;
+        std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0) << client.getNick() << " entered the channel " << BOLD_YELLOW << channelName << RESET << std::endl;
         this->_Channels[channelName]->addClient(client);
     }
     else {
-        std::cout << "\tAdding Client " << client.getNick() << " to new channel: " << channelName << std::endl;
+        std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0) << client.getNick() << " created the channel " << BOLD_YELLOW << channelName << RESET << std::endl;
         Channel *channel = new Channel(channelName);
         this->_Channels[channelName] = channel;
         this->_Channels[channelName]->addClient(client);
