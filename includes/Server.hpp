@@ -16,12 +16,12 @@ public:
     void updateNFDs(int fd);
     void updateClients(Client *client, int fd);
     void checkEvents(int nEvents);
-    void verifyEvent(const pollfd &pfd, std::vector<int> &toRemove);
+    void verifyEvent(const pollfd &pfd);
     void executeCommand(Client &client);
-    void cap(const Client &client);
-    void join(const Client &client);
-    void mode(const Client &client);
-    void who(const Client &client);
+    void welcome(Client &client);
+    void join(Client &client);
+    void mode(Client &client);
+    void who(Client &client);
 
     //getters
     int getSocketFD() const { return this->_socketFD; };
@@ -48,6 +48,7 @@ private:
     std::vector<pollfd>     _NFDs;
     std::map<int, Client*>   _Clients;
     std::map<std::string, Channel*>   _Channels;
+    std::vector <int>       _toRemove;
 
 };
 

@@ -26,7 +26,6 @@
 # include "Channel.hpp"
 # include "IRCException.hpp"
 # include "Macros.hpp"
-# include "Parser.hpp"
 # define RED "\033[31m"
 # define GREEN "\033[32m"
 # define PURPLE "\033[35m"
@@ -41,9 +40,9 @@
 # define BOLD_CYAN "\033[1;36m"
 # define RESET "\033[0m"
 
-# define INVALIDPASS 0
-# define INVALIDNICK 1
-# define INVALIDUSER 2
+# define INVALIDPASS 1
+# define INVALIDNICK 2
+# define INVALIDUSER 3
 
 std::ostream &operator<<(std::ostream &out, const pollfd &pfd);
 std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs);

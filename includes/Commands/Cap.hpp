@@ -20,6 +20,7 @@ private:
     bool                    _authOver;
     bool                    _validCmd;
     */
+   Server&                  _server;
 };
 
 #endif // CAP_HPP

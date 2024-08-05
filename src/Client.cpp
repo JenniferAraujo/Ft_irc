@@ -1,7 +1,7 @@
 #include "Includes.hpp"
 
 Client::Client(Server &server)
-    :   _authError(-1),
+    :   _authError(0),
         _password(false), //initialized as false
         _authOver(false),
         _validCmd(false),
@@ -26,12 +26,19 @@ void Client::parsePassword(std::istringstream &input){
 
 //Esta funcao só guarda o nick, precisa de validacoes futuras
 //Se o nick for invalido deverá guardar na variavel _authError o erro respetivo = INVALIDNICK
+//Info do chat gpt: estudar protocolos e subject
+//!O nickname deve ser unico
+    //Entre 1 a 9 caracteres
+    //Pode incluir letras (A-Z, a-z), dígitos (0-9) e alguns caracteres especiais (-, _, \, [, ], ^, {, }, |).
+    //Deve começar com uma letra.
 void Client::parseNick(std::istringstream &input){
         std::getline(input, this->_nick, '\r');
 }
 
 //Esta funcao guarda o username e o realname, precisa de validacoes futuras
 //Se o nick for invalido deverá guardar na variavel _authError o erro respetivo = INVALIDUSER
+//Users nao podem ser repetidos??
+//username e realname sao campos obrigatorios
 void Client::parseUser(std::istringstream &input){
     this->_authOver = true;
     std::string str;
@@ -80,7 +87,7 @@ bool    Client::parseCap(std::istringstream &input, std::string str){
         }
     }
     //If all tree commands were found, one of them is invalid or there is no command PASS, authentification is over
-    if(this->_authError != -1)
+    if(this->_authError != 0)
         this->_authOver = true;
     this->_command = str;
     //Se a autentificaçao acabou o commando é valido, ou seja, pode ser executado pode ser executado
@@ -89,22 +96,6 @@ bool    Client::parseCap(std::istringstream &input, std::string str){
 
 
 
-//This function takes a buffer with a message sent from a client (the object that calls the function)
-//It's goal is to parse the message, saving the commmand in the variable _command, so it can be executed by the server
-//And saving the arguments of the command in this client atributes, so that they can be used by server when executing the command
-
-//First we set the command as invalid, so we can check if the command receive will be valid or not
-//The message, received as a char vector, is turned into a type string
-//We take the full message (str) and create an input stream for getline to read (input)
-
-//If the prior command is CAP and the authentification isn't done yet, then we continue the parsing of Cap aka the authentification process
-
-//We have an array of commands, that will contain all commands our IRC treats
-//We have an array of funtion pointers that correspond to each of the command's parsing
-//Then we read the first word of input and store it into the string cmd => the first word of the msg is the command
-
-//Now we compare the command with our string of commands, if it finds a valid command, the correct parsing function will be called
-//The parsing functions return a boolean that sets the command as valid or invalid
 
 bool Client::parseMode(std::istringstream &input, std::string str){
         (void)str;
@@ -130,16 +121,28 @@ bool Client::parseWho(std::istringstream &input, std::string str){
         return true;
 }
 
+//This function takes a buffer with a message sent from a client (the object that calls the function)
+//It's goal is to parse the message, saving the commmand in the variable _command, so it can be executed by the server
+//And saving the arguments of the command in this client atributes, so that they can be used by server when executing the command
+
+//First we set the command as invalid, so we can check if the command receive will be valid or not
+//The message, received as a char vector, is turned into a type string
+//We take the full message (str) and create an input stream for getline to read (input)
+
+//If the prior command is CAP and the authentification isn't done yet, then we continue the parsing of Cap aka the authentification process
+
+//We have an array of commands, that will contain all commands our IRC treats
+//We have an array of funtion pointers that correspond to each of the command's parsing
+//Then we read the first word of input and store it into the string cmd => the first word of the msg is the command
+
+//Now we compare the command with our string of commands, if it finds a valid command, the correct parsing function will be called
+//The parsing functions return a boolean that sets the command as valid or invalid
+
 void    Client::parseMessage(std::vector<char> buf){
     this->_validCmd = false;
     std::string str(buf.begin(), buf.end());
-    //std::cout << "\t" << str << std::endl;
     std::istringstream input(str);
-    if(this->_command == "CAP" && this->_authOver == false){
-        this->_validCmd = this->parseCap(input, "CAP");
-    }
-    else {
-        std::string commands[] = {"CAP", "JOIN", "MODE", "WHO"}; //acrescentar commandos a medida que sao tratados
+        std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO"}; //acrescentar commandos a medida que sao tratados
         bool (Client::*p[])(std::istringstream&, std::string str) = {&Client::parseCap, &Client::parseJoin, &Client::parseMode, &Client::parseWho};
         std::string cmd;
         std::getline(input, cmd, ' ');
@@ -148,7 +151,6 @@ void    Client::parseMessage(std::vector<char> buf){
                 this->_validCmd = (this->*p[i])(input, cmd);
             }
         }
-    }
 }
 
 // Função para verificar a conecção de clientes

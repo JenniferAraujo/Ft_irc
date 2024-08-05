@@ -48,6 +48,7 @@ public:
     void            setRealname(std::string realname) { _realname = realname; } ;
     void            setCommand(std::string command) { _command = command; } ;
     void            setIpAddr(std::string ipAddr) { _ipAddr = ipAddr; } ;
+    void            setAuthOver(bool authOver) { _authOver = authOver; } ;
 
 private:
     Client();

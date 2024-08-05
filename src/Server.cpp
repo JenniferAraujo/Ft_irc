@@ -26,12 +26,14 @@ void Server::updateClients(Client *client, int fd)
     this->_Clients[fd] = client;
 }
 
-void Server::cap(const Client &client) {
+void Server::welcome(Client &client) {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << client.getCommand() << std::endl;
     std::string msg;
     if (!client.getPassword() || client.getAuthError() == INVALIDPASS) {
         msg.append(ERROR("Password incorrect"));
         send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+        this->_toRemove.push_back(client.getSocketFD());
+
     } else {
         msg.append(RPL_WELCOME(this->_hostName, "Internet Fight Club", client.getNick(), client.getUsername(), client.getIpaddr()));
         msg.append(RPL_YOURHOST(this->_hostName, "servername", client.getNick(), "version"));
@@ -51,7 +53,7 @@ void Server::cap(const Client &client) {
     }
 }
 
-void Server::join(const Client &client) {
+void Server::join(Client &client) {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << client.getCommand() << std::endl;
     std::string msg;
     std::map<std::string, std::string> temp = client.getFullCmd();
@@ -61,7 +63,7 @@ void Server::join(const Client &client) {
     send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
 }
 
-void Server::mode(const Client &client) {
+void Server::mode(Client &client) {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << client.getCommand() << std::endl;
     std::string msg;
     std::map<std::string, std::string> temp = client.getFullCmd();
@@ -70,7 +72,7 @@ void Server::mode(const Client &client) {
     send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
 }
 
-void Server::who(const Client &client) {
+void Server::who(Client &client) {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << client.getCommand() << std::endl;
     std::string msg;
     std::string names;
@@ -98,11 +100,13 @@ void Server::who(const Client &client) {
 //*Proximos passos: canais e mensagens
 //Ideia para executar os cmds
 void    Server::executeCommand(Client &client){
-    int N = 4;
+    int N = 3;
     std::string commands[] = {"CAP", "JOIN", "MODE", "WHO"};
-    void (Server::*p[])(const Client&) = {&Server::cap, &Server::join, &Server::mode, &Server::who};
+    void (Server::*p[])(Client&) = {&Server::join, &Server::mode, &Server::who};
     for (int i = 0; i < N; i++) {
         if(!commands[i].compare(client.getCommand()))
+            //if(!client->getAuthOver() || client->getAuthError())
+                //enviar msg de erro
             (this->*p[i])(client);
     }
 }
@@ -112,26 +116,26 @@ void    Server::executeCommand(Client &client){
 //Verificar it->revents == POLLIN
 //Verificar it-> revents == POLLOUT
 //if _passward = false -> dar handle de alguma forma?
-void Server::verifyEvent(const pollfd &pfd, std::vector<int> &toRemove) {
-    for(std::map<int, Client*>::iterator it = this->_Clients.begin(); it != this->_Clients.end(); ++it){
-        Client *client = it->second;
-        if(pfd.fd == it->first) {
-            if(pfd.revents == POLLIN) {
-                std::vector<char> buf(5000);
-                recv(client->getSocketFD(), buf.data(), buf.size(), 0);
-                //std::cout << buf.data() << "." << std::endl;
-                client->parseMessage(buf);
-                if(client->getValidCmd() == true) {
-                    std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size()) << "Event on Client " << GREEN << "[" << pfd.fd << "]" << RESET <<  std::endl;
-                    std::cout << formatServerMessage(BOLD_PURPLE, "C.INFO", 0) << *client << std::endl;
-                    this->executeCommand(*client);
-                    if (!client->getPassword() || client->getAuthError() == INVALIDPASS)
-                        toRemove.push_back(client->getSocketFD());
-                }
-            }
-            if(pfd.events == POLLOUT)
-                std::cout << "pollout event" << *client  << std::endl;
+void Server::verifyEvent(const pollfd &pfd) {
+    if(pfd.revents == POLLIN) {
+        Client *client = this->_Clients[pfd.fd];
+        if(!client->getAuthOver() && !client->getNick().empty() 
+            && !client->getRealname().empty() && !client->getUsername().empty()){
+                this->welcome(*client);
+                client->setAuthOver(true);
         }
+        std::vector<char> buf(5000);
+        recv(client->getSocketFD(), buf.data(), buf.size(), 0);
+        //std::cout << buf.data() << "." << std::endl; 
+        //Setting pass, nick, user --> n pode settar a pass se ja existir
+        client->parseMessage(buf);
+        if(client->getValidCmd() == true) {
+            std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size()) << "Event on Client " << GREEN << "[" << pfd.fd << "]" << RESET <<  std::endl;
+            std::cout << formatServerMessage(BOLD_PURPLE, "C.INFO", 0) << *client << std::endl;
+            this->executeCommand(*client);
+        }
+        if(pfd.events == POLLOUT)
+            std::cout << "pollout event" << *client  << std::endl;
     }
 }
 
@@ -139,14 +143,13 @@ void Server::verifyEvent(const pollfd &pfd, std::vector<int> &toRemove) {
 void Server::checkEvents(int nEvents) {
     (void)nEvents;
     std::vector<pollfd> NFDs2 = this->_NFDs;
-    std::vector <int> toRemove;
     //titleInfo("Fds Vector");
     //std::cout << NFDs2;
     for (std::vector<pollfd>::iterator it = NFDs2.begin(); it != NFDs2.end(); ++it)
     {
         (it->fd == this->_socketFD)
             ? Client::verifyConnection(*this, *it)
-            : this->verifyEvent(*it, toRemove);
+            : this->verifyEvent(*it);
     }
     //for (std::vector<int>::iterator it = toRemove.begin(); it != toRemove.end(); ++it) {
     //    this->removeClient(*it);
