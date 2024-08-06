@@ -18,7 +18,7 @@ protected:
     Server      _server;
     Client      _client;
     //TODO criar macros
-    int         _error; 
+    int         _error;
 };
 
 #endif // PARSER_HPP
