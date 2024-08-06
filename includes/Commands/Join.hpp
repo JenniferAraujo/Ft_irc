@@ -5,16 +5,16 @@
 
 class Join: public ACommand {
 public:
-    Join(): ACommand("JOIN") {};
+    Join(const Server& server, const Client& client);
     virtual ~Join() {};
 
-    //assim?
-    void parsing();
+    void parsing(std::istringstream &input);
+
+    std::string getChannel() { return _channel; };
 
 private:
     Join();
-    std::map<std::string, std::string> _fullCmd;
-    //A minha ideia e ter uma variavel por argumento do commando
+    std::string _channel;
 };
 
 #endif // JOIN_HPP

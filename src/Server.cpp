@@ -36,7 +36,7 @@ void Server::pass(Client &client, ACommand *command) {
         send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
         return ;
     }
-    Pass    *pass = dynamic_cast<Pass *>(command); 
+    Pass    *pass = dynamic_cast<Pass *>(command);
     //Isto tem que funcionar, nao pode ser nulo, mas vou por aqui a exception para debug
     if(pass == NULL)
         throw IRCException("[ERROR] pass dynamic cast went wrong");
@@ -49,6 +49,18 @@ void Server::pass(Client &client, ACommand *command) {
     else
         client.setPass(pass->getPass());
 }
+
+void Server::join(Client &client, ACommand *command) {
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << command->getName() << std::endl;
+    std::string msg;
+    Join    *join = dynamic_cast<Join *>(command);
+	if(pass == NULL)
+        throw IRCException("[ERROR] pass dynamic cast went wrong");
+    msg.append(JOIN_CHANNEL(client.getNick(), client.getUsername(), client.getIpaddr(), join->getChannel()));
+    this->addInChannel(join->getChannel(), const_cast<Client&>(client));
+    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+}
+
 
 //!Ver a questao dos erros que se manda
 //Se o nick for invalido da erro e seta a flag AuthError

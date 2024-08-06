@@ -24,14 +24,19 @@ ACommand* Client::createUser(std::istringstream &input){
     return command;
 }
 
-//TODO cap ping
+ACommand* Client::createJoin(std::istringstream &input){
+    ACommand *command = new Join(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
+//TODO cap who mode ping
 
 ACommand*    Client::createCommand(std::vector<char> buf){
     std::string str(buf.begin(), buf.end());
     std::istringstream input(str);
     std::string commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "WHO"}; //acrescentar commandos a medida que sao tratados
-    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createPass, &Client::createNick, 
-        &Client::createUser};
+    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin};
     std::string cmd;
     std::getline(input, cmd, ' ');
     ACommand *command = NULL;

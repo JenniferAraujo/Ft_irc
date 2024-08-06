@@ -8,7 +8,6 @@ public:
     Pass(const Server& server, const Client& client);
     ~Pass();
 
-    //assim?
     std::string getPass() { return _pass; };
     void parsing(std::istringstream &input);
 
