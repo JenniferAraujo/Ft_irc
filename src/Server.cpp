@@ -44,7 +44,7 @@ void Server::pass(Client &client, ACommand *command) {
         msg.append(ERROR("Password incorrect"));
         send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
         this->_toRemove.push_back(client.getSocketFD());
-        client.setAuthError(INVALIDPASS);
+        client.setAuthError(PASSWDMISMATCH);
     }
     else
         client.setPass(pass->getPass());
@@ -118,51 +118,6 @@ void Server::welcome(Client &client) {
         msg.append(RPL_MOTD(this->_hostName, "                   /__/", client.getNick()));
         send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
     }
-}
-
-//TODO modificar execucao para o ACommand
-void Server::join(Client &client, ACommand *command) {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << client.getCommand() << std::endl;
-    std::string msg;
-    std::map<std::string, std::string> temp = client.getFullCmd();
-    std::string channelName = temp[client.getCommand()];
-    msg.append(JOIN_CHANNEL(client.getNick(), client.getUsername(), client.getIpaddr(), channelName));
-    this->addInChannel(channelName, const_cast<Client&>(client));
-    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-}
-
-void Server::mode(Client &client, ACommand *command) {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << client.getCommand() << std::endl;
-    std::string msg;
-    std::map<std::string, std::string> temp = client.getFullCmd();
-    std::string channelName = temp[client.getCommand()];
-    msg.append(RPL_MODE(this->_hostName, channelName, client.getNick(), "+nt"));
-    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-}
-
-void Server::who(Client &client, ACommand *command) {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << client.getCommand() << std::endl;
-    std::string msg;
-    std::string names;
-    std::map<std::string, std::string> temp = client.getFullCmd();
-    std::string channelName = temp[client.getCommand()];
-    if (this->_Channels.find(channelName) != this->_Channels.end()) {
-        Channel* channel = this->_Channels[channelName];
-        std::map<int, Client*> clients = channel->getClients();
-        for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
-            Client* c = it->second;
-            names.append(c->getNick());
-            names.append(" ");
-            msg = RPL_WHO(this->_hostName, channelName, client.getNick(), *c);
-            send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        }
-    }
-    msg = RPL_ENDWHO(this->_hostName, channelName, client.getNick());
-    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-    msg = RPL_NAME(this->_hostName, channelName, client.getNick(), names);
-    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-    msg = RPL_ENDNAME(this->_hostName, channelName, client.getNick());
-    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
 }
 
 //TODO comando cap

@@ -5,13 +5,12 @@
 
 class User: public ACommand {
 public:
-    User(): ACommand("USER") {};
+    User(const Server& server, const Client& client);
     virtual ~User() {};
 
-    //assim?
     std::string getName() { return _name; };
     std::string getRealname() { return _realname; };
-    void parsing();
+    void parsing(std::istringstream &input);
 
 private:
     User();

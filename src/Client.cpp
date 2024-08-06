@@ -6,85 +6,32 @@ Client::Client(Server &server)
         _server(server) {
 }
 
-//Esta funcao só guarda o nick, precisa de validacoes futuras
-//Se o nick for invalido deverá guardar na variavel _authError o erro respetivo = INVALIDNICK
-//Info do chat gpt: estudar protocolos e subject
-//!O nickname deve ser unico
-    //Entre 1 a 9 caracteres
-    //Pode incluir letras (A-Z, a-z), dígitos (0-9) e alguns caracteres especiais (-, _, \, [, ], ^, {, }, |).
-    //Deve começar com uma letra.
-void Client::parseNick(std::istringstream &input){
-        std::getline(input, this->_nick, '\r');
-}
-
-//Esta funcao guarda o username e o realname, precisa de validacoes futuras
-//Se o nick for invalido deverá guardar na variavel _authError o erro respetivo = INVALIDUSER
-//Users nao podem ser repetidos??
-//username e realname sao campos obrigatorios
-void Client::parseUser(std::istringstream &input){
-    this->_registration = true;
-    std::string str;
-    std::getline(input, this->_username, ' ');
-    std::getline(input, str, ':');
-    std::getline(input, this->_realname, '\r');
-}
-
-
-bool    Client::parseJoin(std::istringstream &input, std::string str){
-    (void)str;
-    std::string channel;
-    std::getline(input, channel, '\r');
-    channel.erase(0, 1);
-    this->setCommand("JOIN");
-    this->_fullCmd[this->getCommand()] = channel;
-    return true;
-}
-
-//The parsing functions receive the full line of the command as an input stream, and the command as a string
-//And store the command and its arguments on the correct variables
-//These functions also need to perfoms validations on the arguments of the command
-//And returns a bollean that sets a command as valid (true) or invalid (false)
-
-
-
-
-
-bool Client::parseMode(std::istringstream &input, std::string str){
-        (void)str;
-        //std::cout << "Parse Mode" << std::endl;
-        //std::cout << "\t" << str << std::endl;
-        std::string channel;
-        std::getline(input, channel, '\r');
-        channel.erase(0, 1);
-        this->setCommand("MODE");
-        this->_fullCmd[this->getCommand()] = channel;
-        return true;
-}
-
-bool Client::parseWho(std::istringstream &input, std::string str){
-       (void)str;
-        //std::cout << "Parse Who" << std::endl;
-        //std::cout << "\t" << str << std::endl;
-        std::string channel;
-        std::getline(input, channel, '\r');
-        channel.erase(0, 1);
-        this->setCommand("WHO");
-        this->_fullCmd[this->getCommand()] = channel;
-        return true;
-}
-
 ACommand* Client::createPass(std::istringstream &input){
     ACommand *command = new Pass(this->_server, *this);
     command->parsing(input);
     return command;
 }
 
+ACommand* Client::createNick(std::istringstream &input){
+    ACommand *command = new Nick(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
+ACommand* Client::createUser(std::istringstream &input){
+    ACommand *command = new User(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
+//TODO cap ping
+
 ACommand*    Client::createCommand(std::vector<char> buf){
     std::string str(buf.begin(), buf.end());
     std::istringstream input(str);
     std::string commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "WHO"}; //acrescentar commandos a medida que sao tratados
-    bool (Client::*p[])(std::istringstream&, std::string str) = {&Client::createPass, &Client::createNick, 
-        &Client::createUser, &Client::createJoin, &Client::parseMode, &Client::parseWho};
+    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createPass, &Client::createNick, 
+        &Client::createUser};
     std::string cmd;
     std::getline(input, cmd, ' ');
     ACommand *command = NULL;

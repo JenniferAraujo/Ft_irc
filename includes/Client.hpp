@@ -16,6 +16,8 @@ public:
     //Create Commands
     ACommand*       createCommand(std::vector<char> buf);
     ACommand*       createPass(std::istringstream &input);
+    ACommand*       createNick(std::istringstream &input);
+    ACommand*       createUser(std::istringstream &input);
 
     //Parsing da autentificaçao
     void            parsePassword(std::istringstream &input);
