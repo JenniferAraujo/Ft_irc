@@ -3,24 +3,18 @@
 
 # include "Includes.hpp"
 
-class Parser;
-
-class CAP: public Parser {
+class Cap: public ACommand {
 public:
-    CAP();
-    virtual ~CAP();
+    Cap(): ACommand("CAP") {};
+    virtual ~Cap() {};
 
     //assim?
-    void treatCommand();
+    void parsing();
 
 private:
-    /*
-    int                     _authError;
-    bool                    _password;
-    bool                    _authOver;
-    bool                    _validCmd;
-    */
-   Server&                  _server;
+    Cap();
+    bool _end;
+    //A minha ideia e ter uma variavel por argumento do commando
 };
 
 #endif // CAP_HPP

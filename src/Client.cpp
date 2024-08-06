@@ -2,26 +2,8 @@
 
 Client::Client(Server &server)
     :   _authError(0),
-        _password(false), //initialized as false
-        _authOver(false),
-        _validCmd(false),
+        _registration(false),
         _server(server) {
-}
-
-//*NOTA: nas mensagens enviadas pelo cliente a quebra de linha é representada por \r\n, por isso temos de ler até ao \r 
-//e depois chamar outra vez a getline até ao fim da linha para terminar aquela linha
-
-//Estas sao as funcoes auxiliares da autentificaçao: parsePassword, parseNick, parseUser
-
-//Esta funçao verifica se a password com que o client tentou entrar é correta
-//Se entrar nesta funçao é porque existe pass e a flag da password é ativada
-//Se a pass for invalida guarda na variavel _authError o erro respetivo
-void Client::parsePassword(std::istringstream &input){
-    _password = true;
-    std::string str;
-    std::getline(input, str, '\r');
-    if(_server.getPassword() != str)
-        this->_authError = INVALIDPASS;
 }
 
 //Esta funcao só guarda o nick, precisa de validacoes futuras
@@ -40,7 +22,7 @@ void Client::parseNick(std::istringstream &input){
 //Users nao podem ser repetidos??
 //username e realname sao campos obrigatorios
 void Client::parseUser(std::istringstream &input){
-    this->_authOver = true;
+    this->_registration = true;
     std::string str;
     std::getline(input, this->_username, ' ');
     std::getline(input, str, ':');
@@ -63,36 +45,6 @@ bool    Client::parseJoin(std::istringstream &input, std::string str){
 //These functions also need to perfoms validations on the arguments of the command
 //And returns a bollean that sets a command as valid (true) or invalid (false)
 
-
-//This function receives the input stream input
-//getline reads each line from input and stores it into the string line
-//We take the complete line (line) and create an input stream for getline to read (input_line)
-//Then we read the first word of input_line and store it into the string cmd => the first word of a line is the command
-//Now we compare the command with our string of commands, if it finds a valid command, the correct parsing function will be called
-//If all tree commands were found or one of them is invalid, authentification is over
-bool    Client::parseCap(std::istringstream &input, std::string str){
-    std::string commands[] = {"PASS", "NICK", "USER"};
-    void (Client::*p[])(std::istringstream&)= {&Client::parsePassword, &Client::parseNick, &Client::parseUser};
-    std::string cmd;
-    std::string line;
-    int cmds_parsed = 0;
-    while(std::getline(input, line)){
-        std::istringstream  input_line(line);
-        std::getline(input_line, cmd, ' ');
-        for (int i = 0; i < 3; i++) {
-            if(!commands[i].compare(cmd)){
-                cmds_parsed++;
-                (this->*p[i])(input_line);
-            }
-        }
-    }
-    //If all tree commands were found, one of them is invalid or there is no command PASS, authentification is over
-    if(this->_authError != 0)
-        this->_authOver = true;
-    this->_command = str;
-    //Se a autentificaçao acabou o commando é valido, ou seja, pode ser executado pode ser executado
-    return this->_authOver;
-}
 
 
 
@@ -121,36 +73,28 @@ bool Client::parseWho(std::istringstream &input, std::string str){
         return true;
 }
 
-//This function takes a buffer with a message sent from a client (the object that calls the function)
-//It's goal is to parse the message, saving the commmand in the variable _command, so it can be executed by the server
-//And saving the arguments of the command in this client atributes, so that they can be used by server when executing the command
+ACommand* Client::createPass(std::istringstream &input){
+    ACommand *command = new Pass(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
 
-//First we set the command as invalid, so we can check if the command receive will be valid or not
-//The message, received as a char vector, is turned into a type string
-//We take the full message (str) and create an input stream for getline to read (input)
-
-//If the prior command is CAP and the authentification isn't done yet, then we continue the parsing of Cap aka the authentification process
-
-//We have an array of commands, that will contain all commands our IRC treats
-//We have an array of funtion pointers that correspond to each of the command's parsing
-//Then we read the first word of input and store it into the string cmd => the first word of the msg is the command
-
-//Now we compare the command with our string of commands, if it finds a valid command, the correct parsing function will be called
-//The parsing functions return a boolean that sets the command as valid or invalid
-
-void    Client::parseMessage(std::vector<char> buf){
-    this->_validCmd = false;
+ACommand*    Client::createCommand(std::vector<char> buf){
     std::string str(buf.begin(), buf.end());
     std::istringstream input(str);
-        std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO"}; //acrescentar commandos a medida que sao tratados
-        bool (Client::*p[])(std::istringstream&, std::string str) = {&Client::parseCap, &Client::parseJoin, &Client::parseMode, &Client::parseWho};
-        std::string cmd;
-        std::getline(input, cmd, ' ');
-        for (int i = 0; i < 4; i++) {
-            if(!commands[i].compare(cmd)) {
-                this->_validCmd = (this->*p[i])(input, cmd);
-            }
+    std::string commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "WHO"}; //acrescentar commandos a medida que sao tratados
+    bool (Client::*p[])(std::istringstream&, std::string str) = {&Client::createPass, &Client::createNick, 
+        &Client::createUser, &Client::createJoin, &Client::parseMode, &Client::parseWho};
+    std::string cmd;
+    std::getline(input, cmd, ' ');
+    ACommand *command = NULL;
+    for (int i = 0; i < 4; i++) {
+        if(!commands[i].compare(cmd)) {
+            command = (this->*p[i])(input);
+            return command;
         }
+    }
+    return command;
 }
 
 // Função para verificar a conecção de clientes

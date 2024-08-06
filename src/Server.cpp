@@ -25,15 +25,82 @@ void Server::updateClients(Client *client, int fd)
 {
     this->_Clients[fd] = client;
 }
-
-void Server::welcome(Client &client) {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << client.getCommand() << std::endl;
+//Se o cliente ja tiver registado da erro
+//Se a pasward for invalida da erro e seta a flag AuthError
+//Se a pasward for valida seta a pass do cliente
+void Server::pass(Client &client, ACommand *command) {
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << command->getName() << std::endl;
     std::string msg;
-    if (!client.getPassword() || client.getAuthError() == INVALIDPASS) {
+    if(client.getRegistration()){
+        msg.append(ERROR("You may not reregister"));
+        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+        return ;
+    }
+    Pass    *pass = dynamic_cast<Pass *>(command); 
+    //Isto tem que funcionar, nao pode ser nulo, mas vou por aqui a exception para debug
+    if(pass == NULL)
+        throw IRCException("[ERROR] pass dynamic cast went wrong");
+    if (command->getError()) {
         msg.append(ERROR("Password incorrect"));
         send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
         this->_toRemove.push_back(client.getSocketFD());
+        client.setAuthError(INVALIDPASS);
+    }
+    else
+        client.setPass(pass->getPass());
+}
 
+//!Ver a questao dos erros que se manda
+//Se o nick for invalido da erro e seta a flag AuthError
+//Se o nick for valido seta o nick do cliente
+void Server::nick(Client &client, ACommand *command) {
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << command->getName() << std::endl;
+    std::string msg;
+    Nick    *nick = dynamic_cast<Nick *>(command); 
+    //Isto tem que funcionar, nao pode ser nulo, mas vou por aqui a exception para debug
+    if(nick == NULL)
+        throw IRCException("[ERROR] nick dynamic cast went wrong");
+    if (command->getError()) {
+        msg.append(ERROR("Invalid Nick"));
+        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+        this->_toRemove.push_back(client.getSocketFD());
+        client.setAuthError(INVALIDNICK);
+    }
+    else
+        client.setNick(nick->getNick());
+}
+
+void Server::user(Client &client, ACommand *command) {
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << command->getName() << std::endl;
+    std::string msg;
+    if(client.getRegistration()){
+        msg.append(ERROR("You may not reregister"));
+        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+        return ;
+    }
+    User    *user = dynamic_cast<User *>(command); 
+    //Isto tem que funcionar, nao pode ser nulo, mas vou por aqui a exception para debug
+    if(user == NULL)
+        throw IRCException("[ERROR] user dynamic cast went wrong");
+    if (command->getError()) {
+        msg.append(ERROR("userword incorrect"));
+        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+        this->_toRemove.push_back(client.getSocketFD());
+        client.setAuthError(INVALIDUSER);
+    }
+    else{
+        client.setUsername(user->getName());
+        client.setRealname(user->getRealname());
+    }
+}
+
+void Server::welcome(Client &client) {
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << "welcome" << std::endl;
+    std::string msg;
+    if (client.getPassword().empty()) {
+        msg.append(ERROR("No password was set"));
+        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+        this->_toRemove.push_back(client.getSocketFD());
     } else {
         msg.append(RPL_WELCOME(this->_hostName, "Internet Fight Club", client.getNick(), client.getUsername(), client.getIpaddr()));
         msg.append(RPL_YOURHOST(this->_hostName, "servername", client.getNick(), "version"));
@@ -53,7 +120,8 @@ void Server::welcome(Client &client) {
     }
 }
 
-void Server::join(Client &client) {
+//TODO modificar execucao para o ACommand
+void Server::join(Client &client, ACommand *command) {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << client.getCommand() << std::endl;
     std::string msg;
     std::map<std::string, std::string> temp = client.getFullCmd();
@@ -63,7 +131,7 @@ void Server::join(Client &client) {
     send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
 }
 
-void Server::mode(Client &client) {
+void Server::mode(Client &client, ACommand *command) {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << client.getCommand() << std::endl;
     std::string msg;
     std::map<std::string, std::string> temp = client.getFullCmd();
@@ -72,7 +140,7 @@ void Server::mode(Client &client) {
     send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
 }
 
-void Server::who(Client &client) {
+void Server::who(Client &client, ACommand *command) {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << client.getCommand() << std::endl;
     std::string msg;
     std::string names;
@@ -97,17 +165,24 @@ void Server::who(Client &client) {
     send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
 }
 
+//TODO comando cap
+//TODO comando ping
+
 //*Proximos passos: canais e mensagens
 //Ideia para executar os cmds
-void    Server::executeCommand(Client &client){
-    int N = 3;
-    std::string commands[] = {"CAP", "JOIN", "MODE", "WHO"};
-    void (Server::*p[])(Client&) = {&Server::join, &Server::mode, &Server::who};
+void    Server::executeCommand(Client &client, ACommand *command){
+    int N = 7;
+    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO"};
+    void (Server::*p[])(Client&, ACommand *) = {&Server::join, &Server::mode, &Server::who};
     for (int i = 0; i < N; i++) {
-        if(!commands[i].compare(client.getCommand()))
-            //if(!client->getAuthOver() || client->getAuthError())
-                //enviar msg de erro
-            (this->*p[i])(client);
+        if(!commands[i].compare(command->getName())){
+            if(!client.getRegistration() || client.getAuthError())
+                std::cout << RED << "ERROR: " << RESET 
+                << "Auth not over or auth error -> client can not execute command: " <<
+                command->getName() << ", and will be disconected soon" << std::endl;
+            else 
+                (this->*p[i])(client, command);
+        }
     }
 }
 
@@ -119,23 +194,29 @@ void    Server::executeCommand(Client &client){
 void Server::verifyEvent(const pollfd &pfd) {
     if(pfd.revents == POLLIN) {
         Client *client = this->_Clients[pfd.fd];
-        if(!client->getAuthOver() && !client->getNick().empty() 
+        if(!client->getRegistration() && !client->getAuthError() && !client->getNick().empty()
             && !client->getRealname().empty() && !client->getUsername().empty()){
-                this->welcome(*client);
-                client->setAuthOver(true);
-        }
+                //TODO welcome dependent on cap 
+                //if(client.cap == false || (client.cap == true && client.capEnd == true)){
+                    this->welcome(*client);
+                    client->setRegistration(true);
+                }
+        //TODO disconnection depending on cap
+        /*if(client.capEnd == false && client.ping > 5){
+            this->_toRemove.push_back(client.getSocketFD());
+            client->setAuthError(INVALIDCAP);
+        } */
         std::vector<char> buf(5000);
         recv(client->getSocketFD(), buf.data(), buf.size(), 0);
         //std::cout << buf.data() << "." << std::endl; 
         //Setting pass, nick, user --> n pode settar a pass se ja existir
-        client->parseMessage(buf);
-        if(client->getValidCmd() == true) {
-            std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size()) << "Event on Client " << GREEN << "[" << pfd.fd << "]" << RESET <<  std::endl;
-            std::cout << formatServerMessage(BOLD_PURPLE, "C.INFO", 0) << *client << std::endl;
-            this->executeCommand(*client);
-        }
-        if(pfd.events == POLLOUT)
-            std::cout << "pollout event" << *client  << std::endl;
+        ACommand *command = client->createCommand(buf);
+        if (command == NULL) //Nao e um comando/ comando que nao tratamos
+            return ;
+        std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size()) << "Event on Client " << GREEN << "[" << pfd.fd << "]" << RESET <<  std::endl;
+        std::cout << formatServerMessage(BOLD_PURPLE, "C.INFO", 0) << *client << std::endl;
+        this->executeCommand(*client, command);
+        delete command;
     }
 }
 

@@ -13,8 +13,9 @@ public:
     static void     verifyConnection(Server &server, const pollfd &pfd);
     void            getClientInfo();
 
-    //Parsing da mensagem
-    void            parseMessage(std::vector<char> buf);
+    //Create Commands
+    ACommand*       createCommand(std::vector<char> buf);
+    ACommand*       createPass(std::istringstream &input);
 
     //Parsing da autentificaçao
     void            parsePassword(std::istringstream &input);
@@ -31,39 +32,32 @@ public:
     //getters
     int             getSocketFD() const { return _socketFD; } ;
     int             getAuthError() const { return _authError; } ;
-    bool            getPassword() const { return _password; } ;
-    bool            getAuthOver() const { return _authOver; } ;
-    bool            getValidCmd() const { return _validCmd; } ;
+    bool            getRegistration() const { return _registration; } ;
+    std::string     getPassword() const { return _password; } ;
     std::string     getNick() const { return _nick; } ;
     std::string     getUsername() const { return _username; } ;
     std::string     getRealname() const { return _realname; } ;
-    std::string     getCommand() const { return _command; } ;
     std::string     getIpaddr() const { return _ipAddr; } ;
-    std::map<std::string, std::string>     getFullCmd() const { return _fullCmd; } ;
     //setters
     void            setSocketFD(int socketFD) { _socketFD = socketFD; } ;
-    void            setValidCmd(bool validCmd) { _validCmd = validCmd; } ;
+    void            setAuthError(int authError) { _authError = authError; } ;
+    void            setPass(std::string password) { _password = password; } ;
     void            setNick(std::string nick) { _nick = nick; } ;
     void            setUsername(std::string username) { _username = username; } ;
     void            setRealname(std::string realname) { _realname = realname; } ;
-    void            setCommand(std::string command) { _command = command; } ;
     void            setIpAddr(std::string ipAddr) { _ipAddr = ipAddr; } ;
-    void            setAuthOver(bool authOver) { _authOver = authOver; } ;
+    void            setRegistration(bool registration) { _registration = registration; } ;
 
 private:
     Client();
     int                     _socketFD;
-    int                     _authError;
-    bool                    _password; //initialized as false
-    bool                    _authOver; //initialized as false
-    bool                    _validCmd; //initialized as false
+    int                     _authError; //Possivelmente mudar para bool
+    bool                    _registration; //initialized as false
     std::string             _ipAddr;
+    std::string             _password;
     std::string             _nick;
     std::string             _username;
     std::string             _realname;
-    std::string             _command;
-    //confirmar com a rita depois como ela vai querer fazer isto
-    std::map<std::string, std::string> _fullCmd;
     Server&                 _server;
 };
 

@@ -30,7 +30,6 @@ std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs)
 std::ostream& operator<<(std::ostream& out, const Client &client)
 {
     out << "FD: " << BOLD_GREEN << client.getSocketFD() << RESET
-    << "\t| Command: " << client.getCommand()
     << "\t| Nick: " << client.getNick()
     << " | Username: " << client.getUsername()
     << " | Realname: " << client.getRealname();

@@ -3,21 +3,20 @@
 
 # include "Includes.hpp"
 
-class Parser;
-
-class WHO: public Parser {
+class Who: public ACommand {
 public:
-    WHO();
-    virtual ~WHO();
+    Who(): ACommand("WHO") {};
+    virtual ~Who() {};
 
     //assim?
-    void treatCommand();
+    void parsing();
 
 private:
-    //confirmar com a rita depois como ela vai querer fazer isto
-    //vais guardar aqui o input seguinte para se saber o channel, decide como queres tratar
-    //podes tambem ter flags de erro como todos os outros para verificar se aconteceu algum problema no JOIN
+    Who();
+    //TODO mudar para variaveis individuais
     std::map<std::string, std::string> _fullCmd;
+    //A minha ideia e ter uma variavel por argumento do commando
 };
+
 
 #endif // WHO_HPP

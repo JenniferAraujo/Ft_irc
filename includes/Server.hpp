@@ -17,11 +17,14 @@ public:
     void updateClients(Client *client, int fd);
     void checkEvents(int nEvents);
     void verifyEvent(const pollfd &pfd);
-    void executeCommand(Client &client);
     void welcome(Client &client);
-    void join(Client &client);
-    void mode(Client &client);
-    void who(Client &client);
+    void executeCommand(Client &client, ACommand *command);
+    void pass(Client &client, ACommand *command);
+    void nick(Client &client, ACommand *command);
+    void user(Client &client, ACommand *command);
+    void join(Client &client, ACommand *command);
+    void mode(Client &client, ACommand *command);
+    void who(Client &client, ACommand *command);
 
     //getters
     int getSocketFD() const { return this->_socketFD; };

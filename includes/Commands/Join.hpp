@@ -3,21 +3,18 @@
 
 # include "Includes.hpp"
 
-class Parser;
-
-class JOIN: public Parser {
+class Join: public ACommand {
 public:
-    JOIN();
-    virtual ~JOIN();
+    Join(): ACommand("JOIN") {};
+    virtual ~Join() {};
 
     //assim?
-    void treatCommand();
+    void parsing();
 
 private:
-    //confirmar com a rita depois como ela vai querer fazer isto
-    //vais guardar aqui o input seguinte para se saber o channel, decide como queres tratar
-    //podes tambem ter flags de erro como todos os outros para verificar se aconteceu algum problema no JOIN
+    Join();
     std::map<std::string, std::string> _fullCmd;
+    //A minha ideia e ter uma variavel por argumento do commando
 };
 
 #endif // JOIN_HPP
