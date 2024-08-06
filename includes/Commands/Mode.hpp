@@ -5,17 +5,17 @@
 
 class Mode: public ACommand {
 public:
-    Mode(): ACommand("MODE") {};
+    Mode(const Server& server, const Client& client);
     virtual ~Mode() {};
 
-    //assim?
-    void parsing();
+    void parsing(std::istringstream &input);
 
+    std::string getChannel() { return _channel; };
 private:
     Mode();
-    //TODO mudar para variaveis individuais
-    std::map<std::string, std::string> _fullCmd;
-    //A minha ideia e ter uma variavel por argumento do commando
+    std::string _channel;
+
 };
+
 
 #endif // MODE_HPP

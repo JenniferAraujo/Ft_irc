@@ -1,8 +1,8 @@
 #include "Includes.hpp"
 
-Join::Join(const Server& server, const Client& client): ACommand("Join", server, client) {};
+Mode::Mode(const Server& server, const Client& client): ACommand("Mode", server, client) {};
 
-void Join::parsing(std::istringstream &input){
+void Mode::parsing(std::istringstream &input){
 	std::string channel;
     std::getline(input, channel, '\r');
     channel.erase(0, 1);

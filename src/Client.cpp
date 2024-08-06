@@ -3,8 +3,18 @@
 Client::Client(Server &server)
     :   _authError(0),
         _registration(false),
-        _server(server) {
+        _server(server) {}
+
+Client::Client(const Client &cpy): _authError(cpy.getAuthError()), _registration(cpy.getRegistration()), _server(cpy.getServer())
+{
 }
+
+ACommand* Client::createCap(std::istringstream &input) {
+    ACommand *command = new Cap(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
 
 ACommand* Client::createPass(std::istringstream &input){
     ACommand *command = new Pass(this->_server, *this);
@@ -30,17 +40,30 @@ ACommand* Client::createJoin(std::istringstream &input){
     return command;
 }
 
-//TODO cap who mode ping
+ACommand* Client::createMode(std::istringstream &input){
+    ACommand *command = new Mode(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
+ACommand* Client::createWho(std::istringstream &input){
+    ACommand *command = new Who(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
+//TODO ping
 
 ACommand*    Client::createCommand(std::vector<char> buf){
     std::string str(buf.begin(), buf.end());
+    std::cout << "BUF: " << str << std::endl;
     std::istringstream input(str);
-    std::string commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "WHO"}; //acrescentar commandos a medida que sao tratados
-    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin};
+    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO"};
+    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createCap, &Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin, &Client::createMode, &Client::createWho};
     std::string cmd;
     std::getline(input, cmd, ' ');
     ACommand *command = NULL;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 7; i++) {
         if(!commands[i].compare(cmd)) {
             command = (this->*p[i])(input);
             return command;
@@ -68,18 +91,16 @@ void Client::verifyConnection(Server &server, const pollfd &pfd) {
         char client_ip[INET6_ADDRSTRLEN];
         inet_ntop(AF_INET6, &(client_addr.sin6_addr), client_ip, INET6_ADDRSTRLEN);
 
-        struct hostent *host = NULL;
-
-        if (IN6_IS_ADDR_V4MAPPED(&client_addr.sin6_addr)) {
-            struct in_addr ipv4_addr;
-            memcpy(&ipv4_addr, &client_addr.sin6_addr.s6_addr[12], sizeof(ipv4_addr));
-
-            host = gethostbyname(inet_ntoa(ipv4_addr));
-        }
+        // struct hostent *host = NULL;
+        // if (IN6_IS_ADDR_V4MAPPED(&client_addr.sin6_addr)) {
+        //     struct in_addr ipv4_addr;
+        //     memcpy(&ipv4_addr, &client_addr.sin6_addr.s6_addr[12], sizeof(ipv4_addr));
+        //     host = gethostbyname(inet_ntoa(ipv4_addr));
+        // }
 
         std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", 0) << "Client " << GREEN << "[" << client->_socketFD << "]" << RESET
-                  << " connected from " << BOLD_CYAN << host->h_name << RESET << std::endl;
-        client->setIpAddr(host->h_name);
+                  << " connected from " << BOLD_CYAN << client_ip << RESET << std::endl;
+        client->setIpAddr(client_ip);
 
         server.updateNFDs(client->_socketFD);
         server.updateClients(client, client->_socketFD);

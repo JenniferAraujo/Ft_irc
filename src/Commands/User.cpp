@@ -13,4 +13,3 @@ void User::parsing(std::istringstream &input){
     std::getline(input, this->_realname, '\r');
 }
 
-User::~User() {}

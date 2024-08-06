@@ -9,16 +9,20 @@ class Client {
 public:
     Client(Server &server); // Constructor
     ~Client(); // Destructor
+    Client(const Client& cpy);
 
     static void     verifyConnection(Server &server, const pollfd &pfd);
     void            getClientInfo();
 
     //Create Commands
     ACommand*       createCommand(std::vector<char> buf);
+    ACommand*       createCap(std::istringstream &input);
     ACommand*       createPass(std::istringstream &input);
     ACommand*       createNick(std::istringstream &input);
     ACommand*       createUser(std::istringstream &input);
     ACommand*       createJoin(std::istringstream &input);
+    ACommand*       createMode(std::istringstream &input);
+    ACommand*       createWho(std::istringstream &input);
 
     //Parsing da autentificaçao
     void            parsePassword(std::istringstream &input);
@@ -40,6 +44,7 @@ public:
     std::string     getUsername() const { return _username; } ;
     std::string     getRealname() const { return _realname; } ;
     std::string     getIpaddr() const { return _ipAddr; } ;
+    Server     &getServer() const { return _server; } ;
     //setters
     void            setSocketFD(int socketFD) { _socketFD = socketFD; } ;
     void            setAuthError(int authError) { _authError = authError; } ;

@@ -5,11 +5,10 @@
 
 class Cap: public ACommand {
 public:
-    Cap(): ACommand("CAP") {};
+    Cap(const Server& server, const Client& client);
     virtual ~Cap() {};
 
-    //assim?
-    void parsing();
+    void parsing(std::istringstream &input);
 
 private:
     Cap();

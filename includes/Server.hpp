@@ -5,11 +5,13 @@
 
 class Client;
 class Channel;
+class ACommand;
 
 class Server {
 public:
     Server(const int &port, const std::string &password);
     ~Server();
+    Server(const Server& cpy);
 
     void run();
     void getAddrInfo();
@@ -19,6 +21,7 @@ public:
     void verifyEvent(const pollfd &pfd);
     void welcome(Client &client);
     void executeCommand(Client &client, ACommand *command);
+    void cap(Client &client, ACommand *command);
     void pass(Client &client, ACommand *command);
     void nick(Client &client, ACommand *command);
     void user(Client &client, ACommand *command);

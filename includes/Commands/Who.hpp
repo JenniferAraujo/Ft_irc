@@ -5,17 +5,16 @@
 
 class Who: public ACommand {
 public:
-    Who(): ACommand("WHO") {};
+    Who(const Server& server, const Client& client);
     virtual ~Who() {};
 
-    //assim?
-    void parsing();
+    void parsing(std::istringstream &input);
 
+    std::string getChannel() { return _channel; };
 private:
     Who();
-    //TODO mudar para variaveis individuais
-    std::map<std::string, std::string> _fullCmd;
-    //A minha ideia e ter uma variavel por argumento do commando
+    std::string _channel;
+
 };
 
 
