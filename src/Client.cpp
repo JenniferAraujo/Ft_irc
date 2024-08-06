@@ -29,17 +29,6 @@ void Client::parseUser(std::istringstream &input){
     std::getline(input, this->_realname, '\r');
 }
 
-
-bool    Client::parseJoin(std::istringstream &input, std::string str){
-    (void)str;
-    std::string channel;
-    std::getline(input, channel, '\r');
-    channel.erase(0, 1);
-    this->setCommand("JOIN");
-    this->_fullCmd[this->getCommand()] = channel;
-    return true;
-}
-
 //The parsing functions receive the full line of the command as an input stream, and the command as a string
 //And store the command and its arguments on the correct variables
 //These functions also need to perfoms validations on the arguments of the command
@@ -74,6 +63,24 @@ bool Client::parseWho(std::istringstream &input, std::string str){
 }
 
 ACommand* Client::createPass(std::istringstream &input){
+    ACommand *command = new Pass(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
+ACommand* Client::createJoin(std::istringstream &input){
+    ACommand *command = new Join(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
+ACommand* Client::createWho(std::istringstream &input){
+    ACommand *command = new Pass(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
+ACommand* Client::createMode(std::istringstream &input){
     ACommand *command = new Pass(this->_server, *this);
     command->parsing(input);
     return command;

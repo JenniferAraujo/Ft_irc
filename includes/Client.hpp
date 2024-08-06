@@ -16,6 +16,7 @@ public:
     //Create Commands
     ACommand*       createCommand(std::vector<char> buf);
     ACommand*       createPass(std::istringstream &input);
+    ACommand*       createJoin(std::istringstream &input);
 
     //Parsing da autentificaçao
     void            parsePassword(std::istringstream &input);
@@ -24,7 +25,6 @@ public:
 
     //Parsing de commandos
     bool            parseCap(std::istringstream &input, std::string str);
-    bool            parseJoin(std::istringstream &input, std::string str);
     bool            parseMode(std::istringstream &input, std::string str);
     bool            parseWho(std::istringstream &input, std::string str);
 
