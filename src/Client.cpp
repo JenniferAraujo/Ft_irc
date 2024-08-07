@@ -54,22 +54,27 @@ ACommand* Client::createWho(std::istringstream &input){
 
 //TODO ping
 
-ACommand*    Client::createCommand(std::vector<char> buf){
+std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
     std::string str(buf.begin(), buf.end());
     std::cout << "BUF: " << str << std::endl;
     std::istringstream input(str);
     std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO"};
+    int N = static_cast<int>(ARRAY_SIZE(commands));
     ACommand* (Client::*p[])(std::istringstream&) = {&Client::createCap, &Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin, &Client::createMode, &Client::createWho};
     std::string cmd;
-    std::getline(input, cmd, ' ');
-    ACommand *command = NULL;
-    for (int i = 0; i < 7; i++) {
-        if(!commands[i].compare(cmd)) {
-            command = (this->*p[i])(input);
-            return command;
+    std::string line;
+    std::queue<ACommand *> result;
+    while(std::getline(input, line)){
+        std::istringstream  input_line(line);
+        std::getline(input_line, cmd, ' ');
+        for (int i = 0; i < N; i++) {
+            if(!commands[i].compare(cmd)) {
+                ACommand *command = (this->*p[i])(input_line);
+                result.push(command);
+            }
         }
     }
-    return command;
+    return result;
 }
 
 // Função para verificar a conecção de clientes
@@ -99,7 +104,7 @@ void Client::verifyConnection(Server &server, const pollfd &pfd) {
         // }
 
         std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", 0) << "Client " << GREEN << "[" << client->_socketFD << "]" << RESET
-                  << " connected from " << BOLD_CYAN << client_ip << RESET << std::endl;
+                  << " connected from " << BOLD_CYAN << client_ip << RESET << std::endl << std::endl;
         client->setIpAddr(client_ip);
 
         server.updateNFDs(client->_socketFD);

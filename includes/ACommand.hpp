@@ -7,9 +7,18 @@
 class ACommand {
 public:
     ACommand(std::string command, Server server, Client client): _name(command), _server(server), _client(client), _error(0) {};
+    //TODO copy
     virtual ~ACommand() {};
     std::string getName() const { return _name; };
-    bool getError() const { return _error; };
+    int getError() const { return _error; };
+    void trimChar(std::string& str, char ch) {
+        std::string::size_type first = str.find_first_not_of(ch);
+        std::string::size_type last = str.find_last_not_of(ch);
+        if (first == std::string::npos)
+            str.clear();
+        else
+            str = str.substr(first, last - first + 1);
+    }
     virtual void parsing(std::istringstream &input) = 0;
 
 protected:

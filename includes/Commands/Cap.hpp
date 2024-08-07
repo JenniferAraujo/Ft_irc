@@ -6,8 +6,8 @@
 class Cap: public ACommand {
 public:
     Cap(const Server& server, const Client& client);
-    virtual ~Cap() {};
-
+    ~Cap() {};
+    bool    getEnd() const { return _end; };
     void parsing(std::istringstream &input);
 
 private:

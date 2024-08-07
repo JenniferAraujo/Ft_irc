@@ -6,7 +6,7 @@
 class Nick: public ACommand {
 public:
     Nick(const Server& server, const Client& client);
-    ~Nick();
+    ~Nick() {};
     std::string getNick() { return _nick; };
     void parsing(std::istringstream &input);
 

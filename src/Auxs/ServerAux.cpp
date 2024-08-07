@@ -56,3 +56,12 @@ void Server::addInChannel(std::string channelName, Client &client) {
         this->_Channels[channelName]->addClient(client);
     }
 }
+
+bool Server::registration_command(std::string str){
+    std::string commands[] = {"CAP", "PASS", "NICK", "USER"};
+    for (int i = 0; i < 4; i++) {
+        if(str == commands[i])
+            return true;
+    }
+    return false;
+}

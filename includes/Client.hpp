@@ -15,14 +15,14 @@ public:
     void            getClientInfo();
 
     //Create Commands
-    ACommand*       createCommand(std::vector<char> buf);
-    ACommand*       createCap(std::istringstream &input);
-    ACommand*       createPass(std::istringstream &input);
-    ACommand*       createNick(std::istringstream &input);
-    ACommand*       createUser(std::istringstream &input);
-    ACommand*       createJoin(std::istringstream &input);
-    ACommand*       createMode(std::istringstream &input);
-    ACommand*       createWho(std::istringstream &input);
+    std::queue<ACommand* >      createCommand(std::vector<char> buf);
+    ACommand*                   createCap(std::istringstream &input);
+    ACommand*                   createPass(std::istringstream &input);
+    ACommand*                   createNick(std::istringstream &input);
+    ACommand*                   createUser(std::istringstream &input);
+    ACommand*                   createJoin(std::istringstream &input);
+    ACommand*                   createMode(std::istringstream &input);
+    ACommand*                   createWho(std::istringstream &input);
 
     //Parsing da autentificaçao
     void            parsePassword(std::istringstream &input);

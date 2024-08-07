@@ -6,7 +6,7 @@
 class Pass: public ACommand {
 public:
     Pass(const Server& server, const Client& client);
-    ~Pass();
+    ~Pass() {};
 
     std::string getPass() { return _pass; };
     void parsing(std::istringstream &input);

@@ -6,7 +6,7 @@
 class Join: public ACommand {
 public:
     Join(const Server& server, const Client& client);
-    virtual ~Join() {};
+    ~Join() {};
 
     void parsing(std::istringstream &input);
 

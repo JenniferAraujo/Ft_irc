@@ -18,8 +18,7 @@ public:
 private:
     Channel();
     std::string _name;
-    std::map<int, Client*>   _Clients;
-
+    std::map<int, Client*>   _Clients; //NOTE - sugestion: key ser uma bool - true se é operador
 };
 
 #endif // CHANNEL_HPP

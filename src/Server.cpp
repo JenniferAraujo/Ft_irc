@@ -134,18 +134,23 @@ void Server::user(Client &client, ACommand *command) {
     if (command->getError()) {
         msg.append(ERROR("userword incorrect"));
         send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        this->_toRemove.push_back(client.getSocketFD());
+        this->_toRemove.push_back(client.getSocketFD()); //TODO condiçao para nao haver repetidos (funçao para adicionar ao toRemove)
         client.setAuthError(INVALIDUSER);
     }
     else{
-        client.setUsername(user->getName());
+        client.setUsername(user->getUsername());
         client.setRealname(user->getRealname());
     }
 }
 
 void Server::cap(Client &client, ACommand *command) {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << command->getName() << std::endl;
-    //std::string msg;
+    std::string msg;
+    if(client.getRegistration()){ //NOTE Verificar isto
+        msg.append(ERROR("You may not reregister"));
+        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+        return ;
+    }
     Cap    *cap = dynamic_cast<Cap *>(command);
 	if(cap == NULL)
         throw IRCException("[ERROR] pass dynamic cast went wrong");
@@ -189,7 +194,7 @@ void    Server::executeCommand(Client &client, ACommand *command){
     void (Server::*p[])(Client&, ACommand *) = {&Server::cap, &Server::pass, &Server::nick, &Server::user, &Server::join, &Server::mode, &Server::who};
     for (int i = 0; i < N; i++) {
         if(!commands[i].compare(command->getName())){
-            if(!client.getRegistration() || client.getAuthError())
+            if((!client.getRegistration() || client.getAuthError()) && !registration_command(command->getName()))
                 std::cout << RED << "ERROR: " << RESET
                 << "Auth not over or auth error -> client can not execute command: " <<
                 command->getName() << ", and will be disconected soon" << std::endl;
@@ -207,14 +212,7 @@ void    Server::executeCommand(Client &client, ACommand *command){
 void Server::verifyEvent(const pollfd &pfd) {
     if(pfd.revents == POLLIN) {
         Client *client = this->_Clients[pfd.fd];
-        if(!client->getRegistration() && !client->getAuthError() && !client->getNick().empty()
-            && !client->getRealname().empty() && !client->getUsername().empty()){
-                //TODO welcome dependent on cap
-                //if(client.cap == false || (client.cap == true && client.capEnd == true)){
-                    this->welcome(*client);
-                    client->setRegistration(true);
-                }
-        printMap(this->_Clients);
+        //printMap(this->_Clients);
         //TODO disconnection depending on cap
         /*if(client.capEnd == false && client.ping > 5){
             this->_toRemove.push_back(client.getSocketFD());
@@ -224,13 +222,29 @@ void Server::verifyEvent(const pollfd &pfd) {
         recv(client->getSocketFD(), buf.data(), buf.size(), 0);
         // std::cout << buf.data() << "." << std::endl;
         //Setting pass, nick, user --> n pode settar a pass se ja existir
-        ACommand *command = client->createCommand(buf);
-        if (command == NULL) //Nao e um comando/ comando que nao tratamos
-            return ;
         std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size()) << "Event on Client " << GREEN << "[" << client->getSocketFD() << "]" << RESET <<  std::endl;
         std::cout << formatServerMessage(BOLD_PURPLE, "C.INFO", 0) << *client << std::endl;
-        this->executeCommand(*client, command);
-        delete command;
+        std::queue<ACommand *> commands = client->createCommand(buf);
+        if (commands.empty()) //Nao e um comando/ comando que nao tratamos
+            return ;
+        std::cout << BOLD_GREEN << "[PRINT COMMANDS]\n" << RESET;
+        showq(commands);
+        while(!commands.empty()){
+            ACommand *command = commands.front();
+            this->executeCommand(*client, command);
+            commands.pop();
+            delete command;
+        }
+        std::cout << BOLD_GREEN << "[PRINT CLIENTS]\n" << RESET;
+        printMap(this->_Clients);
+        if(!client->getRegistration() && !client->getAuthError() && !client->getNick().empty()
+            && !client->getRealname().empty() && !client->getUsername().empty()){
+                //TODO welcome dependent on cap
+                //if(client.cap == false || (client.cap == true && client.capEnd == true)){
+                    this->welcome(*client);
+                    client->setRegistration(true);
+        }
+        std::cout << std::endl;
     }
 }
 

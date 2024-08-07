@@ -1,9 +1,12 @@
 #include "Includes.hpp"
 
-Cap::Cap(const Server& server, const Client& client): ACommand("Cap", server, client) {};
+Cap::Cap(const Server& server, const Client& client): ACommand("CAP", server, client), _end(false){};
 
 void Cap::parsing(std::istringstream &input){
-	std::string teste;
-    std::getline(input, teste, '\r');
-    std::cout << teste << std::endl;
+	std::string str;
+    std::getline(input, str, ' ');
+    if(str == "END")
+        this->_end = true;
+    else if(str != "LS")
+        this->_error = 1;
 }

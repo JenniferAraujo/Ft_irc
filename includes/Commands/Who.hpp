@@ -6,7 +6,7 @@
 class Who: public ACommand {
 public:
     Who(const Server& server, const Client& client);
-    virtual ~Who() {};
+    ~Who() {};
 
     void parsing(std::istringstream &input);
 

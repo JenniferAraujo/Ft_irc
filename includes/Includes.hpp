@@ -21,6 +21,7 @@
 # include <algorithm>
 # include <fstream>
 # include <sstream>
+# include <queue>
 # include "IRCException.hpp"
 # include "Server.hpp"
 # include "Client.hpp"
@@ -53,6 +54,8 @@
 # define INVALIDUSER 3
 # define INVALIDCAP  4
 
+# define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
+
 std::ostream &operator<<(std::ostream &out, const pollfd &pfd);
 std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs);
 std::ostream& operator<<(std::ostream& out, const Client &client);
@@ -68,5 +71,6 @@ std::string getCurrentDateTime();
 void titleInfo(std::string title);
 std::string intToString(int value);
 std::string formatServerMessage(const std::string& color, const std::string& label, int clients);
+void showq(std::queue<ACommand *> gq);
 
 #endif // INCLUDES_HPP

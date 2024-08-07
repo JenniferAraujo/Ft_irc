@@ -6,15 +6,15 @@
 class User: public ACommand {
 public:
     User(const Server& server, const Client& client);
-    virtual ~User() {};
+    ~User() {};
 
-    std::string getName() { return _name; };
+    std::string getUsername() { return _username; };
     std::string getRealname() { return _realname; };
     void parsing(std::istringstream &input);
 
 private:
     User();
-    std::string _name;
+    std::string _username;
     std::string _realname;
     //A minha ideia e ter uma variavel por argumento do commando
 };

@@ -10,7 +10,6 @@ Nick::Nick(const Server& server, const Client& client): ACommand("NICK", server,
     //Pode incluir letras (A-Z, a-z), dígitos (0-9) e alguns caracteres especiais (-, _, \, [, ], ^, {, }, |).
     //Deve começar com uma letra.
 void Nick::parsing(std::istringstream &input){
-    std::getline(input, this->_nick, '\r');
+    std::getline(input, this->_nick, '\n');
+    this->trimChar(this->_nick, '\r');
 }
-
-Nick::~Nick() {}

@@ -8,8 +8,9 @@ User::User(const Server& server, const Client& client): ACommand("USER", server,
 //username e realname sao campos obrigatorios
 void User::parsing(std::istringstream &input){
     std::string str;
-    std::getline(input, this->_name, ' ');
+    std::getline(input, this->_username, ' ');
     std::getline(input, str, ':');
-    std::getline(input, this->_realname, '\r');
+    std::getline(input, this->_realname, '\n');
+    this->trimChar(this->_realname, '\r');
 }
 

@@ -6,7 +6,7 @@
 class Mode: public ACommand {
 public:
     Mode(const Server& server, const Client& client);
-    virtual ~Mode() {};
+    ~Mode() {};
 
     void parsing(std::istringstream &input);
 
