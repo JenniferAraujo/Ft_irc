@@ -28,6 +28,7 @@ public:
     void join(Client &client, ACommand *command);
     void mode(Client &client, ACommand *command);
     void who(Client &client, ACommand *command);
+    void ping(Client &client, ACommand *command);
 
     //getters
     int getSocketFD() const { return this->_socketFD; };

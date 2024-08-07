@@ -52,15 +52,21 @@ ACommand* Client::createWho(std::istringstream &input){
     return command;
 }
 
-//TODO ping
+ACommand* Client::createPing(std::istringstream &input){
+    ACommand *command = new Ping(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
+//TODO
 
 std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
     std::string str(buf.begin(), buf.end());
-    std::cout << "BUF: " << str << std::endl;
+    //std::cout << "BUF: " << str << std::endl;
     std::istringstream input(str);
-    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO"};
+    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING"};
     int N = static_cast<int>(ARRAY_SIZE(commands));
-    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createCap, &Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin, &Client::createMode, &Client::createWho};
+    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createCap, &Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin, &Client::createMode, &Client::createWho, &Client::createPing};
     std::string cmd;
     std::string line;
     std::queue<ACommand *> result;

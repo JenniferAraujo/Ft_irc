@@ -119,11 +119,17 @@ void    printWho(ACommand *command){
 
 }
 
+void    printPing(ACommand *command){
+    Ping    *ping = dynamic_cast<Ping *>(command);
+    std::cout << "Name: " << ping->getName() <<  " | Token: " << ping->getToken() << std::endl;
+
+}
+
 void printCommand(ACommand *command)
 {
-    int N = 7;
-    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO"};
-    void (*p[])(ACommand *) = {printCap, printPass, printNick, printUser, printJoin, printMode, printWho};
+    int N = 8;
+    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING"};
+    void (*p[])(ACommand *) = {printCap, printPass, printNick, printUser, printJoin, printMode, printWho, printPing};
     for (int i = 0; i < N; i++) {
         if(!commands[i].compare(command->getName())){
             (*p[i])(command);
@@ -142,4 +148,15 @@ void showq(std::queue<ACommand *> gq)
         g.pop();
     }
     std::cout << '\n';
+}
+
+void showstringq(std::queue<std::string> gq)
+{
+    std::queue<std::string> g = gq;
+    if(g.empty())
+        std::cout << "Ups, I'm empty!!\n";
+    while (!g.empty()) {
+        std::cout << g.front() << std::endl;
+        g.pop();
+    }
 }

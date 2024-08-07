@@ -23,6 +23,7 @@ public:
     ACommand*                   createJoin(std::istringstream &input);
     ACommand*                   createMode(std::istringstream &input);
     ACommand*                   createWho(std::istringstream &input);
+    ACommand*                   createPing(std::istringstream &input);
 
     //Parsing da autentificaçao
     void            parsePassword(std::istringstream &input);

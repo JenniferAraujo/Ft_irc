@@ -146,19 +146,22 @@ void Server::user(Client &client, ACommand *command) {
 void Server::cap(Client &client, ACommand *command) {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << command->getName() << std::endl;
     std::string msg;
-    if(client.getRegistration()){ //NOTE Verificar isto
+    Cap    *cap = dynamic_cast<Cap *>(command);
+    if(client.getRegistration() && !cap->getEnd()){
         msg.append(ERROR("You may not reregister"));
         send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
         return ;
     }
-    Cap    *cap = dynamic_cast<Cap *>(command);
 	if(cap == NULL)
         throw IRCException("[ERROR] pass dynamic cast went wrong");
-    (void)client;
+    if (!cap->getEnd()) {
+        msg.append(CLIENT_NEGOTIATION(this->_hostName));
+        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+    }
 }
 
 void Server::welcome(Client &client) {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << "welcome" << std::endl;
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << "WELCOME" << std::endl;
     std::string msg;
     if (client.getPassword().empty()) {
         msg.append(ERROR("No password was set"));
@@ -168,6 +171,9 @@ void Server::welcome(Client &client) {
         msg.append(RPL_WELCOME(this->_hostName, "Internet Fight Club", client.getNick(), client.getUsername(), client.getIpaddr()));
         msg.append(RPL_YOURHOST(this->_hostName, "servername", client.getNick(), "version"));
         msg.append(RPL_CREATED(this->_hostName, this->getCreationTime(), client.getNick()));
+        msg.append(RPL_MYINFO(this->_hostName, client.getNick(), "servername"));
+        msg.append(RPL_ISUPPORT(this->_hostName, client.getNick()));
+        msg.append(RPL_MOTDSTART(this->_hostName, client.getNick(), "servername"));
         msg.append(RPL_MOTD(this->_hostName, "  ________________", client.getNick()));
         msg.append(RPL_MOTD(this->_hostName, " /______________ /|", client.getNick()));
         msg.append(RPL_MOTD(this->_hostName, "|  ___________  | |", client.getNick()));
@@ -179,19 +185,28 @@ void Server::welcome(Client &client) {
         msg.append(RPL_MOTD(this->_hostName, "| |___________| | |  ___", client.getNick()));
         msg.append(RPL_MOTD(this->_hostName, "|_______________|/  /  /", client.getNick()));
         msg.append(RPL_MOTD(this->_hostName, "                   /__/", client.getNick()));
+        msg.append(RPL_ENDOFMOTD(this->_hostName, client.getNick()));
         send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
     }
 }
 
-//TODO comando cap
-//TODO comando ping
+void Server::ping(Client &client, ACommand *command) {
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << command->getName() << std::endl;
+    std::string msg;
+    Ping    *ping = dynamic_cast<Ping *>(command);
+	if(ping == NULL)
+        throw IRCException("[ERROR] Ping dynamic cast went wrong");
+    msg.append(PONG(this->_hostName, ping->getToken()));
+    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+}
+
 
 //*Proximos passos: canais e mensagens
 //Ideia para executar os cmds
 void    Server::executeCommand(Client &client, ACommand *command){
-    int N = 7;
-    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO"};
-    void (Server::*p[])(Client&, ACommand *) = {&Server::cap, &Server::pass, &Server::nick, &Server::user, &Server::join, &Server::mode, &Server::who};
+    int N = 8;
+    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING"};
+    void (Server::*p[])(Client&, ACommand *) = {&Server::cap, &Server::pass, &Server::nick, &Server::user, &Server::join, &Server::mode, &Server::who, &Server::ping};
     for (int i = 0; i < N; i++) {
         if(!commands[i].compare(command->getName())){
             if((!client.getRegistration() || client.getAuthError()) && !registration_command(command->getName()))
@@ -235,14 +250,14 @@ void Server::verifyEvent(const pollfd &pfd) {
             commands.pop();
             delete command;
         }
-        std::cout << BOLD_GREEN << "[PRINT CLIENTS]\n" << RESET;
-        printMap(this->_Clients);
+        //std::cout << BOLD_GREEN << "[PRINT CLIENTS]\n" << RESET;
+        //printMap(this->_Clients);
         if(!client->getRegistration() && !client->getAuthError() && !client->getNick().empty()
             && !client->getRealname().empty() && !client->getUsername().empty()){
                 //TODO welcome dependent on cap
                 //if(client.cap == false || (client.cap == true && client.capEnd == true)){
-                    this->welcome(*client);
-                    client->setRegistration(true);
+                this->welcome(*client);
+                client->setRegistration(true);
         }
         std::cout << std::endl;
     }

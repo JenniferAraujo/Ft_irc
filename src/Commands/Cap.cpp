@@ -5,7 +5,7 @@ Cap::Cap(const Server& server, const Client& client): ACommand("CAP", server, cl
 void Cap::parsing(std::istringstream &input){
 	std::string str;
     std::getline(input, str, ' ');
-    if(str == "END")
+    if(!str.compare("END\r"))
         this->_end = true;
     else if(str != "LS")
         this->_error = 1;
