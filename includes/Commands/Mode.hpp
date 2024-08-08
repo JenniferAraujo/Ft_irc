@@ -14,7 +14,7 @@ public:
 private:
     Mode();
     std::string _channel;
-
+	std::string _mode;
 };
 
 

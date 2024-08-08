@@ -8,4 +8,5 @@ void Join::parsing(std::istringstream &input){
     this->trimChar(channel, '\r');
     channel.erase(0, 1);
     this->_channel = channel;
+	std::cout << "channel:" << this->_channel << std::endl;
 }

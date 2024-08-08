@@ -3,11 +3,15 @@
 Mode::Mode(const Server& server, const Client& client): ACommand("MODE", server, client) {};
 
 void Mode::parsing(std::istringstream &input){
+	std::string mode;
 	std::string channel;
-    std::getline(input, channel, ' ');
-    channel.erase(0, 1);
-    this->_channel = channel;
-    std::string str;
-    std::getline(input, str, '\n');
-    this->trimChar(str, '\r');
+
+	std::getline(input, channel, ' ');
+	channel.erase(0, 1);
+	this->_channel = channel;
+
+	std::getline(input, mode, '\r');
+	this->_mode = mode;
+	std::cout << "mode:" << this->_mode << std::endl;
+	std::cout << "channel:" << this->_channel << std::endl;
 }
