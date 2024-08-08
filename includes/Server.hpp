@@ -5,23 +5,30 @@
 
 class Client;
 class Channel;
+class ACommand;
 
 class Server {
 public:
     Server(const int &port, const std::string &password);
     ~Server();
+    Server(const Server& cpy);
 
     void run();
     void getAddrInfo();
     void updateNFDs(int fd);
     void updateClients(Client *client, int fd);
     void checkEvents(int nEvents);
-    void verifyEvent(const pollfd &pfd, std::vector<int> &toRemove);
-    void executeCommand(Client &client);
-    void cap(const Client &client);
-    void join(const Client &client);
-    void mode(const Client &client);
-    void who(const Client &client);
+    void verifyEvent(const pollfd &pfd);
+    void welcome(Client &client);
+    void executeCommand(Client &client, ACommand *command);
+    void cap(Client &client, ACommand *command);
+    void pass(Client &client, ACommand *command);
+    void nick(Client &client, ACommand *command);
+    void user(Client &client, ACommand *command);
+    void join(Client &client, ACommand *command);
+    void mode(Client &client, ACommand *command);
+    void who(Client &client, ACommand *command);
+    void ping(Client &client, ACommand *command);
 
     //getters
     int getSocketFD() const { return this->_socketFD; };
@@ -29,25 +36,28 @@ public:
     std::string getHostname() const { return this->_hostName; };
     sockaddr_in6 getSocketInfo() const { return this->_socketInfo; };
     std::string getPassword() const { return _password; };
-    std::string getCreationTime() const {return this->_creationTime;};
+    std::string getCreationTime() const {return this->_creationTime; };
+
     //aux
     void    removeClient(int fd);
     void    getServerInfo();
     void    addInChannel(std::string channelName, Client &client);
+    static bool    registration_command(std::string str);
 
 private:
     Server();
 
-    int                     _port;
-    std::string             _password;
-    char *                   _hostName;
-    char *                  _hostIP;
-    int                     _socketFD;
-    std::string             _creationTime;
-    sockaddr_in6            _socketInfo;
-    std::vector<pollfd>     _NFDs;
-    std::map<int, Client*>   _Clients;
-    std::map<std::string, Channel*>   _Channels;
+    int                                 _port;
+    std::string                         _password;
+    char *                              _hostName;
+    char *                              _hostIP;
+    int                                 _socketFD;
+    std::string                         _creationTime;
+    sockaddr_in6                        _socketInfo;
+    std::vector<pollfd>                 _NFDs;
+    std::map<int, Client*>              _Clients;
+    std::map<std::string, Channel*>     _Channels;
+    std::vector <int>                   _toRemove;
 
 };
 
