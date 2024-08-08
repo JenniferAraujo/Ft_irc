@@ -11,6 +11,7 @@ public:
     void parsing(std::istringstream &input);
 
     std::string getChannel() { return _channel; };
+	std::string getMode() { return _mode; };
 private:
     Mode();
     std::string _channel;

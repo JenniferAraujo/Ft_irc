@@ -12,6 +12,4 @@ void Mode::parsing(std::istringstream &input){
 
 	std::getline(input, mode, '\r');
 	this->_mode = mode;
-	std::cout << "mode:" << this->_mode << std::endl;
-	std::cout << "channel:" << this->_channel << std::endl;
 }
