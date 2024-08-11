@@ -147,13 +147,13 @@ void Server::cap(Client &client, ACommand *command) {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << command->getName() << std::endl;
     std::string msg;
     Cap    *cap = dynamic_cast<Cap *>(command);
+	if(cap == NULL)
+        throw IRCException("[ERROR] pass dynamic cast went wrong");
     if(client.getRegistration() && !cap->getEnd()){
         msg.append(ERROR("You may not reregister"));
         send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
         return ;
     }
-	if(cap == NULL)
-        throw IRCException("[ERROR] pass dynamic cast went wrong");
     if (!cap->getEnd()) {
         msg.append(CLIENT_NEGOTIATION(this->_hostName));
         send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
@@ -227,39 +227,52 @@ void    Server::executeCommand(Client &client, ACommand *command){
 void Server::verifyEvent(const pollfd &pfd) {
     if(pfd.revents == POLLIN) {
         Client *client = this->_Clients[pfd.fd];
-        //printMap(this->_Clients);
-        //TODO disconnection depending on cap
-        /*if(client.capEnd == false && client.ping > 5){
-            this->_toRemove.push_back(client.getSocketFD());
-            client->setAuthError(INVALIDCAP);
-        } */
-        std::vector<char> buf(5000);
-        recv(client->getSocketFD(), buf.data(), buf.size(), 0);
-        // std::cout << buf.data() << "." << std::endl;
-        //Setting pass, nick, user --> n pode settar a pass se ja existir
+        std::vector<char> temp(5000);
+        static std::vector<char> buf(5000);
         std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size()) << "Event on Client " << GREEN << "[" << client->getSocketFD() << "]" << RESET <<  std::endl;
         std::cout << formatServerMessage(BOLD_PURPLE, "C.INFO", 0) << *client << std::endl;
-        std::queue<ACommand *> commands = client->createCommand(buf);
-        if (commands.empty()) //Nao e um comando/ comando que nao tratamos
-            return ;
-        std::cout << BOLD_GREEN << "[PRINT COMMANDS]\n" << RESET;
-        showq(commands);
-        while(!commands.empty()){
-            ACommand *command = commands.front();
-            this->executeCommand(*client, command);
-            commands.pop();
-            delete command;
+        recv(client->getSocketFD(), temp.data(), temp.size(), 0);
+        std::cout << "TEMP: " << temp.data() << "." << std::endl;
+        std::vector<char>::iterator it = std::find(buf.begin(), buf.end(), '\0'); // Procurando por um caractere nulo (onde os dados atuais terminam)
+        if (it == buf.end()) {
+            // Se não houver '\0' no vetor, use o fim como posição inicial
+            it = buf.begin(); 
         }
-        //std::cout << BOLD_GREEN << "[PRINT CLIENTS]\n" << RESET;
-        //printMap(this->_Clients);
-        if(!client->getRegistration() && !client->getAuthError() && !client->getNick().empty()
-            && !client->getRealname().empty() && !client->getUsername().empty()){
-                //TODO welcome dependent on cap
-                //if(client.cap == false || (client.cap == true && client.capEnd == true)){
-                this->welcome(*client);
-                client->setRegistration(true);
+        if (std::find(temp.begin(), temp.end(), '\n') == temp.end()){
+            buf.insert(it, temp.begin(), temp.end());
+            //std::cout << "BUF: " << buf.data() << "." << std::endl;
         }
-        std::cout << std::endl;
+        else{
+            buf.insert(it, temp.begin(), temp.end());
+            std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
+            std::queue<ACommand *> commands = client->createCommand(buf);
+            buf.clear();
+            if (commands.empty()) //Nao e um comando/ comando que nao tratamos
+                return ;
+            std::cout << BOLD_GREEN << "[PRINT COMMANDS]\n" << RESET;
+            showq(commands);
+            while(!commands.empty()){
+                ACommand *command = commands.front();
+                this->executeCommand(*client, command);
+                commands.pop();
+                delete command;
+            }
+            //std::cout << BOLD_GREEN << "[PRINT CLIENTS]\n" << RESET;
+            //printMap(this->_Clients);
+            if(!client->getRegistration() && !client->getAuthError() && !client->getNick().empty()
+                && !client->getRealname().empty() && !client->getUsername().empty()){
+                    //TODO welcome dependent on cap
+                    //if(client.cap == false || (client.cap == true && client.capEnd == true)){
+                    this->welcome(*client);
+                    client->setRegistration(true);
+            }
+            //TODO disconnection depending on cap
+            /*if(client.capEnd == false && client.ping > 5){
+                this->_toRemove.push_back(client.getSocketFD());
+                client->setAuthError(INVALIDCAP);
+            } */
+            std::cout << std::endl;
+        }
     }
 }
 

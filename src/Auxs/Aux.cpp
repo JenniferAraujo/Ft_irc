@@ -97,8 +97,7 @@ void    printNick(ACommand *command){
 
 void    printUser(ACommand *command){
     User    *user = dynamic_cast<User *>(command);
-    std::cout << "Command: " << user->getName() <<  " | Error: " << user->getError() << " | Name: " << user->getName() << " | Real name: " << user->getRealname() << std::endl;
-
+    std::cout << "Command: " << user->getName() <<  " | Error: " << user->getError() << " | Name: " << user->getUsername() << " | Real name: " << user->getRealname() << std::endl;
 }
 
 void    printJoin(ACommand *command){
