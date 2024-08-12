@@ -1,6 +1,6 @@
 #include "Includes.hpp"
 
-Join::Join(const Server& server, const Client& client): ACommand("JOIN", server, client) {};
+Join::Join(Server& server, Client& client): ACommand("JOIN", server, client) {};
 
 void Join::parsingToken(std::string token, int n) {
 	if (n == 0) {
@@ -44,4 +44,12 @@ void Join::parsing(std::istringstream &input){
 	showstringq(this->_channels);
 	std::cout << "_Passwords queue: \n";
 	showstringq(this->_password);
+}
+
+void Join::execute() {
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << this->_name << std::endl;
+    std::string msg;
+    msg.append(JOIN_CHANNEL(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel));
+    this->_server.addInChannel(this->_channel, const_cast<Client&>(this->_client));
+    send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
 }

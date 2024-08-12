@@ -5,11 +5,12 @@
 
 class Pass: public ACommand {
 public:
-    Pass(const Server& server, const Client& client);
+    Pass(Server& server, Client& client);
     ~Pass() {};
 
     std::string getPass() { return _pass; };
     void parsing(std::istringstream &input);
+    void execute();
 
 private:
     std::string _pass;

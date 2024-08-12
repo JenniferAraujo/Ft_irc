@@ -30,136 +30,6 @@ void Server::updateClients(Client *client, int fd)
     this->_Clients[fd] = client;
 }
 
-//Se o cliente ja tiver registado da erro
-//Se a pasward for invalida da erro e seta a flag AuthError
-//Se a pasward for valida seta a pass do cliente
-void Server::pass(Client &client, ACommand *command) {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << command->getName() << std::endl;
-    std::string msg;
-    if(client.getRegistration()){
-        msg.append(ERROR("You may not reregister"));
-        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        return ;
-    }
-    Pass    *pass = dynamic_cast<Pass *>(command);
-    //Isto tem que funcionar, nao pode ser nulo, mas vou por aqui a exception para debug
-    if(pass == NULL)
-        throw IRCException("[ERROR] pass dynamic cast went wrong");
-    if (command->getError()) {
-        msg.append(ERROR("Password incorrect"));
-        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        this->_toRemove.push_back(client.getSocketFD());
-        client.setAuthError(PASSWDMISMATCH);
-    }
-    else
-        client.setPass(pass->getPass());
-}
-
-void Server::join(Client &client, ACommand *command) {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << command->getName() << std::endl;
-    std::string msg;
-    Join    *join = dynamic_cast<Join *>(command);
-	if(join == NULL)
-        throw IRCException("[ERROR] pass dynamic cast went wrong");
-    msg.append(JOIN_CHANNEL(client.getNick(), client.getUsername(), client.getIpaddr(), join->getChannel()));
-    this->addInChannel(join->getChannel(), const_cast<Client&>(client));
-    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-}
-
-void Server::who(Client &client, ACommand *command) {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << command->getName() << std::endl;
-    std::string msg, names;
-    Who    *who = dynamic_cast<Who *>(command);
-	if(who == NULL)
-        throw IRCException("[ERROR] Who dynamic cast went wrong");
-    if (this->_Channels.find(who->getChannel()) != this->_Channels.end()) {
-        Channel* channel = this->_Channels[who->getChannel()];
-        std::map<int, Client*> clients = channel->getClients();
-        for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
-            Client* c = it->second;
-            names.append(c->getNick());
-            names.append(" ");
-            msg = RPL_WHO(this->_hostName, who->getChannel(), client.getNick(), *c);
-            send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        }
-    }
-    msg = RPL_ENDWHO(this->_hostName, who->getChannel(), client.getNick());
-    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-    msg = RPL_NAME(this->_hostName, who->getChannel(), client.getNick(), names);
-    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-    msg = RPL_ENDNAME(this->_hostName, who->getChannel(), client.getNick());
-    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-}
-
-void Server::mode(Client &client, ACommand *command) {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << command->getName() << std::endl;
-    std::string msg;
-    Mode    *mode = dynamic_cast<Mode *>(command);
-	if(mode == NULL)
-        throw IRCException("[ERROR] Mode dynamic cast went wrong");
-    msg.append(RPL_MODE(this->_hostName, mode->getChannel(), client.getNick(), "+nt"));
-    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-}
-
-void Server::nick(Client &client, ACommand *command) {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << command->getName() << std::endl;
-    std::string msg;
-    Nick    *nick = dynamic_cast<Nick *>(command);
-    //Isto tem que funcionar, nao pode ser nulo, mas vou por aqui a exception para debug
-    if(nick == NULL)
-        throw IRCException("[ERROR] nick dynamic cast went wrong");
-    if (command->getError()) {
-        msg.append(ERROR("Invalid Nick"));
-        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        this->_toRemove.push_back(client.getSocketFD());
-        client.setAuthError(INVALIDNICK);
-    }
-    else
-        client.setNick(nick->getNick());
-}
-
-void Server::user(Client &client, ACommand *command) {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << command->getName() << std::endl;
-    std::string msg;
-    if(client.getRegistration()){
-        msg.append(ERROR("You may not reregister"));
-        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        return ;
-    }
-    User    *user = dynamic_cast<User *>(command);
-    //Isto tem que funcionar, nao pode ser nulo, mas vou por aqui a exception para debug
-    if(user == NULL)
-        throw IRCException("[ERROR] user dynamic cast went wrong");
-    if (command->getError()) {
-        msg.append(ERROR("userword incorrect"));
-        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        this->_toRemove.push_back(client.getSocketFD()); //TODO condiçao para nao haver repetidos (funçao para adicionar ao toRemove)
-        client.setAuthError(INVALIDUSER);
-    }
-    else{
-        client.setUsername(user->getUsername());
-        client.setRealname(user->getRealname());
-    }
-}
-
-void Server::cap(Client &client, ACommand *command) {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << command->getName() << std::endl;
-    std::string msg;
-    Cap    *cap = dynamic_cast<Cap *>(command);
-	if(cap == NULL)
-        throw IRCException("[ERROR] pass dynamic cast went wrong");
-    if(client.getRegistration() && !cap->getEnd()){
-        msg.append(ERROR("You may not reregister"));
-        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        return ;
-    }
-    if (!cap->getEnd()) {
-        msg.append(CLIENT_NEGOTIATION(this->_hostName));
-        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-    }
-}
-
 void Server::welcome(Client &client) {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << "WELCOME" << std::endl;
     std::string msg;
@@ -190,40 +60,53 @@ void Server::welcome(Client &client) {
     }
 }
 
-void Server::ping(Client &client, ACommand *command) {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << command->getName() << std::endl;
-    std::string msg;
-    Ping    *ping = dynamic_cast<Ping *>(command);
-	if(ping == NULL)
-        throw IRCException("[ERROR] Ping dynamic cast went wrong");
-    msg.append(PONG(this->_hostName, ping->getToken()));
-    send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-}
-
 
 //*Proximos passos: canais e mensagens
 //Ideia para executar os cmds
 void    Server::executeCommand(Client &client, ACommand *command){
-    int N = 8;
-    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING"};
-    void (Server::*p[])(Client&, ACommand *) = {&Server::cap, &Server::pass, &Server::nick, &Server::user, &Server::join, &Server::mode, &Server::who, &Server::ping};
-    for (int i = 0; i < N; i++) {
-        if(!commands[i].compare(command->getName())){
-            if((!client.getRegistration() || client.getAuthError()) && !registration_command(command->getName()))
-                std::cout << RED << "ERROR: " << RESET
-                << "Auth not over or auth error -> client can not execute command: " <<
-                command->getName() << ", and will be disconected soon" << std::endl;
-            else
-                (this->*p[i])(client, command);
-        }
-    }
+    if((!client.getRegistration() || client.getAuthError()) && !registration_command(command->getName()))
+            std::cout << RED << "ERROR: " << RESET
+            << "Auth not over or auth error -> client can not execute command: " <<
+            command->getName() << ", and will be disconected soon" << std::endl;
+    else
+        command->execute();
 }
 
-//QUIT -> fechar o fd
-// Função para verificar eventos na poll
-//Verificar it->revents == POLLIN
-//Verificar it-> revents == POLLOUT
-//if _passward = false -> dar handle de alguma forma?
+void    Server::handleCommand(Client &client, std::vector<char> &buf){
+    std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
+    std::queue<ACommand *> commands = client.createCommand(buf);
+    if (commands.empty()) //Nao e um comando/ comando que nao tratamos
+            return ;
+    std::cout << BOLD_GREEN << "[PRINT COMMANDS]\n" << RESET;
+    showq(commands);
+    while(!commands.empty()){
+        ACommand *command = commands.front();
+        this->executeCommand(client, command);
+        commands.pop();
+        delete command;
+    }
+    //std::cout << BOLD_GREEN << "[PRINT CLIENTS]\n" << RESET;
+    //printMap(this->_Clients);
+    if(!client.getRegistration() && !client.getAuthError() && !client.getNick().empty()
+                && !client.getRealname().empty() && !client.getUsername().empty()){
+                    //TODO welcome dependent on cap
+                    //if(client.cap == false || (client.cap == true && client.capEnd == true)){
+                    this->welcome(client);
+                    client.setRegistration(true);
+    }
+    //TODO disconnection depending on cap
+    /*if(client.capEnd == false && client.ping > 5){
+    this->_toRemove.push_back(client.getSocketFD());
+    client.setAuthError(INVALIDCAP);
+    } */
+    std::cout << std::endl;
+
+}
+
+
+//TODO QUIT -> fechar o fd
+//TODO desconectar clientes
+//TODO handle size da msg -> ver qual o tamannho max que o server recebe
 void Server::verifyEvent(const pollfd &pfd) {
     if(pfd.revents == POLLIN) {
         Client *client = this->_Clients[pfd.fd];
@@ -244,34 +127,8 @@ void Server::verifyEvent(const pollfd &pfd) {
         }
         else{
             buf.insert(it, temp.begin(), temp.end());
-            std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
-            std::queue<ACommand *> commands = client->createCommand(buf);
+            this->handleCommand(*client, buf);
             buf.clear();
-            if (commands.empty()) //Nao e um comando/ comando que nao tratamos
-                return ;
-            std::cout << BOLD_GREEN << "[PRINT COMMANDS]\n" << RESET;
-            showq(commands);
-            while(!commands.empty()){
-                ACommand *command = commands.front();
-                this->executeCommand(*client, command);
-                commands.pop();
-                delete command;
-            }
-            //std::cout << BOLD_GREEN << "[PRINT CLIENTS]\n" << RESET;
-            //printMap(this->_Clients);
-            if(!client->getRegistration() && !client->getAuthError() && !client->getNick().empty()
-                && !client->getRealname().empty() && !client->getUsername().empty()){
-                    //TODO welcome dependent on cap
-                    //if(client.cap == false || (client.cap == true && client.capEnd == true)){
-                    this->welcome(*client);
-                    client->setRegistration(true);
-            }
-            //TODO disconnection depending on cap
-            /*if(client.capEnd == false && client.ping > 5){
-                this->_toRemove.push_back(client.getSocketFD());
-                client->setAuthError(INVALIDCAP);
-            } */
-            std::cout << std::endl;
         }
     }
 }

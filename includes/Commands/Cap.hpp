@@ -9,10 +9,11 @@ inline std::string CLIENT_NEGOTIATION(const std::string& client) {
 
 class Cap: public ACommand {
 public:
-    Cap(const Server& server, const Client& client);
+    Cap(Server& server, Client& client);
     ~Cap() {};
     bool    getEnd() const { return _end; };
     void parsing(std::istringstream &input);
+    void execute();
 
 private:
     Cap();

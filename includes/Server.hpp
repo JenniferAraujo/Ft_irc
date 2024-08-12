@@ -21,14 +21,7 @@ public:
     void verifyEvent(const pollfd &pfd);
     void welcome(Client &client);
     void executeCommand(Client &client, ACommand *command);
-    void cap(Client &client, ACommand *command);
-    void pass(Client &client, ACommand *command);
-    void nick(Client &client, ACommand *command);
-    void user(Client &client, ACommand *command);
-    void join(Client &client, ACommand *command);
-    void mode(Client &client, ACommand *command);
-    void who(Client &client, ACommand *command);
-    void ping(Client &client, ACommand *command);
+    void handleCommand(Client &client, std::vector<char> &buf);
 
     //getters
     int getSocketFD() const { return this->_socketFD; };
@@ -37,6 +30,7 @@ public:
     sockaddr_in6 getSocketInfo() const { return this->_socketInfo; };
     std::string getPassword() const { return _password; };
     std::string getCreationTime() const {return this->_creationTime; };
+    std::map<std::string, Channel*> getChannels() const {return this->_Channels; };
 
     //aux
     void    removeClient(int fd);

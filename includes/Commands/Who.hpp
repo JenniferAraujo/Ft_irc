@@ -5,10 +5,11 @@
 
 class Who: public ACommand {
 public:
-    Who(const Server& server, const Client& client);
+    Who(Server& server, Client& client);
     ~Who() {};
 
     void parsing(std::istringstream &input);
+    void execute();
 
     std::string getChannel() { return _channel; };
 private:
