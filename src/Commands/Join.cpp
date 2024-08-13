@@ -23,7 +23,7 @@ void Join::parsing(std::istringstream &input){
 	std::string token;
 	int n = 0;
     while (std::getline(input, token, ' ') && n < 2) {
-        this->trimChar(token, '\r');
+        this->trimChar(token, '\r'); //REVIEW - nao precisas disto aqui, é só quando les até ao \n
         std::cout << "Token: " << token << std::endl;
         int count = std::count(token.begin(), token.end(), ',');
         if (count == 0) {
@@ -37,7 +37,7 @@ void Join::parsing(std::istringstream &input){
         }
 		n++;
     }
-	// caso para se receber apenas um [JOIN], verificar se efetivamente entra aqui
+	// caso para se receber apenas um [JOIN], verificar se efetivamente entra aqui -> //NOTE - Está entrar aqui quando eu faço /join #novocanal
 	if (this->_channels.empty())
 		this->_error = NEEDMOREPARAMS;
 	std::cout << "_Channels queue: \n";
@@ -52,4 +52,8 @@ void Join::execute() {
     msg.append(JOIN_CHANNEL(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel));
     this->_server.addInChannel(this->_channel, const_cast<Client&>(this->_client));
     send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+}
+
+void Join::print() const{
+    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | Channel: " << this->_channel << std::endl;
 }

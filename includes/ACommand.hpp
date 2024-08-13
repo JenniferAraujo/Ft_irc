@@ -21,6 +21,7 @@ public:
     }
     virtual void parsing(std::istringstream &input) = 0;
     virtual void execute() = 0;
+    virtual void print() const = 0;
 
 protected:
     std::string _name;

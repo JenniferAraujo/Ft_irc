@@ -11,6 +11,7 @@ public:
     std::string getPass() { return _pass; };
     void parsing(std::istringstream &input);
     void execute();
+    void print() const;
 
 private:
     std::string _pass;

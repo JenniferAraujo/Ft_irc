@@ -14,6 +14,7 @@ public:
     bool    getEnd() const { return _end; };
     void parsing(std::istringstream &input);
     void execute();
+    void print() const;
 
 private:
     Cap();

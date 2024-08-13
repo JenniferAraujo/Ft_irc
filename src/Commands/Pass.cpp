@@ -26,3 +26,7 @@ void Pass::execute() {
     else
         this->_client.setPass(this->_pass);
 }
+
+void Pass::print() const{
+    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | Pass: " << this->_pass<< std::endl;
+}

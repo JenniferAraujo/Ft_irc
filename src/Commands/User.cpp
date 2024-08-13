@@ -33,3 +33,7 @@ void User::execute() {
         this->_client.setRealname(this->_realname);
     }
 }
+
+void User::print() const{
+    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | Name: " << this->_username << " | Real name: " << this->_realname << std::endl;
+}

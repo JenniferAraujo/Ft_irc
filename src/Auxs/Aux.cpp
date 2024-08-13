@@ -77,65 +77,6 @@ std::string formatServerMessage(const std::string& color, const std::string& lab
     return oss.str();
 }
 
-void    printCap(ACommand *command){
-    Cap    *cap = dynamic_cast<Cap *>(command);
-    std::cout << "Command: " << cap->getName() <<  " | Error: " << cap->getError() << " | End: " << cap->getEnd() << std::endl;
-
-}
-
-void    printPass(ACommand *command){
-    Pass    *pass = dynamic_cast<Pass *>(command);
-    std::cout << "Command: " << pass->getName() <<  " | Error: " << pass->getError() << " | Pass: " << pass->getPass() << std::endl;
-
-}
-
-void    printNick(ACommand *command){
-    Nick    *nick = dynamic_cast<Nick *>(command);
-    std::cout << "Command: " << nick->getName() <<  " | Error: " << nick->getError() << " | Nick: " << nick->getNick() << std::endl;
-
-}
-
-void    printUser(ACommand *command){
-    User    *user = dynamic_cast<User *>(command);
-    std::cout << "Command: " << user->getName() <<  " | Error: " << user->getError() << " | Name: " << user->getUsername() << " | Real name: " << user->getRealname() << std::endl;
-}
-
-void    printJoin(ACommand *command){
-    Join    *join = dynamic_cast<Join *>(command);
-    std::cout << "Name: " << join->getName() <<  " | Error: " << join->getError() << " | Channel: " << join->getChannel() << std::endl;
-
-}
-
-void    printMode(ACommand *command){
-    Mode    *mode = dynamic_cast<Mode *>(command);
-    std::cout << "Name: " << mode->getName() <<  " | Error: " << mode->getError() << " | Channel: " << mode->getChannel() << std::endl;
-
-}
-
-void    printWho(ACommand *command){
-    Who    *who = dynamic_cast<Who *>(command);
-    std::cout << "Name: " << who->getName() <<  " | Error: " << who->getError() << " | Channel: " << who->getChannel() << std::endl;
-
-}
-
-void    printPing(ACommand *command){
-    Ping    *ping = dynamic_cast<Ping *>(command);
-    std::cout << "Name: " << ping->getName() <<  " | Token: " << ping->getToken() << std::endl;
-
-}
-
-void printCommand(ACommand *command)
-{
-    int N = 8;
-    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING"};
-    void (*p[])(ACommand *) = {printCap, printPass, printNick, printUser, printJoin, printMode, printWho, printPing};
-    for (int i = 0; i < N; i++) {
-        if(!commands[i].compare(command->getName())){
-            (*p[i])(command);
-        }
-    }
-}
-
 void showq(std::queue<ACommand *> gq)
 {
     std::queue<ACommand *> g = gq;
@@ -143,7 +84,7 @@ void showq(std::queue<ACommand *> gq)
         std::cout << "Ups, I'm empty!!\n";
     while (!g.empty()) {
         //std::cout << g.front()->getName() << std::endl;
-        printCommand(g.front());
+        g.front()->print();
         g.pop();
     }
     std::cout << '\n';

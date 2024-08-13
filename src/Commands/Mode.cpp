@@ -18,3 +18,7 @@ void Mode::execute() {
     msg.append(RPL_MODE(this->_server.getHostname(), this->_channel, this->_client.getNick(), "+nt"));
     send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
 }
+
+void Mode::print() const{
+    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | Channel: " << this->_channel << std::endl;
+}

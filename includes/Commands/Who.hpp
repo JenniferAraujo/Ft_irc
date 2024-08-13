@@ -10,6 +10,7 @@ public:
 
     void parsing(std::istringstream &input);
     void execute();
+    void print() const;
 
     std::string getChannel() { return _channel; };
 private:

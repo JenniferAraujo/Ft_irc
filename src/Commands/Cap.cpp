@@ -24,3 +24,7 @@ void Cap::execute() {
         send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
     }
 }
+
+void Cap::print() const{
+    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | End: " << this->_end << std::endl;
+}

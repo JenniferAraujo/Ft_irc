@@ -10,6 +10,7 @@ public:
     std::string getNick() { return _nick; };
     void parsing(std::istringstream &input);
     void execute();
+    void print() const;
 
 private:
     Nick();

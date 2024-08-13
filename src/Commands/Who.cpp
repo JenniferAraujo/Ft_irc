@@ -32,3 +32,7 @@ void Who::execute() {
     send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
     send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
 }
+
+void Who::print() const{
+    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | Channel: " << this->_channel << std::endl;
+}

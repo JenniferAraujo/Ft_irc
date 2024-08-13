@@ -26,3 +26,7 @@ void Nick::execute() {
     else
         this->_client.setNick(this->_nick);
 }
+
+void Nick::print() const{
+    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | Nick: " << this->_nick << std::endl;
+}

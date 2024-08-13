@@ -17,6 +17,7 @@ public:
     void parsing(std::istringstream &input);
     void parsingToken(std::string token, int n);
     void execute();
+    void print() const;
 
     std::string getChannel() { return _channel; };
     std::queue<std::string> getPassword() { return _password; };

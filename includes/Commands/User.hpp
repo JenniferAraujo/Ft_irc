@@ -12,6 +12,7 @@ public:
     std::string getRealname() { return _realname; };
     void parsing(std::istringstream &input);
     void execute();
+    void print() const;
 
 private:
     User();

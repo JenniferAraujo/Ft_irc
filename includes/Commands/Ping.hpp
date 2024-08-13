@@ -14,6 +14,7 @@ public:
 
     void parsing(std::istringstream &input);
     void execute();
+    void print() const;
 
     std::string getToken() { return _token; };
 

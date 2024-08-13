@@ -16,3 +16,7 @@ void Ping::execute() {
     msg.append(PONG(this->_server.getHostname(), this->_token));
     send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
 }
+
+void Ping::print() const{
+    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | Token: " << this->_token << std::endl;
+}
