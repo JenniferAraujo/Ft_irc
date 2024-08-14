@@ -5,18 +5,26 @@
 
 class Mode: public ACommand {
 public:
-    Mode(const Server& server, const Client& client);
-    ~Mode() {};
+	Mode(const Server& server, const Client& client);
+	~Mode() {};
 
-    void parsing(std::istringstream &input);
+	void	parsing(std::istringstream &input);
 
-    std::string getChannel() { return _channel; };
-	std::string getMode() { return _mode; };
+	std::string	getChannel() { return _channel; };
+	std::string getMode() const { return _mode; };
+	std::string getPassword() const { return _password; }
+	int			getLimit() const { return _userLimit; }
+	int			getClientId() const { return _clientId; }
 private:
-    Mode();
-    std::string _channel;
+	std::string _channel;
 	std::string _mode;
+	std::string _password;
+	int			_userLimit;
+	int			_clientId;
+	
+	Mode();
+	bool	isValidMode(char mode);
+	void	extractKeyAndLimit(std::istringstream &input);
 };
-
 
 #endif // MODE_HPP

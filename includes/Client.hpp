@@ -24,6 +24,12 @@ public:
     ACommand*                   createMode(std::istringstream &input);
     ACommand*                   createWho(std::istringstream &input);
 
+	//aux commands
+	bool	hasPassword(const std::string& password) const;
+	bool	isInvited(const std::string& name) const;
+	void	addInvite(const std::string& name);
+	void	setEnteredPassword(const std::string& password);
+
     //Parsing da autentificaçao
     void            parsePassword(std::istringstream &input);
     void            parseNick(std::istringstream &input);
@@ -60,6 +66,8 @@ private:
     int                     _socketFD;
     int                     _authError; //Possivelmente mudar para bool
     bool                    _registration; //initialized as false
+	std::vector<std::string> _invitedNames; //NOTE - clientes que foram convidados p entrar em canal
+	std::string				_enteredPassword; //NOTE -  password p entrar no canal
     std::string             _ipAddr;
     std::string             _password;
     std::string             _nick;

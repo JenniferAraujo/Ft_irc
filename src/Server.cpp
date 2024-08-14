@@ -93,14 +93,13 @@ void Server::who(Client &client, ACommand *command) {
 }
 
 bool	isValidMode(char mode) {
-    const char validModes[] = {'i', 't', 'k', 'o', 'l'};
-    size_t numValidModes = sizeof(validModes) / sizeof(validModes[0]);
-    for (size_t i = 0; i < numValidModes; ++i) {
-        if (validModes[i] == mode) {
-            return true;
-        }
-    }
-    return false;
+	const char validModes[] = {'i', 't', 'k', 'o', 'l'};
+	size_t numValidModes = sizeof(validModes) / sizeof(validModes[0]);
+	for (size_t i = 0; i < numValidModes; ++i) {
+		if (validModes[i] == mode)
+			return true;
+	}
+	return false;
 }
 
 void Server::mode(Client &client, ACommand *command) {
@@ -114,23 +113,25 @@ void Server::mode(Client &client, ACommand *command) {
 	if (channel.empty()) {
 		msg.append("Error(461): MODE Not enough parameters.\r\n");
 		send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-		return;
+		return ;
 	}
 	std::map<std::string, Channel*>::iterator it = this->_Channels.find(channel);
 	if (it == this->_Channels.end()) {
 		msg.append("Reply(403): No such channel " + channel + "\r\n");
 		send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-		return;
+		return ;
 	}
-	for (size_t i = 0; i < modeStr.length(); ++i) { //colocar os erros no MACRO
-        if (!isValidMode(modeStr[i])) {
-            msg.append("Error(472): ");
-            msg.append(1, modeStr[i]);
-            msg.append(" is not a recognised channel mode.\r\n");
-            send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-            return ;
-        }
-    }
+	Channel* channelObj = it->second;
+	for (size_t i = 0; i < modeStr.length(); ++i) {
+		char modeChar = modeStr[i];
+
+		if (modeChar != '+' && modeChar != '-' && !isValidMode(modeChar)) {
+			msg.append("Error(472): " + std::string(1, modeChar) + " is not a recognised channel mode.");
+			send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+			return ;
+		}
+	}
+	channelObj->applyMode(*mode); 
 }
 
 void Server::nick(Client &client, ACommand *command) {

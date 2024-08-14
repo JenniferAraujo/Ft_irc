@@ -61,7 +61,7 @@ fclean: clean
 re: fclean all
 
 run: all
-	clear && ./ircserv 9000 123
+	clear && ./ircserv 9090 123
 
 .SILENT:
 
