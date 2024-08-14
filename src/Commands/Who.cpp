@@ -6,7 +6,6 @@ void Who::parsing(std::istringstream &input){
 	std::string channel;
     std::getline(input, channel, '\n');
     this->trimChar(channel, '\r');
-    channel.erase(0, 1);
     this->_channel = channel;
 }
 
@@ -15,7 +14,10 @@ void Who::execute() {
     std::string msg, names;
     if (this->_server.getChannels().find(this->_channel) != this->_server.getChannels().end()) {
         Channel* channel = this->_server.getChannels()[this->_channel];
+        std::cout << "SEG AQUI" << std::endl;
+        std::cout << channel;
         std::map<int, Client*> clients = channel->getClients();
+        std::cout << "SEG NÃO PASSA DAQUI" << std::endl;
         for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
             Client* c = it->second;
             names.append(c->getNick());

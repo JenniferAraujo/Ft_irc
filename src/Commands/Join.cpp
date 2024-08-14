@@ -26,18 +26,17 @@ void Join::parsing(std::istringstream &input){
         this->trimChar(token, '\r'); //REVIEW - nao precisas disto aqui, é só quando les até ao \n
         std::cout << "Token: " << token << std::endl;
         int count = std::count(token.begin(), token.end(), ',');
-        if (count == 0) {
+        if (count == 0)
 			this->parsingToken(token, n);
-        } else {
+        else {
             std::istringstream tokenstream(token);
             while (std::getline(tokenstream, token, ',')) {
-                std::cout << "[,] token: " << token << std::endl;
 				this->parsingToken(token, n);
             }
         }
 		n++;
     }
-	// caso para se receber apenas um [JOIN], verificar se efetivamente entra aqui -> //NOTE - Está entrar aqui quando eu faço /join #novocanal
+	// caso para se receber apenas um [JOIN], verificar se efetivamente entra aqui
 	if (this->_channels.empty())
 		this->_error = NEEDMOREPARAMS;
 	std::cout << "_Channels queue: \n";
