@@ -20,7 +20,6 @@ ACommand* Client::createCap(std::istringstream &input) {
     return command;
 }
 
-
 ACommand* Client::createPass(std::istringstream &input){
     ACommand *command = new Pass(this->_server, *this);
     command->parsing(input);
