@@ -21,7 +21,7 @@ void Pass::execute() {
         msg.append(ERROR("Password incorrect"));
         send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
         //this->_toRemove.push_back(this->_client.getSocketFD()); //TODO create function Server::addToRemove
-        this->_client.setAuthError(PASSWDMISMATCH);
+        this->_client.setRegError(PASSWDMISMATCH);
     }
     else
         this->_client.setPass(this->_pass);

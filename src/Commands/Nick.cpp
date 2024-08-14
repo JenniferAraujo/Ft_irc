@@ -21,7 +21,7 @@ void Nick::execute() {
         msg.append(ERROR("Invalid Nick"));
         send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
         //this->_toRemove.push_back(client.getSocketFD()); //TODO create function Server::addToRemove
-        this->_client.setAuthError(INVALIDNICK);
+        this->_client.setRegError(INVALIDNICK);
     }
     else
         this->_client.setNick(this->_nick);

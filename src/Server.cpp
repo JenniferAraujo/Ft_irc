@@ -30,41 +30,10 @@ void Server::updateClients(Client *client, int fd)
     this->_Clients[fd] = client;
 }
 
-void Server::welcome(Client &client) {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << "WELCOME" << std::endl;
-    std::string msg;
-    if (client.getPassword().empty()) {
-        msg.append(ERROR("No password was set"));
-        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        this->_toRemove.push_back(client.getSocketFD());
-    } else {
-        msg.append(RPL_WELCOME(this->_hostName, "Internet Fight Club", client.getNick(), client.getUsername(), client.getIpaddr()));
-        msg.append(RPL_YOURHOST(this->_hostName, "servername", client.getNick(), "version"));
-        msg.append(RPL_CREATED(this->_hostName, this->getCreationTime(), client.getNick()));
-        msg.append(RPL_MYINFO(this->_hostName, client.getNick(), "servername"));
-        msg.append(RPL_ISUPPORT(this->_hostName, client.getNick()));
-        msg.append(RPL_MOTDSTART(this->_hostName, client.getNick(), "servername"));
-        msg.append(RPL_MOTD(this->_hostName, "  ________________", client.getNick()));
-        msg.append(RPL_MOTD(this->_hostName, " /______________ /|", client.getNick()));
-        msg.append(RPL_MOTD(this->_hostName, "|  ___________  | |", client.getNick()));
-        msg.append(RPL_MOTD(this->_hostName, "| |           | | |", client.getNick()));
-        msg.append(RPL_MOTD(this->_hostName, "| |  ft_irc   | | |", client.getNick()));
-        msg.append(RPL_MOTD(this->_hostName, "| |    by:    | | |", client.getNick()));
-        msg.append(RPL_MOTD(this->_hostName, "| |           | | |", client.getNick()));
-        msg.append(RPL_MOTD(this->_hostName, "| |  r, j, d  | | |", client.getNick()));
-        msg.append(RPL_MOTD(this->_hostName, "| |___________| | |  ___", client.getNick()));
-        msg.append(RPL_MOTD(this->_hostName, "|_______________|/  /  /", client.getNick()));
-        msg.append(RPL_MOTD(this->_hostName, "                   /__/", client.getNick()));
-        msg.append(RPL_ENDOFMOTD(this->_hostName, client.getNick()));
-        send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-    }
-}
-
-
 //*Proximos passos: canais e mensagens
 //Ideia para executar os cmds
 void    Server::executeCommand(Client &client, ACommand *command){
-    if((!client.getRegistration() || client.getAuthError()) && !registration_command(command->getName()))
+    if((!client.getRegistration() || client.getRegError()) && !registration_command(command->getName()))
             std::cout << RED << "ERROR: " << RESET
             << "Auth not over or auth error -> client can not execute command: " <<
             command->getName() << ", and will be disconected soon" << std::endl;
@@ -85,40 +54,24 @@ void    Server::handleCommand(Client &client, std::vector<char> &buf){
         commands.pop();
         delete command;
     }
-    //std::cout << BOLD_GREEN << "[PRINT CLIENTS]\n" << RESET;
-    //printMap(this->_Clients);
-    if(!client.getRegistration() && !client.getAuthError() && !client.getNick().empty()
-                && !client.getRealname().empty() && !client.getUsername().empty()){
-                    //TODO welcome dependent on cap
-                    //if(client.cap == false || (client.cap == true && client.capEnd == true)){
-                    this->welcome(client);
-                    client.setRegistration(true);
-    }
-    //TODO disconnection depending on cap
-    /*if(client.capEnd == false && client.ping > 5){
-    this->_toRemove.push_back(client.getSocketFD());
-    client.setAuthError(INVALIDCAP);
-    } */
-    std::cout << std::endl;
-
 }
 
-
-//TODO QUIT -> fechar o fd
-//TODO desconectar clientes
+//TODO desconectar -> QUIT
+//TODO QUIT -> tirar dos canais (KICK), apagar do map de clientes, fechar o fd 
 //TODO handle size da msg -> ver qual o tamannho max que o server recebe
 void Server::verifyEvent(const pollfd &pfd) {
     if(pfd.revents == POLLIN) {
         Client *client = this->_Clients[pfd.fd];
         std::vector<char> temp(5000);
         static std::vector<char> buf(5000);
+
         std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size()) << "Event on Client " << GREEN << "[" << client->getSocketFD() << "]" << RESET <<  std::endl;
         std::cout << formatServerMessage(BOLD_PURPLE, "C.INFO", 0) << *client << std::endl;
+
         recv(client->getSocketFD(), temp.data(), temp.size(), 0);
-        std::cout << "TEMP: " << temp.data() << "." << std::endl;
-        std::vector<char>::iterator it = std::find(buf.begin(), buf.end(), '\0'); // Procurando por um caractere nulo (onde os dados atuais terminam)
+        //std::cout << "TEMP: " << temp.data() << "." << std::endl;
+        std::vector<char>::iterator it = std::find(buf.begin(), buf.end(), '\0');
         if (it == buf.end()) {
-            // Se não houver '\0' no vetor, use o fim como posição inicial
             it = buf.begin(); 
         }
         if (std::find(temp.begin(), temp.end(), '\n') == temp.end()){
@@ -130,6 +83,9 @@ void Server::verifyEvent(const pollfd &pfd) {
             this->handleCommand(*client, buf);
             buf.clear();
         }
+        if(!client->getRegistration())
+            client->registration();
+        std::cout << std::endl;
     }
 }
 

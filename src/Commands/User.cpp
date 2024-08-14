@@ -26,7 +26,7 @@ void User::execute() {
         msg.append(ERROR("userword incorrect"));
         send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
         //this->_server._toRemove.push_back(this->_client.getSocketFD()); //TODO condiçao para nao haver repetidos (funçao para adicionar ao toRemove)
-        this->_client.setAuthError(INVALIDUSER);
+        this->_client.setRegError(INVALIDUSER);
     }
     else{
         this->_client.setUsername(this->_username);

@@ -1,13 +1,18 @@
 #include "Includes.hpp"
 
 Client::Client(Server &server)
-    :   _authError(0),
+    :   _regError(0),
         _registration(false),
+        _cap(false),
+        _capEnd(false),
         _server(server) {}
 
-Client::Client(const Client &cpy): _authError(cpy.getAuthError()), _registration(cpy.getRegistration()), _server(cpy.getServer())
-{
-}
+Client::Client(const Client &cpy)
+    :   _regError(cpy.getRegError()), 
+        _registration(cpy.getRegistration()), 
+        _cap(cpy.getCap()),
+        _capEnd(cpy.getCapend()),
+        _server(cpy.getServer()) {}
 
 ACommand* Client::createCap(std::istringstream &input) {
     ACommand *command = new Cap(this->_server, *this);
@@ -81,6 +86,52 @@ std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
         }
     }
     return result;
+}
+
+void Client::welcome() {
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << "WELCOME" << std::endl;
+    std::string msg;
+    if (this->_password.empty()) {
+        msg.append(ERROR("No password was set"));
+        send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
+        //this->_toRemove.push_back(this->getSocketFD()); //TODO create function Server::addToRemove
+    } else {
+        msg.append(RPL_WELCOME(this->_server.getHostname(), "Internet Fight Club", this->getNick(), this->getUsername(), this->getIpaddr()));
+        msg.append(RPL_YOURHOST(this->_server.getHostname(), "servername", this->getNick(), "version"));
+        msg.append(RPL_CREATED(this->_server.getHostname(), this->_server.getCreationTime(), this->getNick()));
+        msg.append(RPL_MYINFO(this->_server.getHostname(), this->getNick(), "servername"));
+        msg.append(RPL_ISUPPORT(this->_server.getHostname(), this->getNick()));
+        msg.append(RPL_MOTDSTART(this->_server.getHostname(), this->getNick(), "servername"));
+        msg.append(RPL_MOTD(this->_server.getHostname(), "  ________________", this->getNick()));
+        msg.append(RPL_MOTD(this->_server.getHostname(), " /______________ /|", this->getNick()));
+        msg.append(RPL_MOTD(this->_server.getHostname(), "|  ___________  | |", this->getNick()));
+        msg.append(RPL_MOTD(this->_server.getHostname(), "| |           | | |", this->getNick()));
+        msg.append(RPL_MOTD(this->_server.getHostname(), "| |  ft_irc   | | |", this->getNick()));
+        msg.append(RPL_MOTD(this->_server.getHostname(), "| |    by:    | | |", this->getNick()));
+        msg.append(RPL_MOTD(this->_server.getHostname(), "| |           | | |", this->getNick()));
+        msg.append(RPL_MOTD(this->_server.getHostname(), "| |  r, j, d  | | |", this->getNick()));
+        msg.append(RPL_MOTD(this->_server.getHostname(), "| |___________| | |  ___", this->getNick()));
+        msg.append(RPL_MOTD(this->_server.getHostname(), "|_______________|/  /  /", this->getNick()));
+        msg.append(RPL_MOTD(this->_server.getHostname(), "                   /__/", this->getNick()));
+        msg.append(RPL_ENDOFMOTD(this->_server.getHostname(), this->getNick()));
+        send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
+    }
+}
+
+void    Client::registration(){
+    if(!this->_regError && !this->getNick().empty()
+                && !this->getRealname().empty() && !this->getUsername().empty()){
+                    if(this->_cap == false || (this->_cap == true && this->_capEnd == true)){
+                        this->welcome();
+                        this->setRegistration(true);
+                    }
+    }
+    //TODO disconnection depending on cap and every registration variable
+    //!Create class registration??
+    /*if(this->_ping > 5){
+    this->_toRemove.push_back(this->getSocketFD());
+    this->setAuthError(INVALIDCAP);
+    } */
 }
 
 // Função para verificar a conecção de clientes
