@@ -63,15 +63,22 @@ ACommand* Client::createPing(std::istringstream &input){
     return command;
 }
 
+ACommand* Client::createKick(std::istringstream &input){
+    ACommand *command = new Kick(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
 //TODO
+// KICK: EXECUTE
 
 std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
     std::string str(buf.begin(), buf.end());
     //std::cout << "BUF: " << str << std::endl;
     std::istringstream input(str);
-    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING"};
+    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING", "KICK"};
     int N = static_cast<int>(ARRAY_SIZE(commands));
-    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createCap, &Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin, &Client::createMode, &Client::createWho, &Client::createPing};
+    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createCap, &Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin, &Client::createMode, &Client::createWho, &Client::createPing, &Client::createKick};
     std::string cmd;
     std::string line;
     std::queue<ACommand *> result;
@@ -161,7 +168,7 @@ void Client::verifyConnection(Server &server, const pollfd &pfd) {
         // }
 
         std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", 0) << "Client " << GREEN << "[" << client->_socketFD << "]" << RESET
-                  << " connected from " << BOLD_CYAN << client_ip << RESET << std::endl << std::endl;
+                  << " connected from " << BOLD_CYAN << client_ip << RESET << std::endl;
         client->setIpAddr(client_ip);
 
         server.updateNFDs(client->_socketFD);

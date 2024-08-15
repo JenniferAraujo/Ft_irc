@@ -31,6 +31,7 @@ public:
     std::string getPassword() const { return _password; };
     std::string getCreationTime() const {return this->_creationTime; };
     std::map<std::string, Channel*> getChannels() const {return this->_Channels; };
+    std::map<int, Client*> getClients() const {return this->_Clients; };
 
     //aux
     void    removeClient(int fd);

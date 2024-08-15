@@ -36,6 +36,7 @@
 # include "Commands/Mode.hpp"
 # include "Commands/Cap.hpp"
 # include "Commands/Ping.hpp"
+# include "Commands/Kick.hpp"
 # define RED "\033[31m"
 # define GREEN "\033[32m"
 # define PURPLE "\033[35m"
@@ -76,5 +77,6 @@ std::string intToString(int value);
 std::string formatServerMessage(const std::string& color, const std::string& label, int clients);
 void showq(std::queue<ACommand *> gq);
 void showstringq(std::queue<std::string> gq);
+void showdoublestringq(std::queue<std::string> gq, std::queue<std::string> gq2);
 
 #endif // INCLUDES_HPP

@@ -19,6 +19,20 @@ public:
         else
             str = str.substr(first, last - first + 1);
     }
+    bool existentChannel(std::string channelName) {
+        std::map<std::string, Channel *>::iterator it = this->_server.getChannels().find(channelName);
+        if (it != this->_server.getChannels().end())
+            return true;
+        return false;
+    }
+    bool existentClient(std::string nickname) {
+        std::map<int, Client*>::iterator it;
+        for (it = this->_server.getClients().begin(); it != this->_server.getClients().end(); it++) {
+            if (it->second->getNick() == nickname)
+                return true;
+        }
+        return false;
+    }
     virtual void parsing(std::istringstream &input) = 0;
     virtual void execute() = 0;
     virtual void print() const = 0;

@@ -18,17 +18,13 @@ Server::Server(const Server &cpy): _port(cpy.getPort()), _password(cpy.getPasswo
 {
 }
 
-// Função para adicionar fds para a poll monitorizar
 void Server::updateNFDs(int fd)
 {
     pollfd pfd = {fd, POLLIN, 0};
     this->_NFDs.push_back(pfd);
 }
 
-void Server::updateClients(Client *client, int fd)
-{
-    this->_Clients[fd] = client;
-}
+void Server::updateClients(Client *client, int fd) { this->_Clients[fd] = client; }
 
 //*Proximos passos: canais e mensagens
 //Ideia para executar os cmds
@@ -42,7 +38,7 @@ void    Server::executeCommand(Client &client, ACommand *command){
 }
 
 void    Server::handleCommand(Client &client, std::vector<char> &buf){
-    std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
+    //std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
     std::queue<ACommand *> commands = client.createCommand(buf);
     if (commands.empty()) //Nao e um comando/ comando que nao tratamos
             return ;
@@ -57,7 +53,7 @@ void    Server::handleCommand(Client &client, std::vector<char> &buf){
 }
 
 //TODO desconectar -> QUIT
-//TODO QUIT -> tirar dos canais (KICK), apagar do map de clientes, fechar o fd 
+//TODO QUIT -> tirar dos canais (KICK), apagar do map de clientes, fechar o fd
 //TODO handle size da msg -> ver qual o tamannho max que o server recebe
 void Server::verifyEvent(const pollfd &pfd) {
     if(pfd.revents == POLLIN) {
@@ -72,7 +68,7 @@ void Server::verifyEvent(const pollfd &pfd) {
         //std::cout << "TEMP: " << temp.data() << "." << std::endl;
         std::vector<char>::iterator it = std::find(buf.begin(), buf.end(), '\0');
         if (it == buf.end()) {
-            it = buf.begin(); 
+            it = buf.begin();
         }
         if (std::find(temp.begin(), temp.end(), '\n') == temp.end()){
             buf.insert(it, temp.begin(), temp.end());
@@ -108,7 +104,6 @@ void Server::checkEvents(int nEvents) {
 
 void Server::run()
 {
-    // Inicializa a socket e da exception se der erro
     this->_socketFD = socket(AF_INET6, SOCK_STREAM, 0);
     if (this->_socketFD == -1)
         throw IRCException("[ERROR] Opening socket went wrong");
@@ -117,7 +112,6 @@ void Server::run()
         close(this->_socketFD);
         throw IRCException("[ERROR] Setting socket options went wrong");
     }
-    // Dá bind aquele mesma socket numa porta específica
     if (bind(this->_socketFD, reinterpret_cast<struct sockaddr *>(&this->_socketInfo), sizeof(this->_socketInfo)) == -1)
     {
         close(this->_socketFD);
@@ -125,7 +119,6 @@ void Server::run()
     }
     std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Socket with fd " << GREEN "[" << this->_socketFD << "]" << RESET
               << " bound on port " << YELLOW << this->_port << RESET << std::endl;
-    // Meter a socket a ouvir aquela porta para um máximo de X conecções
     if (listen(this->_socketFD, 10) == -1)
     {
         close(this->_socketFD);
@@ -134,9 +127,7 @@ void Server::run()
     std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Server listening only " << YELLOW << 10 << RESET << " connections"
               << std::endl;
     this->getServerInfo();
-    // Adicionar o FD da socket aqueles que a poll vai poder monitorizar
     this->updateNFDs(this->_socketFD);
-    // Ciclo para correr a poll para esperar eventos
     while (true)
     {
         switch (int nEvents = poll(this->_NFDs.data(), this->_NFDs.size(), -1))
@@ -147,8 +138,6 @@ void Server::run()
             throw IRCException("[ERROR] Poll connection timed out");
         default:
             this->checkEvents(nEvents);
-            //titleInfo("Clients Map");
-            //printMap(_Clients);
             break;
         }
     }

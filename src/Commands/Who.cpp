@@ -14,10 +14,7 @@ void Who::execute() {
     std::string msg, names;
     if (this->_server.getChannels().find(this->_channel) != this->_server.getChannels().end()) {
         Channel* channel = this->_server.getChannels()[this->_channel];
-        std::cout << "SEG AQUI" << std::endl;
-        std::cout << channel;
         std::map<int, Client*> clients = channel->getClients();
-        std::cout << "SEG NÃO PASSA DAQUI" << std::endl;
         for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
             Client* c = it->second;
             names.append(c->getNick());
