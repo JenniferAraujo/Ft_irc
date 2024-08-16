@@ -5,10 +5,12 @@
 
 class Nick: public ACommand {
 public:
-    Nick(const Server& server, const Client& client);
+    Nick(Server& server, Client& client);
     ~Nick() {};
     std::string getNick() { return _nick; };
     void parsing(std::istringstream &input);
+    void execute();
+    void print() const;
 
 private:
     Nick();

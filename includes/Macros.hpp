@@ -15,8 +15,20 @@ inline std::string RPL_YOURHOST(const std::string& client, const std::string& se
 inline std::string RPL_CREATED(const std::string& client, const std::string& dateTime, const std::string& nick) {
     return ":" + client + " 003 " + nick + " :This server was created " + dateTime + "\r\n";
 }
+inline std::string RPL_MYINFO(const std::string& client, const std::string& nick, const std::string& serverName) {
+    return ":" + client + " 004 " + nick + " " + serverName + " <version> NCcCtu\r\n";
+}
+inline std::string RPL_ISUPPORT(const std::string& client, const std::string& nick) {
+    return ":" + client + " 005 " + nick + " USERLEN=12 :are supported by this server\r\n";
+}
+inline std::string RPL_MOTDSTART(const std::string& client, const std::string& nick, const std::string& serverName) {
+    return ":" + client + " 375 " + nick + " :" + serverName + " Message of the day\r\n";
+}
 inline std::string RPL_MOTD(const std::string& client, const std::string& msg, const std::string& nick) {
     return ":" + client + " 372 " + nick + " :" + msg + "\r\n";
+}
+inline std::string RPL_ENDOFMOTD(const std::string& client, const std::string& nick) {
+    return ":" + client + " 376 " + nick + " :End of /MOTD command.\r\n";
 }
 inline std::string RPL_MODE(const std::string& client, const std::string& channel, const std::string& nick, const std::string& mode) {
     return ":" + client + " 324 " + nick + " #" + channel + " " + mode + "\r\n";
@@ -43,10 +55,5 @@ inline std::string ERROR(const std::string & msg) {
 inline std::string PRIV_MESSAGE(const std::string& nick, const std::string& user, const std::string& host, const std::string& nickIntended, const std::string& msg) {
     return ":" + nick + "!" + user + "@" + host + " PRIVMSG "  + nickIntended + ": " + msg + "\r\n";
 }
-//? :<Nick>!<User>@<Host> JOIN #<Channel>
-inline std::string JOIN_CHANNEL(const std::string& nick, const std::string& user, const std::string& host, const std::string& channel) {
-    return ":" + nick + "!" + user + "@" + host + " JOIN #" + channel + "\r\n";
-}
-
 
 #endif // MACROS_HPP

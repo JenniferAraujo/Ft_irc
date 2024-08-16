@@ -35,6 +35,7 @@
 # include "Commands/Who.hpp"
 # include "Commands/Mode.hpp"
 # include "Commands/Cap.hpp"
+# include "Commands/Ping.hpp"
 # define RED "\033[31m"
 # define GREEN "\033[32m"
 # define PURPLE "\033[35m"
@@ -49,7 +50,9 @@
 # define BOLD_CYAN "\033[1;36m"
 # define RESET "\033[0m"
 
+# define NEEDMOREPARAMS 461
 # define PASSWDMISMATCH 464
+
 # define INVALIDNICK 2
 # define INVALIDUSER 3
 # define INVALIDCAP  4
@@ -72,5 +75,6 @@ void titleInfo(std::string title);
 std::string intToString(int value);
 std::string formatServerMessage(const std::string& color, const std::string& label, int clients);
 void showq(std::queue<ACommand *> gq);
+void showstringq(std::queue<std::string> gq);
 
 #endif // INCLUDES_HPP

@@ -5,10 +5,12 @@
 
 class Mode: public ACommand {
 public:
-	Mode(const Server& server, const Client& client);
+	Mode(Server& server, Client& client);
 	~Mode() {};
 
-	void	parsing(std::istringstream &input);
+	void parsing(std::istringstream &input);
+	void execute();
+	void print() const;
 
 	std::string	getChannel() { return _channel; };
 	std::string getMode() const { return _mode; };

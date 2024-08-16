@@ -80,5 +80,4 @@ bool Channel::canJoin(const Client& client) const {
 	return false;
 }
 
-
 Channel::~Channel() {}
