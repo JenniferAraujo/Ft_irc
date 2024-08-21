@@ -3,15 +3,18 @@
 Client::Client(Server &server)
     :   _regError(0),
         _registration(false),
-        _cap(false),
-        _capEnd(false),
         _server(server) {}
 
+
 Client::Client(const Client &cpy)
-    :   _regError(cpy.getRegError()), 
-        _registration(cpy.getRegistration()), 
-        _cap(cpy.getCap()),
-        _capEnd(cpy.getCapend()),
+    :   _socketFD(cpy.getSocketFD()),
+        _regError(cpy.getRegError()),
+        _registration(cpy.getRegistration()),
+        _ipAddr(cpy.getIpaddr()),
+        _password(cpy.getPassword()),
+        _nick(cpy.getNick()),
+        _username(cpy.getUsername()),
+        _realname(cpy.getRealname()),
         _server(cpy.getServer()) {}
 
 ACommand* Client::createCap(std::istringstream &input) {
@@ -117,16 +120,15 @@ void Client::welcome() {
     }
 }
 
+/* If the server is waiting to complete a lookup of client information (such as hostname or ident for a username), 
+there may be an arbitrary wait at some point during registration. Servers SHOULD set a reasonable timeout for these lookups. */
 void    Client::registration(){
     if(!this->_regError && !this->getNick().empty()
                 && !this->getRealname().empty() && !this->getUsername().empty()){
-                    if(this->_cap == false || (this->_cap == true && this->_capEnd == true)){
                         this->welcome();
                         this->setRegistration(true);
-                    }
     }
-    //TODO disconnection depending on cap and every registration variable
-    //!Create class registration??
+    //TODO disconnection depending on timeout
     /*if(this->_ping > 5){
     this->_toRemove.push_back(this->getSocketFD());
     this->setAuthError(INVALIDCAP);

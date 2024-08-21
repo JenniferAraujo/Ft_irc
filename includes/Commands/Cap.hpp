@@ -11,14 +11,12 @@ class Cap: public ACommand {
 public:
     Cap(Server& server, Client& client);
     ~Cap() {};
-    bool    getEnd() const { return _end; };
     void parsing(std::istringstream &input);
     void execute();
     void print() const;
 
 private:
     Cap();
-    bool _end;
     //A minha ideia e ter uma variavel por argumento do commando
 };
 

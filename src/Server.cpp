@@ -14,9 +14,18 @@ Server::Server(const int &port, const std::string &password) : _port(port),
     this->_creationTime = getCurrentDateTime();
 }
 
-Server::Server(const Server &cpy): _port(cpy.getPort()), _password(cpy.getPassword())
-{
-}
+Server::Server(const Server &cpy)
+    :   _port(cpy.getPort()),
+        _password(cpy.getPassword()),
+        _hostName(cpy.getHostname()),
+        _hostIP(cpy.getHostIP()),
+        _socketFD(cpy.getSocketFD()),
+        _creationTime(cpy.getCreationTime()),
+        _socketInfo(cpy.getSocketInfo()),
+        _NFDs(cpy.getNFD()),
+        _Clients(cpy.getClients()),
+        _Channels(cpy.getChannels()),
+        _toRemove(cpy.getToRemove()) {}
 
 // Função para adicionar fds para a poll monitorizar
 void Server::updateNFDs(int fd)
@@ -33,7 +42,7 @@ void Server::updateClients(Client *client, int fd)
 //*Proximos passos: canais e mensagens
 //Ideia para executar os cmds
 void    Server::executeCommand(Client &client, ACommand *command){
-    if((!client.getRegistration() || client.getRegError()) && !registration_command(command->getName()))
+    if((!client.getRegistration() || client.getRegError()) && !command->isRegistration())
             std::cout << RED << "ERROR: " << RESET
             << "Auth not over or auth error -> client can not execute command: " <<
             command->getName() << ", and will be disconected soon" << std::endl;
@@ -42,9 +51,9 @@ void    Server::executeCommand(Client &client, ACommand *command){
 }
 
 void    Server::handleCommand(Client &client, std::vector<char> &buf){
-    std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
+    //std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
     std::queue<ACommand *> commands = client.createCommand(buf);
-    if (commands.empty()) //Nao e um comando/ comando que nao tratamos
+    if (commands.empty()) //Nao e um comando/ comando que nao tratamos -> //TODO - erro de unknoncommmand
             return ;
     std::cout << BOLD_GREEN << "[PRINT COMMANDS]\n" << RESET;
     showq(commands);

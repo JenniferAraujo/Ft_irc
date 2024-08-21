@@ -16,7 +16,7 @@ void Server::removeClient(int fd){
     }
 }
 
-// ISTO ESTÁ ERRADO PK NÃO SE PODE USAR A GETHOSTNAME, MAS SIM A GETHOSTBYNAME
+// FIXME - ISTO ESTÁ ERRADO PK NÃO SE PODE USAR A GETHOSTNAME, MAS SIM A GETHOSTBYNAME
 void Server::getServerInfo() {
     char hostbuffer[256];
     struct hostent *host_entry;
@@ -36,8 +36,9 @@ void Server::getServerInfo() {
     if (IPbuffer == NULL) {
         throw IRCException("[ERROR] inet_ntoa went wrong");
     }
-
-    this->_hostName = strdup(host_entry->h_name);
+    char *temp = strdup(host_entry->h_name);
+    this->_hostName = temp;
+    free(temp);
     this->_hostIP = IPbuffer;
 
     std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Hostname: " << this->_hostName << std::endl;
@@ -55,13 +56,4 @@ void Server::addInChannel(std::string channelName, Client &client) {
         this->_Channels[channelName] = channel;
         this->_Channels[channelName]->addClient(client);
     }
-}
-
-bool Server::registration_command(std::string str){
-    std::string commands[] = {"CAP", "PASS", "NICK", "USER"};
-    for (int i = 0; i < 4; i++) {
-        if(str == commands[i])
-            return true;
-    }
-    return false;
 }

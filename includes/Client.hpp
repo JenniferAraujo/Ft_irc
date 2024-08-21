@@ -2,6 +2,7 @@
 # define CLIENT_HPP
 
 # include "Includes.hpp"
+# define PASSWDMISMATCH 464
 
 class Server;
 
@@ -33,8 +34,6 @@ public:
     int             getSocketFD() const { return _socketFD; } ;
     int             getRegError() const { return _regError; } ;
     bool            getRegistration() const { return _registration; } ;
-    bool            getCap() const { return _cap; } ;
-    bool            getCapend() const { return _capEnd; } ;
     std::string     getPassword() const { return _password; } ;
     std::string     getNick() const { return _nick; } ;
     std::string     getUsername() const { return _username; } ;
@@ -51,16 +50,12 @@ public:
     void            setRealname(std::string realname) { _realname = realname; } ;
     void            setIpAddr(std::string ipAddr) { _ipAddr = ipAddr; } ;
     void            setRegistration(bool registration) { _registration = registration; } ;
-    void            setCapend(bool capEnd) { _capEnd = capEnd; } ;
-    void            setCap(bool cap) { _cap = cap; } ;
 
 private:
     Client();
     int                     _socketFD;
     int                     _regError; //Possivelmente mudar para bool
     bool                    _registration; //initialized as false
-    bool                    _cap;
-    bool                    _capEnd;
     std::string             _ipAddr;
     std::string             _password;
     std::string             _nick;

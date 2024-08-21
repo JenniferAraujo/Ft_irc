@@ -18,6 +18,7 @@ void Pass::execute() {
         return ;
     }
     if (this->_error) {
+        //FIXME - erro tem que ser dado na autenticação
         msg.append(ERROR("Password incorrect"));
         send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
         //this->_toRemove.push_back(this->_client.getSocketFD()); //TODO create function Server::addToRemove

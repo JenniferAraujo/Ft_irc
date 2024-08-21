@@ -27,24 +27,27 @@ public:
     int getSocketFD() const { return this->_socketFD; };
     int getPort() const { return this->_port; };
     std::string getHostname() const { return this->_hostName; };
-    sockaddr_in6 getSocketInfo() const { return this->_socketInfo; };
+    std::string getHostIP() const { return this->_hostIP; };
     std::string getPassword() const { return _password; };
     std::string getCreationTime() const {return this->_creationTime; };
+    sockaddr_in6 getSocketInfo() const { return this->_socketInfo; };
+    std::vector<pollfd> getNFD() const { return this->_NFDs; };
+    std::map<int, Client*> getClients() const { return this->_Clients; };
     std::map<std::string, Channel*> getChannels() const {return this->_Channels; };
+    std::vector <int>  getToRemove() const { return this->_toRemove; };
 
     //aux
     void    removeClient(int fd);
     void    getServerInfo();
     void    addInChannel(std::string channelName, Client &client);
-    static bool    registration_command(std::string str);
 
 private:
     Server();
 
     int                                 _port;
     std::string                         _password;
-    char *                              _hostName;
-    char *                              _hostIP;
+    std::string                         _hostName;
+    std::string                         _hostIP;
     int                                 _socketFD;
     std::string                         _creationTime;
     sockaddr_in6                        _socketInfo;
