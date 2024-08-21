@@ -93,46 +93,54 @@ std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
 void Client::welcome() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << "WELCOME" << std::endl;
     std::string msg;
-    if (this->_password.empty()) {
-        msg.append(ERROR("No password was set"));
-        send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
-        //this->_toRemove.push_back(this->getSocketFD()); //TODO create function Server::addToRemove
-    } else {
-        msg.append(RPL_WELCOME(this->_server.getHostname(), "Internet Fight Club", this->getNick(), this->getUsername(), this->getIpaddr()));
-        msg.append(RPL_YOURHOST(this->_server.getHostname(), "servername", this->getNick(), "version"));
-        msg.append(RPL_CREATED(this->_server.getHostname(), this->_server.getCreationTime(), this->getNick()));
-        msg.append(RPL_MYINFO(this->_server.getHostname(), this->getNick(), "servername"));
-        msg.append(RPL_ISUPPORT(this->_server.getHostname(), this->getNick()));
-        msg.append(RPL_MOTDSTART(this->_server.getHostname(), this->getNick(), "servername"));
-        msg.append(RPL_MOTD(this->_server.getHostname(), "  ________________", this->getNick()));
-        msg.append(RPL_MOTD(this->_server.getHostname(), " /______________ /|", this->getNick()));
-        msg.append(RPL_MOTD(this->_server.getHostname(), "|  ___________  | |", this->getNick()));
-        msg.append(RPL_MOTD(this->_server.getHostname(), "| |           | | |", this->getNick()));
-        msg.append(RPL_MOTD(this->_server.getHostname(), "| |  ft_irc   | | |", this->getNick()));
-        msg.append(RPL_MOTD(this->_server.getHostname(), "| |    by:    | | |", this->getNick()));
-        msg.append(RPL_MOTD(this->_server.getHostname(), "| |           | | |", this->getNick()));
-        msg.append(RPL_MOTD(this->_server.getHostname(), "| |  r, j, d  | | |", this->getNick()));
-        msg.append(RPL_MOTD(this->_server.getHostname(), "| |___________| | |  ___", this->getNick()));
-        msg.append(RPL_MOTD(this->_server.getHostname(), "|_______________|/  /  /", this->getNick()));
-        msg.append(RPL_MOTD(this->_server.getHostname(), "                   /__/", this->getNick()));
-        msg.append(RPL_ENDOFMOTD(this->_server.getHostname(), this->getNick()));
-        send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
-    }
+    msg.append(RPL_WELCOME(this->_server.getHostname(), "Internet Fight Club", this->getNick(), this->getUsername(), this->getIpaddr()));
+    msg.append(RPL_YOURHOST(this->_server.getHostname(), "servername", this->getNick(), "version"));
+    msg.append(RPL_CREATED(this->_server.getHostname(), this->_server.getCreationTime(), this->getNick()));
+    msg.append(RPL_MYINFO(this->_server.getHostname(), this->getNick(), "servername"));
+    msg.append(RPL_ISUPPORT(this->_server.getHostname(), this->getNick()));
+    msg.append(RPL_MOTDSTART(this->_server.getHostname(), this->getNick(), "servername"));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "  ________________", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), " /______________ /|", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "|  ___________  | |", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "| |           | | |", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "| |  ft_irc   | | |", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "| |    by:    | | |", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "| |           | | |", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "| |  r, j, d  | | |", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "| |___________| | |  ___", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "|_______________|/  /  /", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "                   /__/", this->getNick()));
+    msg.append(RPL_ENDOFMOTD(this->_server.getHostname(), this->getNick()));
+    send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
 }
 
 /* If the server is waiting to complete a lookup of client information (such as hostname or ident for a username), 
 there may be an arbitrary wait at some point during registration. Servers SHOULD set a reasonable timeout for these lookups. */
 void    Client::registration(){
-    if(!this->_regError && !this->getNick().empty()
-                && !this->getRealname().empty() && !this->getUsername().empty()){
-                        this->welcome();
-                        this->setRegistration(true);
+    if(this->_regError || this->getNick().empty()
+                || this->getRealname().empty() ||this->getUsername().empty()){
+                    return ;
     }
+    std::string msg;
+    if (this->_password.empty()) {
+        msg = ERR_UNKNOWNERROR(this->_server.getHostname(), this->_nick, "", "Missing password");
+        send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
+        //this->_toRemove.push_back(this->getSocketFD()); //TODO create function Server::addToRemove
+        return ;
+    }
+    if (this->_regError == PASSWDMISMATCH) {
+        msg = ERR_PASSWDMISMATCH(this->_server.getHostname(), this->_nick);
+        send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
+        //this->_toRemove.push_back(this->getSocketFD()); //TODO create function Server::addToRemove
+        return ;
+    }
+    this->welcome();
+    this->setRegistration(true);
+    //this->_toRemove.push_back(this->_client.getSocketFD()); //TODO create function Server::addToRemove
     //TODO disconnection depending on timeout
     /*if(this->_ping > 5){
-    this->_toRemove.push_back(this->getSocketFD());
-    this->setAuthError(INVALIDCAP);
-    } */
+        this->_toRemove.push_back(this->getSocketFD());
+    }*/
 }
 
 // Função para verificar a conecção de clientes

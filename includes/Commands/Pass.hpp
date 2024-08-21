@@ -2,6 +2,11 @@
 # define PASS_HPP
 
 # include "Includes.hpp"
+# define PASSWDMISMATCH 464
+
+inline std::string ERR_PASSWDMISMATCH(const std::string& client, const std::string& nick) {
+    return ":" + client + " 462 " + nick + " :Password incorrect\r\n";
+}
 
 class Pass: public ACommand {
 public:

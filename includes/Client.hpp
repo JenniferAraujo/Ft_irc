@@ -2,7 +2,6 @@
 # define CLIENT_HPP
 
 # include "Includes.hpp"
-# define PASSWDMISMATCH 464
 
 class Server;
 

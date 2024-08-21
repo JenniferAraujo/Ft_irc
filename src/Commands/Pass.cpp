@@ -12,16 +12,13 @@ void Pass::parsing(std::istringstream &input){
 void Pass::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << this->_name << std::endl;
     std::string msg;
+    //TODO - validaçoes de erros parsing
     if(this->_client.getRegistration()){
-        msg.append(ERROR("You may not reregister"));
+        msg.append(ERR_ALREADYREGISTERED(this->_server.getHostname(), this->_client.getNick()));
         send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
         return ;
     }
     if (this->_error) {
-        //FIXME - erro tem que ser dado na autenticação
-        msg.append(ERROR("Password incorrect"));
-        send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        //this->_toRemove.push_back(this->_client.getSocketFD()); //TODO create function Server::addToRemove
         this->_client.setRegError(PASSWDMISMATCH);
     }
     else

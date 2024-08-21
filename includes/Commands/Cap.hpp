@@ -3,10 +3,6 @@
 
 # include "Includes.hpp"
 
-inline std::string CLIENT_NEGOTIATION(const std::string& client) {
-    return ":" + client + " CAP * LS :\r\n";
-}
-
 class Cap: public ACommand {
 public:
     Cap(Server& server, Client& client);
