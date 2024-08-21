@@ -4,7 +4,7 @@ Join::Join(Server& server, Client& client): ACommand("JOIN", server, client) {};
 
 void Join::parsingToken(std::string token, int n) {
 	if (n == 0) {
-        if (token[0] == '#') //TODO - Mudar a lógica para usar as queue
+        if (token[0] == '#')
             this->_channels.push(token);	 //JOIN #a //JOIN #a,#b
     	else
     	    this->_error = BADCHANNELKEY;	 //JOIN a //JOIN a,#b //JOIN #a,b
@@ -21,6 +21,10 @@ void Join::parsing(std::istringstream &input){
 	int n = 0;
     while (std::getline(input, token, ' ') && n < 2) {
         this->trimChar(token, '\r');
+        if (token.empty()) {
+            this->_error = NEEDMOREPARAMS;  //JOIN  #a
+            return;
+        }
         int count = std::count(token.begin(), token.end(), ',');
         if (count == 0)
 			this->parsingToken(token, n);

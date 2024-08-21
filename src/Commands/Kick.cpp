@@ -7,6 +7,10 @@ void Kick::parsing(std::istringstream &input) {
     int n = 0;
     while (std::getline(input, token, ' ') || n < 3) {
         this->trimChar(token, '\r');
+        /*if (token.empty()) {
+            this->_error = NEEDMOREPARAMS;      //KICK  #a Diogo (CONFIRMAR ISTO)
+            return;
+        }*/
         if (n == 0) {
             if (token[0] == '#') {
                 if (this->existentChannel(token))
