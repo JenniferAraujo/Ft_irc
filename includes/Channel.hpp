@@ -31,8 +31,8 @@ public:
 
 	void	setPassword(const std::string& password) { _password = password; }
 	void	setUserLimit(int limit) { _userLimit = limit; }
-	void	addOperator(int clientId, Client* client) { _operators.insert(std::make_pair(clientId, client)); }
-	void	removeOperator(int clientId) { _operators.erase(clientId); }
+	void	addOperator(int clientId, Client* client);
+	void	removeOperator(int clientId);
 	void	addClient(int clientId, Client* client) { _Clients[clientId] = client; }
 	
 private:

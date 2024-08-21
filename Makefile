@@ -15,7 +15,7 @@ CXX				= c++
 RM 				= rm -rf
 
 #-----------------------------------  FLAGS  -----------------------------------
-CXXFLAGS		= -Wall -Wextra -Werror -std=c++98
+CXXFLAGS		= -Wall -Wextra -Werror -std=c++98 -fsanitize=address
 NPD				= --no-print-directory
 
 #--------------------------------- FILES  ---------------------------------------
@@ -64,7 +64,7 @@ run: all
 	clear && ./ircserv 9090 123
 
 val:
-	clear && valgrind ./ircserv 8080 123
+	clear && valgrind ./ircserv 9090 123
 
 .SILENT:
 

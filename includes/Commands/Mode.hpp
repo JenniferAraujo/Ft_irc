@@ -21,12 +21,13 @@ private:
 	std::string _channel;
 	std::string _mode;
 	std::string _password;
+	std::string	_parameters;
 	int			_userLimit;
 	int			_clientId;
 	
 	Mode();
 	bool	isValidMode(char mode);
-	void	extractKeyAndLimit(std::istringstream &input);
+	void	extractKeyAndLimit();
 };
 
 #endif // MODE_HPP
