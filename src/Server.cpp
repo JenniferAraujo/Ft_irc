@@ -42,10 +42,11 @@ void Server::updateClients(Client *client, int fd)
 //*Proximos passos: canais e mensagens
 //Ideia para executar os cmds
 void    Server::executeCommand(Client &client, ACommand *command){
-    if((!client.getRegistration() || client.getRegError()) && !command->isRegistration())
+    //REVIEW - Nao sei se esta condição é necessaria -> if((!client.getRegistration() || client.getRegError()) && !command->isRegistration())
+    if(!client.getRegistration() && !command->isRegistration())
             std::cout << RED << "ERROR: " << RESET
-            << "Auth not over or auth error -> client can not execute command: " <<
-            command->getName() << ", and will be disconected soon" << std::endl;
+            << "Auth not over -> client can not execute command: " <<
+            command->getName() << std::endl;
     else
         command->execute();
 }

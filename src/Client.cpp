@@ -65,7 +65,6 @@ ACommand* Client::createPing(std::istringstream &input){
     return command;
 }
 
-//TODO
 
 std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
     std::string str(buf.begin(), buf.end());
@@ -117,26 +116,25 @@ void Client::welcome() {
 /* If the server is waiting to complete a lookup of client information (such as hostname or ident for a username), 
 there may be an arbitrary wait at some point during registration. Servers SHOULD set a reasonable timeout for these lookups. */
 void    Client::registration(){
-    if(this->_regError || this->getNick().empty()
-                || this->getRealname().empty() ||this->getUsername().empty()){
+    if(this->getNick().empty()
+                || this->getRealname().empty() ||this->getUsername().empty())
                     return ;
-    }
     std::string msg;
+    this->setRegistration(true);
     if (this->_password.empty()) {
         msg = ERR_UNKNOWNERROR(this->_server.getHostname(), this->_nick, "", "Missing password");
         send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
         //this->_toRemove.push_back(this->getSocketFD()); //TODO create function Server::addToRemove
+        this->_regError = UNKNOWNERROR;
         return ;
     }
     if (this->_regError == PASSWDMISMATCH) {
         msg = ERR_PASSWDMISMATCH(this->_server.getHostname(), this->_nick);
         send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
-        //this->_toRemove.push_back(this->getSocketFD()); //TODO create function Server::addToRemove
+        //this->_toRemove.push_back(this->getSocketFD());
         return ;
     }
     this->welcome();
-    this->setRegistration(true);
-    //this->_toRemove.push_back(this->_client.getSocketFD()); //TODO create function Server::addToRemove
     //TODO disconnection depending on timeout
     /*if(this->_ping > 5){
         this->_toRemove.push_back(this->getSocketFD());
