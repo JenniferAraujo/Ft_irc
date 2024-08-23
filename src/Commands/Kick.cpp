@@ -7,41 +7,44 @@ void Kick::parsing(std::istringstream &input) {
     int n = 0;
     while (std::getline(input, token, ' ') || n < 3) {
         this->trimChar(token, '\r');
-        /*if (token.empty()) {
-            this->_error = NEEDMOREPARAMS;      //KICK  #a Diogo (CONFIRMAR ISTO)
+        if (token.empty()) {
+            this->_error = NEEDMOREPARAMS;          //KICK  #a Diogo
             return;
-        }*/
-        if (n == 0) {
-            if (token[0] == '#') {
-                if (this->existentChannel(token))
-                    this->_channel = token;     //KICK #a Diogo
+        }
+        switch (n)
+        {
+            case 0:
+                if (token[0] == '#') {
+                    if (this->existentChannel(token))
+                        this->_channel = token;     //KICK #a Diogo
+                    else {
+                        this->_error = NOSUCHCHANNEL;
+                        return ;
+                    }
+                }
                 else {
-                    this->_error = NOSUCHCHANNEL;
+                    this->_error = BADCHANMASK;     //KICK a
                     return ;
                 }
-            }
-            else {
-                this->_error = BADCHANMASK;     //KICK a
-                return ;
-            }
-        }
-        else if (n == 1) {
-            if (this->existentClient(token))
-                this->_client = token;			//KICK #a Diogo
-            else {
-                this->_error = USERNOTINCHANNEL;
-                return ;
-            }
-        }
-        else if (n == 2) {
-			if (token[0] == ':') {
-            	token.erase(token.begin());
-            	this->_reason = token;			//KICK #a Diogo :idk
-			}
-			else {
-				this->_error = NEEDMOREPARAMS;	//KICK #a Diogo idk
-				return ;
-			}
+                break;
+            case 1:
+                if (this->existentClient(token))
+                    this->_client = token;			//KICK #a Diogo
+                else {
+                    this->_error = USERNOTINCHANNEL;
+                    return ;
+                }
+                break;
+            case 2:
+                if (token[0] == ':') {
+                    token.erase(token.begin());
+                    this->_reason = token;			//KICK #a Diogo :idk
+                }
+                else {
+                    this->_error = NEEDMOREPARAMS;	//KICK #a Diogo idk
+                    return ;
+                }
+                break;
         }
         n++;
     }

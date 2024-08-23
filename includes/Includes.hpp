@@ -38,6 +38,7 @@
 # include "Commands/Cap.hpp"
 # include "Commands/Ping.hpp"
 # include "Commands/Kick.hpp"
+# include "Commands/Invite.hpp"
 # define RED "\033[31m"
 # define GREEN "\033[32m"
 # define PURPLE "\033[35m"
@@ -54,6 +55,7 @@
 
 # define NEEDMOREPARAMS 461
 # define PASSWDMISMATCH 464
+# define NOSUCHNICK 401
 
 # define INVALIDNICK 2
 # define INVALIDUSER 3

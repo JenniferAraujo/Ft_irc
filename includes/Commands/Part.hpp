@@ -12,12 +12,14 @@ public:
     void execute();
     void print() const;
 
-    void parsingToken(std::string token);
+    void parsingToken(std::string token, int n);
     std::queue<std::string> getChannels() { return _channels; };
+    std::string getMessage() { return _message; };
 
 private:
     Part();
     std::queue<std::string> _channels;
+    std::string             _message;
 };
 
 #endif // PART_HPP

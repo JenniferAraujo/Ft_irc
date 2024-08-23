@@ -75,17 +75,24 @@ ACommand* Client::createPart(std::istringstream &input){
     return command;
 }
 
+ACommand* Client::createInvite(std::istringstream &input){
+    ACommand *command = new Invite(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
 //TODO
 // KICK: EXECUTE
 // PART: EXECUTE
+// INVITE: EXECUTE
 
 std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
     std::string str(buf.begin(), buf.end());
     //std::cout << "BUF: " << str << std::endl;
     std::istringstream input(str);
-    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING", "KICK", "PART"};
+    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING", "KICK", "PART", "INVITE"};
     int N = static_cast<int>(ARRAY_SIZE(commands));
-    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createCap, &Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin, &Client::createMode, &Client::createWho, &Client::createPing, &Client::createKick, &Client::createPart};
+    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createCap, &Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin, &Client::createMode, &Client::createWho, &Client::createPing, &Client::createKick, &Client::createPart, &Client::createInvite};
     std::string cmd;
     std::string line;
     std::queue<ACommand *> result;

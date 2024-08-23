@@ -30,6 +30,7 @@ public:
     ACommand*                   createPing(std::istringstream &input);
     ACommand*                   createKick(std::istringstream &input);
     ACommand*                   createPart(std::istringstream &input);
+    ACommand*                   createInvite(std::istringstream &input);
 
     //getters
     int             getSocketFD() const { return _socketFD; } ;

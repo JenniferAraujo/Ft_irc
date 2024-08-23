@@ -37,7 +37,6 @@ void Join::parsing(std::istringstream &input){
         }
 		n++;
     }
-	// caso para se receber apenas um [JOIN], verificar se efetivamente entra aqui
 	if (this->_channels.empty())
 		this->_error = NEEDMOREPARAMS;
 }
