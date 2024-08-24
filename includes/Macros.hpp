@@ -19,7 +19,7 @@ inline std::string RPL_MYINFO(const std::string& client, const std::string& nick
     return ":" + client + " 004 " + nick + " " + serverName + " <version> NCcCtu\r\n";
 }
 inline std::string RPL_ISUPPORT(const std::string& client, const std::string& nick) {
-    return ":" + client + " 005 " + nick + " USERLEN=12 :are supported by this server\r\n";
+    return ":" + client + " 005 " + nick + " USERLEN=" + USERLEN + " :are supported by this server\r\n";
 }
 inline std::string RPL_MOTDSTART(const std::string& client, const std::string& nick, const std::string& serverName) {
     return ":" + client + " 375 " + nick + " :" + serverName + " Message of the day\r\n";

@@ -5,11 +5,11 @@ Pass::Pass(Server& server, Client& client): ACommand("PASS", server, client) {};
 void Pass::parsing(std::istringstream &input){
     std::getline(input, this->_pass, ' ');
     if (this->_pass.empty())
-        this->_error = NEEDMOREPARAMS;
+        this->_error = NEEDMOREPARAMS; //PASS
     else{
         this->trimChar(this->_pass, '\r');
         if(_server.getPassword() != this->_pass)
-            this->_error = PASSWDMISMATCH;
+            this->_error = PASSWDMISMATCH; //PASS wrongpass
     }
 }
 

@@ -6,11 +6,11 @@ void Cap::parsing(std::istringstream &input){
 	std::string str;
     std::getline(input, str, ' ');
     if (str.empty())
-        this->_error = NEEDMOREPARAMS;
+        this->_error = NEEDMOREPARAMS; //CAP
     else {
         this->trimChar(str, '\r');
         if(str != "LS")
-            this->_error = UNKNOWNCOMMAND;
+            this->_error = UNKNOWNCOMMAND; //CAP dsjag
     }
 }
 

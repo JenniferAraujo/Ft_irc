@@ -131,7 +131,6 @@ void    Client::registration(){
         msg = ERR_UNKNOWNERROR(this->_server.getHostname(), this->_nick, "", "Missing password");
         send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
         this->_server.updateToRemove(this->_socketFD, "Connection Registration Failed");
-        this->_regError = UNKNOWNERROR;
         return ;
     }
     this->welcome();

@@ -25,7 +25,6 @@ inline std::string ERR_ALREADYREGISTERED(const std::string& client, const std::s
     return ":" + client + " 462 " + nick + " :You may not reregister\r\n";
 }
 
-
 //A class abstrata ACommand tem uma string com o nome do comando e um int que guarda o erro de comando, se necessario, inicializado a 0 -> sem erro
 class ACommand {
 public:
@@ -57,10 +56,8 @@ public:
 
 protected:
     std::string _name;
-    //Nao sao referencias nem ponteiros, servem so para ir buscar info, nao para modificar
     Server      &_server;
     Client      &_client;
-    //TODO criar macros
     int         _error;
 };
 

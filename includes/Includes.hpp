@@ -50,8 +50,8 @@
 # define BOLD_CYAN "\033[1;36m"
 # define RESET "\033[0m"
 
-# define INVALIDNICK 2
-# define INVALIDUSER 3
+# define MAXCHARS       30
+# define USERLEN        12
 
 # define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 

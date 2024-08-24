@@ -59,3 +59,11 @@ void Server::addInChannel(std::string channelName, Client &client) {
         this->_Channels[channelName]->addClient(client);
     }
 }
+
+Client    *Server::findClient(std::string nick){
+    for (std::map <int, Client *>::iterator it = this->_Clients.begin(); it != _Clients.end(); ++it) {
+        if(it->second->getNick() == nick)
+            return it->second;
+    }
+    return NULL;
+}

@@ -64,7 +64,7 @@ void    Server::executeCommand(Client &client, ACommand *command){
 }
 
 void    Server::handleCommand(Client &client, std::vector<char> &buf){
-    //std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
+    std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
     std::queue<ACommand *> commands = client.createCommand(buf);
     if (commands.empty()) //Nao e um comando/ comando que nao tratamos -> //TODO - erro de unknoncommmand
             return ;

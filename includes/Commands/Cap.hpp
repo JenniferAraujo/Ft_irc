@@ -13,7 +13,6 @@ public:
 
 private:
     Cap();
-    //A minha ideia e ter uma variavel por argumento do commando
 };
 
 #endif // CAP_HPP
