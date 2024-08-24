@@ -1,9 +1,11 @@
 #include "Includes.hpp"
 
-void Server::removeClient(int fd){
+void Server::removeClient(int fd, std::string error){
     std::cout << "Removing Client with FD: " << fd << std::endl;
     if(this->_Clients.find(fd) != this->_Clients.end()){
-        std::cout << "Founded client: " << this->_Clients[fd]->getNick() << std::endl;
+        std::cout << "Found client: " << this->_Clients[fd]->getNick() << std::endl;
+        std::string msg = ERROR(error);
+        send(this->_Clients[fd]->getSocketFD(), msg.c_str(), msg.length(), 0);
         close(fd);
         delete this->_Clients[fd];
         this->_Clients.erase(fd);

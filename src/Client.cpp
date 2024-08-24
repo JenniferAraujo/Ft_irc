@@ -121,17 +121,17 @@ void    Client::registration(){
                     return ;
     std::string msg;
     this->setRegistration(true);
-    if (this->_password.empty()) {
-        msg = ERR_UNKNOWNERROR(this->_server.getHostname(), this->_nick, "", "Missing password");
-        send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
-        //this->_toRemove.push_back(this->getSocketFD()); //TODO create function Server::addToRemove
-        this->_regError = UNKNOWNERROR;
-        return ;
-    }
     if (this->_regError == PASSWDMISMATCH) {
         msg = ERR_PASSWDMISMATCH(this->_server.getHostname(), this->_nick);
         send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
-        //this->_toRemove.push_back(this->getSocketFD());
+        this->_server.updateToRemove(this->_socketFD, "Connection Registration Failed");
+        return ;
+    }
+    if (this->_password.empty()) {
+        msg = ERR_UNKNOWNERROR(this->_server.getHostname(), this->_nick, "", "Missing password");
+        send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
+        this->_server.updateToRemove(this->_socketFD, "Connection Registration Failed");
+        this->_regError = UNKNOWNERROR;
         return ;
     }
     this->welcome();

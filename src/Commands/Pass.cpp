@@ -19,9 +19,10 @@ void Pass::execute() {
     //TODO - validaçoes de erros parsing
     if (this->_error == NEEDMOREPARAMS){
         if (this->_client.getNick().empty())
-            msg.append(ERROR("Not enough parameters"));
+            msg.append(ERR_NEEDMOREPARAMS(this->_server.getHostname(), "*", this->_name));
         else
             msg.append(ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name));
+        send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
         return ;
     }
     if(this->_client.getRegistration()){

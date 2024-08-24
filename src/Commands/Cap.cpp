@@ -20,23 +20,19 @@ void Cap::execute() {
     switch (this->_error) {
         case NEEDMOREPARAMS:
             if (this->_client.getNick().empty())
-                msg.append(ERROR("Not enough parameters"));
+                msg.append(ERR_NEEDMOREPARAMS(this->_server.getHostname(), "*", this->_name));
             else
                 msg.append(ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name));
             break;
         case UNKNOWNCOMMAND:
             if (this->_client.getNick().empty())
-                msg.append(ERROR("Unknown command"));
+                msg.append(ERR_UNKNOWNCOMMAND(this->_server.getHostname(), "*" , this->_name));
             else
                 msg.append(ERR_UNKNOWNCOMMAND(this->_server.getHostname(), this->_client.getNick(), this->_name));
             break;
         default:
-            if(this->_client.getRegistration()){
-                if (this->_client.getNick().empty())
-                    msg.append(ERROR("You may not reregister"));
-                else
+            if(this->_client.getRegistration())
                     msg.append(ERR_ALREADYREGISTERED(this->_server.getHostname(), this->_client.getNick()));
-            }
             break;
     }
     send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);

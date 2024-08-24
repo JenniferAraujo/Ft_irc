@@ -19,20 +19,15 @@ std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs)
     return out;
 }
 
-/*     int                     _socketFD;
-    bool                    _validCmd;
-    std::string             _nick;
-    std::string             _name;
-    std::string             _user;
-    std::string             _realName;
-    std::string             _command; */
-//O nick e o user só imprime com \n e eu n percebo porque \n
 std::ostream& operator<<(std::ostream& out, const Client &client)
 {
     out << "FD: " << BOLD_GREEN << client.getSocketFD() << RESET
     << "\t| Nick: " << client.getNick()
     << " | Username: " << client.getUsername()
-    << " | Realname: " << client.getRealname();
+    << " | Realname: " << client.getRealname()
+    << " | Password: " << client.getPassword()
+    << " | Reg Error: " << client.getRegError()
+    << " | Registration bool: " << client.getRegistration();
     return(out);
 }
 

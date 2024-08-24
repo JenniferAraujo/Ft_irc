@@ -17,6 +17,7 @@ public:
     void getAddrInfo();
     void updateNFDs(int fd);
     void updateClients(Client *client, int fd);
+    void updateToRemove(int fd, std::string error);
     void checkEvents(int nEvents);
     void verifyEvent(const pollfd &pfd);
     void welcome(Client &client);
@@ -34,10 +35,10 @@ public:
     std::vector<pollfd> getNFD() const { return this->_NFDs; };
     std::map<int, Client*> getClients() const { return this->_Clients; };
     std::map<std::string, Channel*> getChannels() const {return this->_Channels; };
-    std::vector <int>  getToRemove() const { return this->_toRemove; };
+    std::map <int, std::string>  getToRemove() const { return this->_toRemove; };
 
     //aux
-    void    removeClient(int fd);
+    void    removeClient(int fd, std::string error);
     void    getServerInfo();
     void    addInChannel(std::string channelName, Client &client);
 
@@ -54,8 +55,7 @@ private:
     std::vector<pollfd>                 _NFDs;
     std::map<int, Client*>              _Clients;
     std::map<std::string, Channel*>     _Channels;
-    std::vector <int>                   _toRemove;
-
+    std::map <int, std::string>         _toRemove;
 };
 
 #endif // SERVER_HPP

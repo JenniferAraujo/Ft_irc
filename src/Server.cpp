@@ -39,6 +39,18 @@ void Server::updateClients(Client *client, int fd)
     this->_Clients[fd] = client;
 }
 
+void Server::updateToRemove(int fd, std::string error)
+{
+    this->_toRemove[fd] = error;
+}
+
+/* ERR_NOTREGISTERED (451)
+
+  "<client> :You have not registered"
+
+Returned when a client command cannot be parsed as they are not yet registered. Servers offer only a limited subset of commands until clients are properly registered to the server. The text used in the last param of this message may vary.
+ */
+
 //*Proximos passos: canais e mensagens
 //Ideia para executar os cmds
 void    Server::executeCommand(Client &client, ACommand *command){
@@ -71,6 +83,7 @@ void    Server::handleCommand(Client &client, std::vector<char> &buf){
 //TODO handle size da msg -> ver qual o tamannho max que o server recebe
 void Server::verifyEvent(const pollfd &pfd) {
     if(pfd.revents == POLLIN) {
+        printMap(_Clients);
         Client *client = this->_Clients[pfd.fd];
         std::vector<char> temp(5000);
         static std::vector<char> buf(5000);
@@ -111,9 +124,10 @@ void Server::checkEvents(int nEvents) {
             ? Client::verifyConnection(*this, *it)
             : this->verifyEvent(*it);
     }
-    //for (std::vector<int>::iterator it = toRemove.begin(); it != toRemove.end(); ++it) {
-    //    this->removeClient(*it);
-    //}
+    for (std::map <int, std::string>::iterator it = this->_toRemove.begin(); it != _toRemove.end(); ++it) {
+        this->removeClient(it->first, it->second);
+    }
+    this->_toRemove.clear();
 }
 
 void Server::run()

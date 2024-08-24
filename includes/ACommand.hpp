@@ -16,6 +16,8 @@ inline std::string ERR_UNKNOWNCOMMAND(const std::string& client, const std::stri
 }
 
 inline std::string ERR_UNKNOWNERROR(const std::string& client, const std::string& nick, const std::string& command, const std::string& info) {
+    if(command.empty())
+        return ":" + client + " 421 " + nick + " :" + info + "\r\n";
     return ":" + client + " 400 " + nick + " " + command + " :" + info + "\r\n";
 }
 
