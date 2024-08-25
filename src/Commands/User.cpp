@@ -8,16 +8,16 @@ void User::parsing(std::istringstream &input){
     if(this->_username.empty())
         _error = NEEDMOREPARAMS; //USER
     if(this->_username.length() > USERLEN - 1)
-        this->_username = this->_username.substr(0, USERLEN -1);
-    this->_username.insert(this->_username.begin(), '~');
+        this->_username = this->_username.substr(0, USERLEN -1); //usernamemuitolongo => usernamemui
+    this->_username.insert(this->_username.begin(), '~'); //username => ~username
     std::getline(input, str, ':');
     if(std::cin.eof() || str[0] != '0' || str[2] != '*'){
-        _error = NEEDMOREPARAMS;
+        _error = NEEDMOREPARAMS; //nao tem a formataçao "0 * :""
         return ;
     }
     std::getline(input, this->_realname);
     if(this->_realname.empty())
-        _error = NEEDMOREPARAMS;
+        _error = NEEDMOREPARAMS; //USER 0 * :
     this->trimChar(this->_realname, '\r');
 }
 
