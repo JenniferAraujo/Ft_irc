@@ -83,7 +83,6 @@ void    Server::handleCommand(Client &client, std::vector<char> &buf){
 //TODO handle size da msg -> ver qual o tamannho max que o server recebe
 void Server::verifyEvent(const pollfd &pfd) {
     if(pfd.revents == POLLIN) {
-        printMap(_Clients);
         Client *client = this->_Clients[pfd.fd];
         std::vector<char> temp(5000);
         static std::vector<char> buf(5000);
@@ -109,7 +108,9 @@ void Server::verifyEvent(const pollfd &pfd) {
         if(!client->getRegistration())
             client->registration();
         std::cout << std::endl;
+        printMap(_Clients);
     }
+
 }
 
 // Função para verificar que evento aconteceu

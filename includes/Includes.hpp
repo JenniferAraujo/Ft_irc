@@ -22,6 +22,11 @@
 # include <fstream>
 # include <sstream>
 # include <queue>
+
+# define USERLEN        12
+# define MAXCHARS       30
+# define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
+
 # include "IRCException.hpp"
 # include "Server.hpp"
 # include "Client.hpp"
@@ -36,6 +41,7 @@
 # include "Commands/Mode.hpp"
 # include "Commands/Cap.hpp"
 # include "Commands/Ping.hpp"
+
 # define RED "\033[31m"
 # define GREEN "\033[32m"
 # define PURPLE "\033[35m"
@@ -49,11 +55,6 @@
 # define BOLD_WHITE 	"\033[1;37m"
 # define BOLD_CYAN "\033[1;36m"
 # define RESET "\033[0m"
-
-# define MAXCHARS       30
-# define USERLEN        12
-
-# define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 
 std::ostream &operator<<(std::ostream &out, const pollfd &pfd);
 std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs);

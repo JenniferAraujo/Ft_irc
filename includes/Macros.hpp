@@ -3,8 +3,6 @@
 
 # include "Includes.hpp"
 
-class Client;
-
 //? :<Client> <Numeric Code> <Nick Intended>: <Msg Content>
 inline std::string RPL_WELCOME(const std::string& client, const std::string& networkName, const std::string& nick, const std::string& user, const std::string& host) {
     return ":" + client + " 001 " + nick + " :Welcome to the " + networkName + " Network, " + nick + "!" + user + "@<" + host + ">\r\n";
@@ -19,7 +17,9 @@ inline std::string RPL_MYINFO(const std::string& client, const std::string& nick
     return ":" + client + " 004 " + nick + " " + serverName + " <version> NCcCtu\r\n";
 }
 inline std::string RPL_ISUPPORT(const std::string& client, const std::string& nick) {
-    return ":" + client + " 005 " + nick + " USERLEN=" + USERLEN + " :are supported by this server\r\n";
+    std::stringstream ss;
+    ss << ":" << client << " 005 " << nick << " USERLEN=" << USERLEN << " :are supported by this server\r\n";
+    return ss.str();
 }
 inline std::string RPL_MOTDSTART(const std::string& client, const std::string& nick, const std::string& serverName) {
     return ":" + client + " 375 " + nick + " :" + serverName + " Message of the day\r\n";
