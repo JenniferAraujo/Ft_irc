@@ -3,22 +3,22 @@
 
 # include "Includes.hpp"
 
-# define NEEDMOREPARAMS 461
-# define UNKNOWNCOMMAND 421
 # define UNKNOWNERROR   400
+# define UNKNOWNCOMMAND 421
+# define NEEDMOREPARAMS 461
 
-inline std::string ERR_NEEDMOREPARAMS(const std::string& client, const std::string& nick, const std::string& command) {
-    return ":" + client + " 461 " + nick + " " + command + " :Not enough parameters\r\n";
+inline std::string ERR_UNKNOWNERROR(const std::string& client, const std::string& nick, const std::string& command, const std::string& info) {
+    if(command.empty())
+        return ":" + client + " 421 " + nick + " :" + info + "\r\n";
+    return ":" + client + " 400 " + nick + " " + command + " :" + info + "\r\n";
 }
 
 inline std::string ERR_UNKNOWNCOMMAND(const std::string& client, const std::string& nick, const std::string& command) {
     return ":" + client + " 421 " + nick + " " + command + " :Unknown command\r\n";
 }
 
-inline std::string ERR_UNKNOWNERROR(const std::string& client, const std::string& nick, const std::string& command, const std::string& info) {
-    if(command.empty())
-        return ":" + client + " 421 " + nick + " :" + info + "\r\n";
-    return ":" + client + " 400 " + nick + " " + command + " :" + info + "\r\n";
+inline std::string ERR_NEEDMOREPARAMS(const std::string& client, const std::string& nick, const std::string& command) {
+    return ":" + client + " 461 " + nick + " " + command + " :Not enough parameters\r\n";
 }
 
 inline std::string ERR_ALREADYREGISTERED(const std::string& client, const std::string& nick) {

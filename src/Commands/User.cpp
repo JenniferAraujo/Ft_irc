@@ -2,15 +2,22 @@
 
 User::User(Server& server, Client& client): ACommand("USER", server, client) {};
 
-//Esta funcao guarda o username e o realname, precisa de validacoes futuras
-//Se o nick for invalido deverá guardar na variavel _authError o erro respetivo = INVALIDUSER
-//Users nao podem ser repetidos??
-//username e realname sao campos obrigatorios
 void User::parsing(std::istringstream &input){
     std::string str;
     std::getline(input, this->_username, ' ');
+    if(this->_username.empty())
+        _error = NEEDMOREPARAMS; //USER
+    if(this->_username.length() > USERLEN - 1)
+        this->_username = this->_username.substr(0, USERLEN -1);
+    this->_username.insert(this->_username.begin(), '~');
     std::getline(input, str, ':');
-    std::getline(input, this->_realname, '\n');
+    if(std::cin.eof() || str[0] != '0' || str[2] != '*'){
+        _error = NEEDMOREPARAMS;
+        return ;
+    }
+    std::getline(input, this->_realname);
+    if(this->_realname.empty())
+        _error = NEEDMOREPARAMS;
     this->trimChar(this->_realname, '\r');
 }
 
@@ -18,20 +25,20 @@ void User::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << this->_name << std::endl;
     std::string msg;
     if(this->_client.getRegistration()){
-        msg.append(ERROR("You may not reregister"));
+        msg.append(ERR_ALREADYREGISTERED(this->_server.getHostname(), this->_client.getNick()));
         send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
         return ;
     }
-    if (this->_error) {
-        msg.append(ERROR("userword incorrect"));
+    if (this->_error == NEEDMOREPARAMS){
+        if (this->_client.getNick().empty())
+            msg.append(ERR_NEEDMOREPARAMS(this->_server.getHostname(), "*", this->_name));
+        else
+            msg.append(ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name));
         send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        //this->_server._toRemove.push_back(this->_client.getSocketFD()); //TODO condiçao para nao haver repetidos (funçao para adicionar ao toRemove)
-        this->_client.setRegError(INVALIDUSER);
+        return ;
     }
-    else{
-        this->_client.setUsername(this->_username);
-        this->_client.setRealname(this->_realname);
-    }
+    this->_client.setUsername(this->_username);
+    this->_client.setRealname(this->_realname);
 }
 
 void User::print() const{

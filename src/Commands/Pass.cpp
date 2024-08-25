@@ -16,7 +16,6 @@ void Pass::parsing(std::istringstream &input){
 void Pass::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << this->_name << std::endl;
     std::string msg;
-    //TODO - validaçoes de erros parsing
     if (this->_error == NEEDMOREPARAMS){
         if (this->_client.getNick().empty())
             msg.append(ERR_NEEDMOREPARAMS(this->_server.getHostname(), "*", this->_name));
