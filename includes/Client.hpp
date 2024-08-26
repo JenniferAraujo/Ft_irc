@@ -31,6 +31,7 @@ public:
     ACommand*                   createKick(std::istringstream &input);
     ACommand*                   createPart(std::istringstream &input);
     ACommand*                   createInvite(std::istringstream &input);
+    ACommand*                   createTopic(std::istringstream &input);
 
     //getters
     int             getSocketFD() const { return _socketFD; } ;
