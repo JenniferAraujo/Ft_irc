@@ -36,7 +36,7 @@ public:
 	//aux
 	void    removeClient(int fd);
 	void    getServerInfo();
-	void    addInChannel(std::string channelName, Client &client);
+	void    addInChannel(std::string channelName, std::string password, Client &client);
 	static bool    registration_command(std::string str);
 
 private:

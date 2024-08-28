@@ -97,7 +97,7 @@ void Channel::removeOperator(int clientId) {
 	}
 }
 
-bool Channel::canJoin(const Client& client) const {
+bool Channel::canJoin(const Client& client, std::string password) const {
 	 if (_inviteOnly) {
 		if (!isInvited(_name)) {
 			std::cout << "Client " << client.getSocketFD() << " cannot join: not invited." << std::endl;
@@ -105,7 +105,8 @@ bool Channel::canJoin(const Client& client) const {
 		}
 	}
 	if (!_password.empty()) {
-		if (hasPassword(_password)) { //FIXME - se mando uma senha valida ele entra e nao deveria
+		std::cout << "QUAL A PASS? " << password << "!!!!" << std::endl;
+		if (!hasPassword(password)) { //FIXME - se mando uma senha valida ele entra e nao deveria
 			std::cout << "Client " << client.getSocketFD() << " cannot join: invalid password" << std::endl;
 			//TODO - ERR_BADCHANNELKEY (475) -- Adicionar validações de senha esta correta, se estiver invalida ERR_INVALIDMODEPARAM
 			return false;

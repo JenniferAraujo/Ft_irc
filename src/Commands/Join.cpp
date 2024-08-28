@@ -46,7 +46,10 @@ void Join::execute() {
     std::string msg;
     while(!this->_channels.empty()) {
         std::cout << "Channel: " << this->_channels.front() << std::endl;
-        this->_server.addInChannel(this->_channels.front(), const_cast<Client&>(this->_client));
+		if (this->_password.empty())
+		        this->_server.addInChannel(this->_channels.front(),  "", const_cast<Client&>(this->_client));
+		else
+	        this->_server.addInChannel(this->_channels.front(), this->_password.front(), const_cast<Client&>(this->_client));
         msg.append(JOIN_CHANNEL(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channels.front()));
         send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
         if (this->_server.getChannels().find(this->_channels.front()) != this->_server.getChannels().end()) {
@@ -58,6 +61,8 @@ void Join::execute() {
             send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
         }
         this->_channels.pop();
+		if (!this->_password.empty()) 
+        	this->_password.pop();
     }
 }
 

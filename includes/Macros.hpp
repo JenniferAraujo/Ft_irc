@@ -31,19 +31,19 @@ inline std::string RPL_ENDOFMOTD(const std::string& client, const std::string& n
     return ":" + client + " 376 " + nick + " :End of /MOTD command.\r\n";
 }
 inline std::string RPL_MODE(const std::string& client, const std::string& channel, const std::string& nick, const std::string& mode) {
-    return ":" + client + " 324 " + nick + " #" + channel + " " + mode + "\r\n";
+    return ":" + client + " 324 " + nick + " " + channel + " " + mode + "\r\n";
 }
 inline std::string RPL_WHO(const std::string& client, const std::string& channel, const std::string& nick, const Client& c) {
-    return ":" + client + " 352 " + nick + " #" + channel + " " + c.getUsername() + " " + c.getIpaddr() + " " + client + " " + c.getNick() + " H :0 " + c.getRealname() + "\r\n";
+    return ":" + client + " 352 " + nick + " " + channel + " " + c.getUsername() + " " + c.getIpaddr() + " " + client + " " + c.getNick() + " H :0 " + c.getRealname() + "\r\n";
 }
 inline std::string RPL_ENDWHO(const std::string& client, const std::string& channel, const std::string& nick) {
-    return ":" + client + " 315 " + nick + " #" + channel + " :END of /WHO list.\r\n";
+    return ":" + client + " 315 " + nick + " " + channel + " :END of /WHO list.\r\n";
 }
 inline std::string RPL_NAME(const std::string& client, const std::string& channel, const std::string& nick, const std::string& nicks) {
-    return ":" + client + " 353 " + nick + " = #" + channel + " :" + nicks + "\r\n";
+    return ":" + client + " 353 " + nick + " = " + channel + " :" + nicks + "\r\n";
 }
 inline std::string RPL_ENDNAME(const std::string& client, const std::string& channel, const std::string& nick) {
-    return ":" + client + " 366 " + nick + " #" + channel + " :End of NAMES list\r\n";
+    return ":" + client + " 366 " + nick + " " + channel + " :End of NAMES list\r\n";
 }
 
 //? SERVER MESSAGES

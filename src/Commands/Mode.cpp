@@ -27,8 +27,10 @@ void	Mode::extractKeyAndLimit() {
 	std::string parameters = _parameters;
 
 	//TODO - fazer um loop para quando for mais de um mode
-	if (modeChar == 'k') // ERR_INVALIDMODEPARAM se for invalid a senha (com espaços)
+	if (modeChar == 'k') {
+		this->trimChar(parameters, '\r');
 		this->_password = parameters;
+	}// ERR_INVALIDMODEPARAM se for invalid a senha (com espaços)
 	else if (modeChar == 'l') {
 		bool isValid = true;
 		for (size_t i = 0; i < parameters.length(); ++i) {
@@ -39,8 +41,10 @@ void	Mode::extractKeyAndLimit() {
 		}
 		if (isValid)
 			this->_userLimit = atoi(parameters.c_str());
-		else
+		else {
 			std::cout << "Error: Invalid user limit parameter." << std::endl;
+			return ;
+		}
 	} else if (modeChar == 'o') {
 		bool isValid = true;
 		for (size_t i = 0; i < parameters.length(); ++i) {
