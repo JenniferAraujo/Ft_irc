@@ -18,7 +18,6 @@ public:
 
     void setTopic(std::string topic) { _topic = topic; } ;
 
-
 private:
     Channel();
     std::string _name;
