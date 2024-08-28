@@ -28,12 +28,6 @@ public:
     ACommand*                   createMode(std::istringstream &input);
     ACommand*                   createWho(std::istringstream &input);
     ACommand*                   createPing(std::istringstream &input);
-
-	//aux commands
-	bool	hasPassword(const std::string& password) const;
-	bool	isInvited(const std::string& name) const;
-	void	addInvite(const std::string& name);
-	void	setEnteredPassword(const std::string& password);
 	
     //getters
     int             getSocketFD() const { return _socketFD; } ;
@@ -65,8 +59,6 @@ private:
     int                     _socketFD;
     int                     _regError; //Possivelmente mudar para bool
     bool                    _registration; //initialized as false
-	std::vector<std::string> _invitedNames; //NOTE - clientes que foram convidados p entrar em canal
-	std::string				_enteredPassword; //NOTE -  password p entrar no canal
     bool                    _cap;
     bool                    _capEnd;
     std::string             _ipAddr;

@@ -43,6 +43,7 @@ void Channel::applyMode(const Mode& modeObj) {
 			case 'k':
 				if (adding) {
 					setPassword(modeObj.getPassword());
+					std::cout << "OLA CARALHO" << std::endl;
 					std::cout << "Password set to: " << modeObj.getPassword() << std::endl;
 				} else {
 					setPassword("");
@@ -98,13 +99,15 @@ void Channel::removeOperator(int clientId) {
 
 bool Channel::canJoin(const Client& client) const {
 	 if (_inviteOnly) {
-		if (!client.isInvited(_name)) {
+		if (!isInvited(_name)) {
 			std::cout << "Client " << client.getSocketFD() << " cannot join: not invited." << std::endl;
 			return false;
 		}
 	}
-	if (_topicProtected) {
-	if (!client.hasPassword(_password)) {
+	if (!_password.empty()) {
+		if (hasPassword(_password)) { //FIXME - se mando uma senha valida ele entra e nao deveria
+			std::cout << "Client " << client.getSocketFD() << " cannot join: invalid password" << std::endl;
+			//TODO - ERR_BADCHANNELKEY (475) -- Adicionar validações de senha esta correta, se estiver invalida ERR_INVALIDMODEPARAM
 			return false;
 		}
 	}

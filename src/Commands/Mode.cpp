@@ -19,16 +19,17 @@ void Mode::parsing(std::istringstream &input){
 	this->_parameters = parameters;
 	extractKeyAndLimit();
 	this->print();
+	std::cout << "Password: " << this->_password <<  " | User limit: " << this->_userLimit << " | Client ID: " << this->_clientId << std::endl;
 }
 
 void	Mode::extractKeyAndLimit() {
 	char modeChar = _mode[1];
 	std::string parameters = _parameters;
 
-	if (modeChar == 'k') {
+	//TODO - fazer um loop para quando for mais de um mode
+	if (modeChar == 'k') // ERR_INVALIDMODEPARAM se for invalid a senha (com espaços)
 		this->_password = parameters;
-		std::cout << "PASSWORD: " << this->_password << std::endl;
-	} else if (modeChar == 'l') {
+	else if (modeChar == 'l') {
 		bool isValid = true;
 		for (size_t i = 0; i < parameters.length(); ++i) {
 			if (!isdigit(parameters[i])) {
@@ -36,12 +37,10 @@ void	Mode::extractKeyAndLimit() {
 				break;
 			}
 		}
-		if (isValid) {
+		if (isValid)
 			this->_userLimit = atoi(parameters.c_str());
-			std::cout << "USER LIMIT: " << this->_userLimit << std::endl;
-		} else {
+		else
 			std::cout << "Error: Invalid user limit parameter." << std::endl;
-		}
 	} else if (modeChar == 'o') {
 		bool isValid = true;
 		for (size_t i = 0; i < parameters.length(); ++i) {
@@ -50,15 +49,12 @@ void	Mode::extractKeyAndLimit() {
 				break;
 			}
 		}
-		if (isValid) {
+		if (isValid)
 			this->_clientId = atoi(parameters.c_str());
-			std::cout << "CLIENT ID: " << this->_clientId << std::endl;
-		} else {
+		else
 			std::cout << "Error: Invalid client ID parameter." << std::endl;
-		}
-	} else {
+	} else
 		std::cout << "Error: Unrecognized mode character: " << modeChar << std::endl;
-	}
 }
 
 bool Mode::isValidMode(char mode) {
@@ -94,7 +90,6 @@ void Mode::execute() {
 		std::cout << "Error: channelObj is null." << std::endl;
 		return ;
 	}
-	
 	for (size_t i = 0; i < modeStr.length(); ++i) {
 		char modeChar = modeStr[i];
 		
@@ -127,7 +122,6 @@ void Mode::execute() {
 	std::string confirmationMsg = ":" + this->_client.getNick() + " MODE " + this->_channel + " " + this->_mode + "\r\n";
 	send(this->_client.getSocketFD(), confirmationMsg.c_str(), confirmationMsg.length(), 0);
 }
-
 
 void Mode::print() const{
 	std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | Channel: " << this->_channel << " | Parameters: " << this->_parameters << " | Mode: " << this->_mode << std::endl;

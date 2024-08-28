@@ -17,19 +17,3 @@ void   Client::getClientInfo() {
 
 	std::cout << "Hostname: " << hostbuffer << std::endl;
 }
-
-bool Client::isInvited(const std::string& name) const {
-	return std::find(_invitedNames.begin(), _invitedNames.end(), name) != _invitedNames.end();
-}
-
-void Client::addInvite(const std::string& name) {
-	_invitedNames.push_back(name);
-}
-
- bool Client::hasPassword(const std::string& password) const {
-	return _enteredPassword == password;
-}
-
-void Client::setEnteredPassword(const std::string& password) {
-	_enteredPassword = password;
-}

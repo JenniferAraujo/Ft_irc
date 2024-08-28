@@ -18,7 +18,7 @@ public:
 	std::string getMode() const { return _mode; }
 	void	setMode(const std::string &mode) { _mode = mode; }
 
-	//gerenciamento do canal
+	//channel management
 	void	applyMode(const Mode& modeObj);
 	bool	isInviteOnly() const { return _inviteOnly; }
 	bool	isTopicLocked() const { return _topicProtected; }
@@ -34,6 +34,12 @@ public:
 	void	addOperator(int clientId, Client* client);
 	void	removeOperator(int clientId);
 	void	addClient(int clientId, Client* client) { _Clients[clientId] = client; }
+
+	//aux mode
+	bool	isInvited(const std::string& name) const { return std::find(_invitedNames.begin(), _invitedNames.end(), name) != _invitedNames.end(); }
+	void	addInvite(const std::string& name) { _invitedNames.push_back(name); }
+	void	setEnteredPassword(const std::string& password) { _password = password; }
+	bool	hasPassword(const std::string& password) const { return _password == password; }
 	
 private:
 	Channel();
@@ -43,6 +49,7 @@ private:
 	bool		_inviteOnly;
 	bool		_topicProtected;
 	int			_userLimit;
+	std::vector<std::string> _invitedNames; //NOTE - clientes que foram convidados p entrar em canal
 	std::map<int, Client*>   _Clients; //NOTE - sugestion: key ser uma bool - true se é operador
 	std::map<int, Client*>	_operators; //NOTE - channel operators 
 };
