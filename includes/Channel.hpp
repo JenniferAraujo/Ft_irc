@@ -34,6 +34,11 @@ public:
 	void	addOperator(int clientId, Client* client);
 	void	removeOperator(int clientId);
 	void	addClient(int clientId, Client* client) { _Clients[clientId] = client; }
+    std::map<int, Client*> getClients() const { return _Clients; } ;
+    std::string getTopic() const { return _topic; } ;
+    std::string getName() const { return _name; } ;
+
+    void setTopic(std::string topic) { _topic = topic; } ;
 
 	//aux mode
 	bool	isInvited(const std::string& name) const { return std::find(_invitedNames.begin(), _invitedNames.end(), name) != _invitedNames.end(); }
@@ -46,6 +51,7 @@ private:
 	std::string _name;
 	std::string _mode;
 	std::string	_password;
+	std::string	_topic;
 	bool		_inviteOnly;
 	bool		_topicProtected;
 	int			_userLimit;

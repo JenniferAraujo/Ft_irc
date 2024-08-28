@@ -32,10 +32,14 @@
 # include "Commands/Nick.hpp"
 # include "Commands/User.hpp"
 # include "Commands/Join.hpp"
+# include "Commands/Part.hpp"
 # include "Commands/Who.hpp"
 # include "Commands/Mode.hpp"
 # include "Commands/Cap.hpp"
 # include "Commands/Ping.hpp"
+# include "Commands/Kick.hpp"
+# include "Commands/Invite.hpp"
+# include "Commands/Topic.hpp"
 # define RED "\033[31m"
 # define GREEN "\033[32m"
 # define PURPLE "\033[35m"
@@ -52,6 +56,7 @@
 
 # define NEEDMOREPARAMS 461
 # define PASSWDMISMATCH 464
+# define NOSUCHNICK 401
 
 # define INVALIDNICK 2
 # define INVALIDUSER 3
@@ -76,5 +81,6 @@ std::string intToString(int value);
 std::string formatServerMessage(const std::string& color, const std::string& label, int clients);
 void showq(std::queue<ACommand *> gq);
 void showstringq(std::queue<std::string> gq);
+void showdoublestringq(std::queue<std::string> gq, std::queue<std::string> gq2);
 
 #endif // INCLUDES_HPP

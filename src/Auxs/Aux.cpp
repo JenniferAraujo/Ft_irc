@@ -100,3 +100,18 @@ void showstringq(std::queue<std::string> gq)
         g.pop();
     }
 }
+
+void showdoublestringq(std::queue<std::string> gq, std::queue<std::string> gq2)
+{
+    std::queue<std::string> g = gq;
+    std::queue<std::string> g2 = gq2;
+    while (!g.empty()) {
+        std::cout << g.front() << "\t\t| ";
+        g.pop();
+        if (!g2.empty()) {
+            std::cout << g2.front();
+            g2.pop();
+        }
+        std::cout << std::endl;
+    }
+}

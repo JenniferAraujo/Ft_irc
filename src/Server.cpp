@@ -14,17 +14,13 @@ Server::Server(const int &port, const std::string &password) : _port(port),
 
 Server::Server(const Server &cpy): _port(cpy.getPort()), _password(cpy.getPassword()) {}
 
-// Função para adicionar fds para a poll monitorizar
 void Server::updateNFDs(int fd)
 {
 	pollfd pfd = {fd, POLLIN, 0};
 	this->_NFDs.push_back(pfd);
 }
 
-void Server::updateClients(Client *client, int fd)
-{
-	this->_Clients[fd] = client;
-}
+void Server::updateClients(Client *client, int fd) { this->_Clients[fd] = client; }
 
 //*Proximos passos: canais e mensagens
 //Ideia para executar os cmds
@@ -38,7 +34,7 @@ void    Server::executeCommand(Client &client, ACommand *command){
 }
 
 void    Server::handleCommand(Client &client, std::vector<char> &buf){
-    std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
+    //std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
     std::queue<ACommand *> commands = client.createCommand(buf);
     if (commands.empty()) //Nao e um comando/ comando que nao tratamos
             return ;
@@ -53,7 +49,7 @@ void    Server::handleCommand(Client &client, std::vector<char> &buf){
 }
 
 //TODO desconectar -> QUIT
-//TODO QUIT -> tirar dos canais (KICK), apagar do map de clientes, fechar o fd 
+//TODO QUIT -> tirar dos canais (KICK), apagar do map de clientes, fechar o fd
 //TODO handle size da msg -> ver qual o tamannho max que o server recebe
 void Server::verifyEvent(const pollfd &pfd) {
     if (pfd.revents == POLLIN) {
@@ -68,7 +64,7 @@ void Server::verifyEvent(const pollfd &pfd) {
         //std::cout << "TEMP: " << temp.data() << "." << std::endl;
         std::vector<char>::iterator it = std::find(buf.begin(), buf.end(), '\0');
         if (it == buf.end()) {
-            it = buf.begin(); 
+            it = buf.begin();
         }
         if (std::find(temp.begin(), temp.end(), '\n') == temp.end()){
             buf.insert(it, temp.begin(), temp.end());
