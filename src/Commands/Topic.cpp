@@ -43,6 +43,25 @@ void Topic::parsing(std::istringstream &input){
 
 void Topic::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << this->_name << std::endl;
+    std::string msg;
+    // Falta verificar permissões de operador
+    if (this->_server.getChannels().find(this->_channel) != this->_server.getChannels().end()) {
+        Channel* channel = this->_server.getChannels()[this->_channel];
+        if (!this->_msg.empty()) {
+            channel->setTopic(this->_msg);
+            msg.append(RPL_TOPIC(this->_server.getHostname(), this->_channel, this->_client.getNick(), channel->getTopic()));
+        } else if (this->_removeTopic) {
+            channel->setTopic(NULL);
+            // Confirmar se tenho de enviar isto
+            msg.append(RPL_NOTOPIC(this->_server.getHostname(), this->_channel, this->_client.getNick()));
+        } else {
+            if (channel->getTopic().empty())
+                msg.append(RPL_NOTOPIC(this->_server.getHostname(), this->_channel, this->_client.getNick()));
+            else
+                msg.append(RPL_TOPIC(this->_server.getHostname(), this->_channel, this->_client.getNick(), channel->getTopic()));
+        }
+        send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+    }
 }
 
 void Topic::print() const{

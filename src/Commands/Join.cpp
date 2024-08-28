@@ -49,6 +49,14 @@ void Join::execute() {
         this->_server.addInChannel(this->_channels.front(), const_cast<Client&>(this->_client));
         msg.append(JOIN_CHANNEL(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channels.front()));
         send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+        if (this->_server.getChannels().find(this->_channels.front()) != this->_server.getChannels().end()) {
+            Channel* channel = this->_server.getChannels()[this->_channels.front()];
+            if (channel->getTopic().empty())
+                msg.append(RPL_NOTOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick()));
+            else
+                msg.append(RPL_TOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick(), channel->getTopic()));
+            send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+        }
         this->_channels.pop();
     }
 }
