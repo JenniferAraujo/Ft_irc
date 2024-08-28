@@ -34,7 +34,6 @@ public:
 	void	addOperator(int clientId, Client* client);
 	void	removeOperator(int clientId);
 	void	addClient(int clientId, Client* client) { _Clients[clientId] = client; }
-    std::map<int, Client*> getClients() const { return _Clients; } ;
     std::string getTopic() const { return _topic; } ;
     std::string getName() const { return _name; } ;
 

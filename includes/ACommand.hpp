@@ -20,7 +20,8 @@ public:
             str = str.substr(first, last - first + 1);
     }
     bool existentChannel(std::string channelName) {
-        std::map<std::string, Channel *>::iterator it = this->_server.getChannels().find(channelName);
+		std::map<std::string, Channel *> channels = this->_server.getChannels();
+        std::map<std::string, Channel *>::iterator it = channels.find(channelName);
         if (it != this->_server.getChannels().end())
             return true;
         return false;
