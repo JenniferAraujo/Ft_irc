@@ -47,10 +47,15 @@ void Server::getServerInfo() {
     std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Host IP: " << this->_hostIP << "\n" << std::endl;
 }
 
-void Server::addInChannel(std::string channelName, Client &client) {
+void Server::addInChannel(std::string channelName, std::string password, Client &client) {
     if (this->_Channels.find(channelName) != this->_Channels.end()) {
+        if (!this->_Channels[channelName]->canJoin(client, password)) {
+			// std::string msg = "Error: You cannot join the channel " + channelName + ".\r\n"; //NOTE - arrumar msg de erro
+			// send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
+			return ;
+    	}
         std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0) << client.getNick() << " entered the channel " << BOLD_YELLOW << channelName << RESET << std::endl;
-        this->_Channels[channelName]->addClient(client);
+		this->_Channels[channelName]->addClient(client);
     }
     else {
         std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0) << client.getNick() << " created the channel " << BOLD_YELLOW << channelName << RESET << std::endl;

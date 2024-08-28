@@ -9,9 +9,9 @@ class ACommand;
 
 class Server {
 public:
-    Server(const int &port, const std::string &password);
-    ~Server();
-    Server(const Server& cpy);
+	Server(const int &port, const std::string &password);
+	~Server();
+	Server(const Server& cpy);
 
     void run();
     void updateNFDs(int fd);
@@ -39,11 +39,12 @@ public:
     //aux
     void    removeClient(int fd, std::string error);
     void    getServerInfo();
-    void    addInChannel(std::string channelName, Client &client);
+    void    addInChannel(std::string channelName, std::string password, Client &client);
     Client  *findClient(std::string nick, int skipFd);
 
+
 private:
-    Server();
+	Server();
 
     int                                 _port;
     std::string                         _password;

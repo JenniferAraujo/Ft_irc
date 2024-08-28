@@ -4,6 +4,7 @@
 # include "Includes.hpp"
 
 # define UNKNOWNERROR   400
+# define NOSUCHNICK     401
 # define UNKNOWNCOMMAND 421
 # define NEEDMOREPARAMS 461
 
@@ -45,6 +46,21 @@ public:
         std::string commands[] = {"CAP", "PASS", "NICK", "USER"};
         for (int i = 0; i < 4; i++) {
             if(this->getName() == commands[i])
+                return true;
+        }
+        return false;
+    }
+    bool existentChannel(std::string channelName) {
+		std::map<std::string, Channel *> channels = this->_server.getChannels();
+        std::map<std::string, Channel *>::iterator it = channels.find(channelName);
+        if (it != this->_server.getChannels().end())
+            return true;
+        return false;
+    }
+    bool existentClient(std::string nickname) {
+        std::map<int, Client*>::iterator it;
+        for (it = this->_server.getClients().begin(); it != this->_server.getClients().end(); it++) {
+            if (it->second->getNick() == nickname)
                 return true;
         }
         return false;

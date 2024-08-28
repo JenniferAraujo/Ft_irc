@@ -1,17 +1,15 @@
 #include "Includes.hpp"
 
-Server::Server()
-{
-}
+Server::Server() {}
 
 Server::Server(const int &port, const std::string &password) : _port(port),
-                                                               _password(password)
+															   _password(password)
 {
-    memset(&this->_socketInfo, 0, sizeof(this->_socketInfo));
-    _socketInfo.sin6_family = AF_INET6;
-    _socketInfo.sin6_port = htons(this->_port);
-    _socketInfo.sin6_addr = in6addr_any;
-    this->_creationTime = getCurrentDateTime();
+	memset(&this->_socketInfo, 0, sizeof(this->_socketInfo));
+	_socketInfo.sin6_family = AF_INET6;
+	_socketInfo.sin6_port = htons(this->_port);
+	_socketInfo.sin6_addr = in6addr_any;
+	this->_creationTime = getCurrentDateTime();
 }
 
 Server::Server(const Server &cpy)
@@ -27,17 +25,13 @@ Server::Server(const Server &cpy)
         _Channels(cpy.getChannels()),
         _toRemove(cpy.getToRemove()) {}
 
-// Função para adicionar fds para a poll monitorizar
 void Server::updateNFDs(int fd)
 {
-    pollfd pfd = {fd, POLLIN, 0};
-    this->_NFDs.push_back(pfd);
+	pollfd pfd = {fd, POLLIN, 0};
+	this->_NFDs.push_back(pfd);
 }
 
-void Server::updateClients(Client *client, int fd)
-{
-    this->_Clients[fd] = client;
-}
+void Server::updateClients(Client *client, int fd) { this->_Clients[fd] = client; }
 
 void Server::updateToRemove(int fd, std::string error)
 {
@@ -79,10 +73,10 @@ void    Server::handleCommand(Client &client, std::vector<char> &buf){
 }
 
 //TODO desconectar -> QUIT
-//TODO QUIT -> tirar dos canais (KICK), apagar do map de clientes, fechar o fd 
+//TODO QUIT -> tirar dos canais (KICK), apagar do map de clientes, fechar o fd
 //TODO handle size da msg -> ver qual o tamannho max que o server recebe
 void Server::verifyEvent(const pollfd &pfd) {
-    if(pfd.revents == POLLIN) {
+    if (pfd.revents == POLLIN) {
         Client *client = this->_Clients[pfd.fd];
         // Update the last activity time with the current time
         client->setLastActivityTime(time(NULL));
@@ -96,18 +90,18 @@ void Server::verifyEvent(const pollfd &pfd) {
         //std::cout << "TEMP: " << temp.data() << "." << std::endl;
         std::vector<char>::iterator it = std::find(buf.begin(), buf.end(), '\0');
         if (it == buf.end()) {
-            it = buf.begin(); 
+            it = buf.begin();
         }
         if (std::find(temp.begin(), temp.end(), '\n') == temp.end()){
             buf.insert(it, temp.begin(), temp.end());
             //std::cout << "BUF: " << buf.data() << "." << std::endl;
         }
-        else{
+        else {
             buf.insert(it, temp.begin(), temp.end());
             this->handleCommand(*client, buf);
             buf.clear();
         }
-        if(!client->getRegistration())
+        if (!client->getRegistration())
             client->registration();
         std::cout << std::endl;
         //printMap(_Clients);
@@ -207,8 +201,8 @@ void Server::run()
 }
 
 Server::~Server() {
-    for (std::map<int, Client*>::iterator it = _Clients.begin(); it != _Clients.end(); ++it) {
-        close(it->first);
-        delete it->second;
-    }
+	for (std::map<int, Client*>::iterator it = _Clients.begin(); it != _Clients.end(); ++it) {
+		close(it->first);
+		delete it->second;
+	}
 }
