@@ -23,8 +23,10 @@
 # include <sstream>
 # include <queue>
 
-# define USERLEN        12
-# define MAXCHARS       30
+# define USERLEN           12
+# define MAXCHARS          30
+# define CONNECTIONTIMEOUT 60 //2 minuts in seconds
+# define TIMEOUT           300 //5 minuts in seconds
 # define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 
 # include "IRCException.hpp"

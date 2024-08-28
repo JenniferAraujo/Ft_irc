@@ -14,15 +14,14 @@ public:
     Server(const Server& cpy);
 
     void run();
-    void getAddrInfo();
     void updateNFDs(int fd);
     void updateClients(Client *client, int fd);
     void updateToRemove(int fd, std::string error);
     void checkEvents(int nEvents);
     void verifyEvent(const pollfd &pfd);
-    void welcome(Client &client);
     void executeCommand(Client &client, ACommand *command);
     void handleCommand(Client &client, std::vector<char> &buf);
+    void handleTimeouts(time_t inactivityTimeout, time_t connectionTimeout);
 
     //getters
     int getSocketFD() const { return this->_socketFD; };
@@ -41,7 +40,7 @@ public:
     void    removeClient(int fd, std::string error);
     void    getServerInfo();
     void    addInChannel(std::string channelName, Client &client);
-    Client  *findClient(std::string nick);
+    Client  *findClient(std::string nick, int skipFd);
 
 private:
     Server();

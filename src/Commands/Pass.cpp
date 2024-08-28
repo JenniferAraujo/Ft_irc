@@ -30,7 +30,7 @@ void Pass::execute() {
         return ;
     }
     if (this->_error) {
-        this->_client.setRegError(PASSWDMISMATCH);
+        this->_client.setRegError(true);
     }
     else{
         this->_client.setRegError(0);

@@ -13,14 +13,17 @@ void Nick::parsing(std::istringstream &input){
         || this->_nick.find('"') != std::string::npos || this->_nick.find(39) != std::string::npos
             || this->_nick.find('#') != std::string::npos || this->_nick.find('&') != std::string::npos
                 || this->_nick.find(':') != std::string::npos || this->_nick.find(',') != std::string::npos
-                    || this->_nick.find(';') != std::string::npos)
+                    || this->_nick.find(';') != std::string::npos || this->_nick.find('*') != std::string::npos
+                        || this->_nick.find('?') != std::string::npos || this->_nick.find('!') != std::string::npos
+                            || this->_nick.find('@') != std::string::npos)
                         _error = ERRONEUSNICKNAME; 
                         //NICK rita a linda || NICK rita a   linda || NICK  rit"a || NICK 'rita
                         //NICK #rita || NICK &#rita || NICK  #&rita || NICK :rita
-                        //NICK rita; || NICK rit,a
+                        //NICK rita; || NICK rit,a 
     else if (this->_nick.length() > MAXCHARS)
         _error = ERRONEUSNICKNAME; //NICK nomedemasiadocomprido
-    else if(this->_server.findClient(this->_nick) != NULL) //NICK nick_repetido
+    else if(this->_server.findClient(this->_nick, this->_client.getSocketFD()) != NULL 
+            && this->_server.findClient(this->_nick, this->_client.getSocketFD())->getRegistration())//NICK nick_repetido
         _error = NICKNAMEINUSE;
 }
 

@@ -41,7 +41,6 @@ public:
         else
             str = str.substr(first, last - first + 1);
     }
-
     bool isRegistration(){
         std::string commands[] = {"CAP", "PASS", "NICK", "USER"};
         for (int i = 0; i < 4; i++) {

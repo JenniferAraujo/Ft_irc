@@ -7,7 +7,7 @@ class Server;
 
 class Client {
 public:
-    Client(Server &server); // Constructor
+    Client(Server &server, time_t lastActivityTime); // Constructor
     ~Client(); // Destructor
     Client(const Client& cpy);
 
@@ -39,6 +39,8 @@ public:
     std::string     getRealname() const { return _realname; } ;
     std::string     getIpaddr() const { return _ipAddr; } ;
     Server          &getServer() const { return _server; } ;
+    time_t          getLastActivityTime() const { return _lastActivityTime; } ;
+    time_t          getConnectTime() const { return _connectTime; } ;
 
     //setters
     void            setSocketFD(int socketFD) { _socketFD = socketFD; } ;
@@ -49,18 +51,23 @@ public:
     void            setRealname(std::string realname) { _realname = realname; } ;
     void            setIpAddr(std::string ipAddr) { _ipAddr = ipAddr; } ;
     void            setRegistration(bool registration) { _registration = registration; } ;
+    void            setLastActivityTime(time_t lastActivityTime) { _lastActivityTime = lastActivityTime; } ;
+    void            setConnectTime(time_t connectTime) { _connectTime = connectTime; } ;
 
 private:
     Client();
     int                     _socketFD;
-    int                     _regError; //Possivelmente mudar para bool
-    bool                    _registration; //initialized as false
+    bool                    _regError;
+    bool                    _registration;
     std::string             _ipAddr;
     std::string             _password;
     std::string             _nick;
     std::string             _username;
     std::string             _realname;
     Server&                 _server;
+    time_t                  _lastActivityTime;
+    time_t                  _connectTime;
 };
+
 
 #endif // CLIENT_HPP

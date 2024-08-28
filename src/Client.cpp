@@ -1,9 +1,11 @@
 #include "Includes.hpp"
 
-Client::Client(Server &server)
+Client::Client(Server &server, time_t time)
     :   _regError(0),
         _registration(false),
-        _server(server) {}
+        _server(server),
+        _lastActivityTime(time),
+        _connectTime(time) {}
 
 
 Client::Client(const Client &cpy)
@@ -121,7 +123,7 @@ void    Client::registration(){
                     return ;
     std::string msg;
     this->setRegistration(true);
-    if (this->_regError == PASSWDMISMATCH) {
+    if (this->_regError) {
         msg = ERR_PASSWDMISMATCH(this->_server.getHostname(), this->_nick);
         send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
         this->_server.updateToRemove(this->_socketFD, "Connection Registration Failed");
@@ -133,27 +135,33 @@ void    Client::registration(){
         this->_server.updateToRemove(this->_socketFD, "Connection Registration Failed");
         return ;
     }
+    if(this->_server.findClient(this->_nick, this->_socketFD) != NULL
+        && this->_server.findClient(this->_nick, this->_socketFD)->getRegistration()){
+            msg = ERR_NICKNAMEINUSE(this->_server.getHostname(), "*", this->_nick);
+            send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
+            this->_server.updateToRemove(this->_socketFD, "Connection Registration Failed");
+            return ;
+    }
     this->welcome();
-    //TODO disconnection depending on timeout
-    /*if(this->_ping > 5){
-        this->_toRemove.push_back(this->getSocketFD());
-    }*/
 }
 
 // Função para verificar a conecção de clientes
 // inet_ntop FUNÇÃO PROIBIDA, PROVAVELMENTE TEMOS DE MUDAR TUDO PARA O IPv4
 void Client::verifyConnection(Server &server, const pollfd &pfd) {
     if (pfd.revents & POLLIN) {
-        Client *client = new Client(server);
-
+        Client *client = new Client(server, time(NULL));
         struct sockaddr_in6 client_addr;
         socklen_t client_addr_len = sizeof(client_addr);
         memset(&client_addr, 0, sizeof(client_addr));
-
-        client->_socketFD = accept(server.getSocketFD(), (struct sockaddr *)&client_addr, &client_addr_len);
-        if (client->_socketFD == -1) {
-            delete client;
-            throw IRCException("[ERROR] Opening client socket went wrong");
+        //TODO - Non-blocking Sockets -> neste momento é impossivel dar erro
+        try {
+            client->_socketFD = accept(server.getSocketFD(), (struct sockaddr *)&client_addr, &client_addr_len);
+            if (client->_socketFD == -1) {
+                delete client;
+                throw IRCException("[ERROR] Opening client socket went wrong");
+            }
+        } catch(const std::exception &e) {
+            std::cout << RED << e.what() << RESET << std::endl;
         }
 
         char client_ip[INET6_ADDRSTRLEN];
@@ -174,7 +182,6 @@ void Client::verifyConnection(Server &server, const pollfd &pfd) {
         server.updateClients(client, client->_socketFD);
     }
 }
-
 
 
 Client::~Client() {}

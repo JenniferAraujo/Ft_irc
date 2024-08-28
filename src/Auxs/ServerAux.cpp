@@ -60,9 +60,9 @@ void Server::addInChannel(std::string channelName, Client &client) {
     }
 }
 
-Client    *Server::findClient(std::string nick){
+Client    *Server::findClient(std::string nick, int skipFd){
     for (std::map <int, Client *>::iterator it = this->_Clients.begin(); it != _Clients.end(); ++it) {
-        if(it->second->getNick() == nick)
+        if(it->second->getSocketFD() != skipFd && it->second->getNick() == nick)
             return it->second;
     }
     return NULL;

@@ -64,7 +64,7 @@ void    Server::executeCommand(Client &client, ACommand *command){
 }
 
 void    Server::handleCommand(Client &client, std::vector<char> &buf){
-    std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
+    //std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
     std::queue<ACommand *> commands = client.createCommand(buf);
     if (commands.empty()) //Nao e um comando/ comando que nao tratamos -> //TODO - erro de unknoncommmand
             return ;
@@ -84,12 +84,14 @@ void    Server::handleCommand(Client &client, std::vector<char> &buf){
 void Server::verifyEvent(const pollfd &pfd) {
     if(pfd.revents == POLLIN) {
         Client *client = this->_Clients[pfd.fd];
+        // Update the last activity time with the current time
+        client->setLastActivityTime(time(NULL));
         std::vector<char> temp(5000);
         static std::vector<char> buf(5000);
 
         std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size()) << "Event on Client " << GREEN << "[" << client->getSocketFD() << "]" << RESET <<  std::endl;
         std::cout << formatServerMessage(BOLD_PURPLE, "C.INFO", 0) << *client << std::endl;
-
+        //TODO - Non-blocking Sockets and error handling
         recv(client->getSocketFD(), temp.data(), temp.size(), 0);
         //std::cout << "TEMP: " << temp.data() << "." << std::endl;
         std::vector<char>::iterator it = std::find(buf.begin(), buf.end(), '\0');
@@ -108,7 +110,7 @@ void Server::verifyEvent(const pollfd &pfd) {
         if(!client->getRegistration())
             client->registration();
         std::cout << std::endl;
-        printMap(_Clients);
+        //printMap(_Clients);
     }
 
 }
@@ -131,6 +133,28 @@ void Server::checkEvents(int nEvents) {
     this->_toRemove.clear();
 }
 
+void Server::handleTimeouts(time_t inactivityTimeout, time_t connectionTimeout) {
+    time_t now = time(NULL);
+
+    for (std::map<int, Client *>::iterator it = this->_Clients.begin(); it != this->_Clients.end(); ++it) {
+/*         std::cout << "Now: " << now << " | Last time activity: " << it->second->getLastActivityTime() 
+        << "Dif: " << now - it->second->getLastActivityTime() << " | TIMEOUT: " << timeoutDuration << std::endl; */
+        if (!it->second->getRegistration()){
+            if(now - it->second->getConnectTime() >= connectionTimeout)
+                this->updateToRemove(it->first, "Connection timeout");
+        }
+        else{
+            if (now - it->second->getLastActivityTime() >= inactivityTimeout){
+                this->updateToRemove(it->first, "Inactivity timeout");
+            }
+        }
+    }
+    for (std::map <int, std::string>::iterator it = this->_toRemove.begin(); it != _toRemove.end(); ++it) {
+        this->removeClient(it->first, it->second);
+    }
+    this->_toRemove.clear();
+}
+
 void Server::run()
 {
     // Inicializa a socket e da exception se der erro
@@ -142,7 +166,7 @@ void Server::run()
         close(this->_socketFD);
         throw IRCException("[ERROR] Setting socket options went wrong");
     }
-    // Dá bind aquele mesma socket numa porta específica
+    // Dá bind aquela mesma socket numa porta específica
     if (bind(this->_socketFD, reinterpret_cast<struct sockaddr *>(&this->_socketInfo), sizeof(this->_socketInfo)) == -1)
     {
         close(this->_socketFD);
@@ -164,13 +188,15 @@ void Server::run()
     // Ciclo para correr a poll para esperar eventos
     while (true)
     {
-        switch (int nEvents = poll(this->_NFDs.data(), this->_NFDs.size(), -1))
+        switch (int nEvents = poll(this->_NFDs.data(), this->_NFDs.size(), TIMEOUT * 1000))
         {
         case -1:
             throw IRCException("[ERROR] Poll went wrong");
         case 0:
+            this->handleTimeouts(TIMEOUT, CONNECTIONTIMEOUT);
             throw IRCException("[ERROR] Poll connection timed out");
         default:
+            this->handleTimeouts(TIMEOUT, CONNECTIONTIMEOUT);
             this->checkEvents(nEvents);
             //titleInfo("Clients Map");
             //printMap(_Clients);
