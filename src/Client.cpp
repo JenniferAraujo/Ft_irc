@@ -182,17 +182,26 @@ void Client::verifyConnection(Server &server, const pollfd &pfd) {
         struct sockaddr_in6 client_addr;
         socklen_t client_addr_len = sizeof(client_addr);
         memset(&client_addr, 0, sizeof(client_addr));
-        //TODO - Non-blocking Sockets -> neste momento é impossivel dar erro
         try {
             client->_socketFD = accept(server.getSocketFD(), (struct sockaddr *)&client_addr, &client_addr_len);
             if (client->_socketFD == -1) {
+                if (errno != EWOULDBLOCK && errno != EAGAIN){
+                    delete client;
+                    throw IRCException("[ERROR] Opening client socket went wrong");
+                }
+            }
+            // Set the client socket to non-blocking mode
+            int flags = fcntl(client->_socketFD, F_GETFL, 0);
+            if (flags == -1 || fcntl(client->_socketFD, F_SETFL, flags | O_NONBLOCK) == -1) {
+                std::string msg = ERROR("Oppening socket went wrong");
+                send(client->_socketFD, msg.c_str(), msg.length(), 0);
+                close(client->_socketFD);
                 delete client;
-                throw IRCException("[ERROR] Opening client socket went wrong");
+                throw IRCException("[ERROR] Getting client socket flags went wrong");
             }
         } catch(const std::exception &e) {
             std::cout << RED << e.what() << RESET << std::endl;
         }
-
         char client_ip[INET6_ADDRSTRLEN];
         inet_ntop(AF_INET6, &(client_addr.sin6_addr), client_ip, INET6_ADDRSTRLEN);
 

@@ -93,8 +93,22 @@ void Channel::removeOperator(int clientId) {
 		_operators.erase(clientId);
 		std::cout << "Operator removed: " << clientId << std::endl;
 	} else {
-		std::cout << "Client " << clientId << " is not an operator." << std::endl;
+		std::cout << "Client " << clientId << " is not an operator of channel " << _name << std::endl;
 	}
+}
+
+void Channel::removeClient(int clientId) {
+	if (_Clients.find(clientId) != _Clients.end()) {
+		_Clients.erase(clientId);
+		std::cout << "Client removed: " << clientId << std::endl;
+	} else {
+		std::cout << "Client " << clientId << " is not an client of channel " << _name << std::endl;
+	}
+}
+
+void Channel::removeInvited(int clientId) {
+	_invitedClients.erase(std::remove(_invitedClients.begin(), _invitedClients.end(), clientId), _invitedClients.end());
+	std::cout << "Trying to remove client : " << clientId << "from invited clients" << std::endl;
 }
 
 bool Channel::canJoin(const Client& client, std::string password) const {

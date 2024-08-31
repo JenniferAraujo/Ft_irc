@@ -34,6 +34,8 @@ public:
 	void	addOperator(int clientId, Client* client);
 	void	removeOperator(int clientId);
 	void	addClient(int clientId, Client* client) { _Clients[clientId] = client; }
+	void	removeClient(int clientId);
+	void	removeInvited(int clientId);
     std::string getTopic() const { return _topic; } ;
     std::string getName() const { return _name; } ;
 
@@ -63,9 +65,11 @@ private:
 	bool		_inviteOnly;
 	bool		_topicProtected;
 	int			_userLimit;
-	std::vector<std::string> _invitedNames; //NOTE - clientes que foram convidados p entrar em canal
-	std::map<int, Client*>   _Clients; //NOTE - sugestion: key ser uma bool - true se é operador
-	std::map<int, Client*>	_operators; //NOTE - channel operators 
+	//NOTE - Se o cliente desconectar tem que ser apagado de todas estas collections
+	std::vector<std::string>	_invitedNames; //NOTE - clientes que foram convidados p entrar em canal
+	std::vector<int>			_invitedClients; //NOTE - clientes que foram convidados p entrar em canal - fd
+	std::map<int, Client*>		_Clients; 
+	std::map<int, Client*>		_operators; //NOTE - channel operators 
 };
 
 #endif // CHANNEL_HPP

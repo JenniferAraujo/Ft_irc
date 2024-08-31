@@ -14,6 +14,7 @@
 # include <arpa/inet.h>
 # include <poll.h>
 # include <vector>
+# include <fcntl.h>
 # include <map>
 # include <string>
 # include <cstring>
@@ -23,10 +24,11 @@
 # include <sstream>
 # include <queue>
 
-# define USERLEN           12
-# define MAXCHARS          30
-# define CONNECTIONTIMEOUT 60 //2 minuts in seconds
-# define TIMEOUT           300 //5 minuts in seconds
+# define MAX_MESSAGE_SIZE   512
+# define USERLEN            12
+# define MAXCHARS           30
+# define CONNECTIONTIMEOUT  60 //2 minuts in seconds
+# define TIMEOUT            300 //5 minuts in seconds
 # define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 
 # include "IRCException.hpp"

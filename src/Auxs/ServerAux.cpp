@@ -4,6 +4,11 @@ void Server::removeClient(int fd, std::string error){
     std::cout << "Removing Client with FD: " << fd << std::endl;
     if(this->_Clients.find(fd) != this->_Clients.end()){
         std::cout << "Found client: " << this->_Clients[fd]->getNick() << std::endl;
+        for(std::map<std::string, Channel*>::iterator it = this->_Channels.begin(); it != this->_Channels.end(); ++it){
+            it->second->removeOperator(fd);
+            it->second->removeClient(fd);
+            it->second->removeInvited(fd);
+        }
         std::string msg = ERROR(error);
         send(this->_Clients[fd]->getSocketFD(), msg.c_str(), msg.length(), 0);
         close(fd);

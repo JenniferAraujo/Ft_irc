@@ -72,41 +72,65 @@ void    Server::handleCommand(Client &client, std::vector<char> &buf){
     }
 }
 
-//TODO desconectar -> QUIT
-//TODO QUIT -> tirar dos canais (KICK), apagar do map de clientes, fechar o fd
-//TODO handle size da msg -> ver qual o tamannho max que o server recebe
+//TODO PRIVMSG -> handle send errors
+//TODO QUIT -> tirar dos canais (KICK), remover client, mandar msg
+//TODO handle size da msg -> ver qual o tamannho max que o server recebe/buffer overflow -> bytesReceived < 0 ??
 void Server::verifyEvent(const pollfd &pfd) {
     if (pfd.revents == POLLIN) {
         Client *client = this->_Clients[pfd.fd];
+
         // Update the last activity time with the current time
         client->setLastActivityTime(time(NULL));
-        std::vector<char> temp(5000);
-        static std::vector<char> buf(5000);
+
+        //Most IRC servers limit messages to 512 bytes in length
+        std::vector<char> temp(MAX_MESSAGE_SIZE + 1);
+        static std::vector<char> buf;
 
         std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size()) << "Event on Client " << GREEN << "[" << client->getSocketFD() << "]" << RESET <<  std::endl;
         std::cout << formatServerMessage(BOLD_PURPLE, "C.INFO", 0) << *client << std::endl;
-        //TODO - Non-blocking Sockets and error handling
-        recv(client->getSocketFD(), temp.data(), temp.size(), 0);
+
+        int bytesReceived = recv(client->getSocketFD(), temp.data(), temp.size(), 0);
+        if(bytesReceived == 0){
+            this->updateToRemove(this->_socketFD, "Connection closed by client");
+            return ;
+        }
+        if(bytesReceived < 0){
+            if (errno != EWOULDBLOCK || errno != EAGAIN){
+                this->updateToRemove(this->_socketFD, "Recv fail");
+            }
+            return ;
+        }
+        // Ensure the buffer does not overflow
+        if(bytesReceived > MAX_MESSAGE_SIZE){
+            std::string msg = ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected");
+            send(client->getSocketFD(), msg.c_str(), msg.length(), 0);
+            buf.clear();
+            return;
+        }
         //std::cout << "TEMP: " << temp.data() << "." << std::endl;
-        std::vector<char>::iterator it = std::find(buf.begin(), buf.end(), '\0');
-        if (it == buf.end()) {
-            it = buf.begin();
+
+        // Ensure the buffer does not overflow
+        if (buf.size() + bytesReceived > MAX_MESSAGE_SIZE) {
+            std::string msg = ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected");
+            send(client->getSocketFD(), msg.c_str(), msg.length(), 0);
+            buf.clear();
+            return;
         }
-        if (std::find(temp.begin(), temp.end(), '\n') == temp.end()){
-            buf.insert(it, temp.begin(), temp.end());
-            //std::cout << "BUF: " << buf.data() << "." << std::endl;
-        }
-        else {
-            buf.insert(it, temp.begin(), temp.end());
+
+        // Insert received data into the buffer
+        buf.insert(buf.end(), temp.begin(), temp.begin() + bytesReceived);
+        //std::cout << "BUF: " << buf.data() << "." << std::endl;
+
+        // If the message contains a newline, process it
+        if (std::find(temp.begin(), temp.end(), '\n') != temp.end()){
             this->handleCommand(*client, buf);
             buf.clear();
         }
+
+        // If the client isn't registered, try registration
         if (!client->getRegistration())
             client->registration();
-        std::cout << std::endl;
-        //printMap(_Clients);
     }
-
 }
 
 // Função para verificar que evento aconteceu
@@ -125,6 +149,8 @@ void Server::checkEvents(int nEvents) {
         this->removeClient(it->first, it->second);
     }
     this->_toRemove.clear();
+    std::cout << std::endl;
+    //printMap(_Clients);
 }
 
 void Server::handleTimeouts(time_t inactivityTimeout, time_t connectionTimeout) {
@@ -151,16 +177,27 @@ void Server::handleTimeouts(time_t inactivityTimeout, time_t connectionTimeout) 
 
 void Server::run()
 {
-    // Inicializa a socket e da exception se der erro
+    // 1.Inicializa a socket e da exception se der erro
     this->_socketFD = socket(AF_INET6, SOCK_STREAM, 0);
     if (this->_socketFD == -1)
         throw IRCException("[ERROR] Opening socket went wrong");
+    // 2. Set socket options (e.g., SO_REUSEADDR)
     int enable = 1;
     if (setsockopt(this->_socketFD, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) == -1){
         close(this->_socketFD);
         throw IRCException("[ERROR] Setting socket options went wrong");
     }
-    // Dá bind aquela mesma socket numa porta específica
+    // 3. Set the socket to non-blocking mode
+    int flags = fcntl(this->_socketFD, F_GETFL, 0);
+    if (flags == -1) {
+        close(this->_socketFD);
+        throw IRCException("[ERROR] Getting socket flags went wrong");
+    }
+    if (fcntl(this->_socketFD, F_SETFL, flags | O_NONBLOCK) == -1) {
+        close(this->_socketFD);
+        throw IRCException("[ERROR] Setting socket to non-blocking went wrong");
+    }
+    // 4. Dá bind aquela mesma socket numa porta específica
     if (bind(this->_socketFD, reinterpret_cast<struct sockaddr *>(&this->_socketInfo), sizeof(this->_socketInfo)) == -1)
     {
         close(this->_socketFD);
@@ -190,8 +227,8 @@ void Server::run()
             this->handleTimeouts(TIMEOUT, CONNECTIONTIMEOUT);
             throw IRCException("[ERROR] Poll connection timed out");
         default:
-            this->handleTimeouts(TIMEOUT, CONNECTIONTIMEOUT);
             this->checkEvents(nEvents);
+            this->handleTimeouts(TIMEOUT, CONNECTIONTIMEOUT);
             //titleInfo("Clients Map");
             //printMap(_Clients);
             break;
