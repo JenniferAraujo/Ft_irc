@@ -19,20 +19,15 @@ std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs)
     return out;
 }
 
-/*     int                     _socketFD;
-    bool                    _validCmd;
-    std::string             _nick;
-    std::string             _name;
-    std::string             _user;
-    std::string             _realName;
-    std::string             _command; */
-//O nick e o user só imprime com \n e eu n percebo porque \n
 std::ostream& operator<<(std::ostream& out, const Client &client)
 {
     out << "FD: " << BOLD_GREEN << client.getSocketFD() << RESET
     << "\t| Nick: " << client.getNick()
     << " | Username: " << client.getUsername()
-    << " | Realname: " << client.getRealname();
+    << " | Realname: " << client.getRealname()
+    << " | Password: " << client.getPassword()
+    << " | Reg Error: " << client.getRegError()
+    << " | Registration bool: " << client.getRegistration();
     return(out);
 }
 
@@ -77,65 +72,6 @@ std::string formatServerMessage(const std::string& color, const std::string& lab
     return oss.str();
 }
 
-void    printCap(ACommand *command){
-    Cap    *cap = dynamic_cast<Cap *>(command);
-    std::cout << "Command: " << cap->getName() <<  " | Error: " << cap->getError() << " | End: " << cap->getEnd() << std::endl;
-
-}
-
-void    printPass(ACommand *command){
-    Pass    *pass = dynamic_cast<Pass *>(command);
-    std::cout << "Command: " << pass->getName() <<  " | Error: " << pass->getError() << " | Pass: " << pass->getPass() << std::endl;
-
-}
-
-void    printNick(ACommand *command){
-    Nick    *nick = dynamic_cast<Nick *>(command);
-    std::cout << "Command: " << nick->getName() <<  " | Error: " << nick->getError() << " | Nick: " << nick->getNick() << std::endl;
-
-}
-
-void    printUser(ACommand *command){
-    User    *user = dynamic_cast<User *>(command);
-    std::cout << "Command: " << user->getName() <<  " | Error: " << user->getError() << " | Name: " << user->getUsername() << " | Real name: " << user->getRealname() << std::endl;
-}
-
-void    printJoin(ACommand *command){
-    Join    *join = dynamic_cast<Join *>(command);
-    std::cout << "Name: " << join->getName() <<  " | Error: " << join->getError() << " | Channel: " << join->getChannel() << std::endl;
-
-}
-
-void    printMode(ACommand *command){
-    Mode    *mode = dynamic_cast<Mode *>(command);
-    std::cout << "Name: " << mode->getName() <<  " | Error: " << mode->getError() << " | Channel: " << mode->getChannel() << std::endl;
-
-}
-
-void    printWho(ACommand *command){
-    Who    *who = dynamic_cast<Who *>(command);
-    std::cout << "Name: " << who->getName() <<  " | Error: " << who->getError() << " | Channel: " << who->getChannel() << std::endl;
-
-}
-
-void    printPing(ACommand *command){
-    Ping    *ping = dynamic_cast<Ping *>(command);
-    std::cout << "Name: " << ping->getName() <<  " | Token: " << ping->getToken() << std::endl;
-
-}
-
-void printCommand(ACommand *command)
-{
-    int N = 8;
-    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING"};
-    void (*p[])(ACommand *) = {printCap, printPass, printNick, printUser, printJoin, printMode, printWho, printPing};
-    for (int i = 0; i < N; i++) {
-        if(!commands[i].compare(command->getName())){
-            (*p[i])(command);
-        }
-    }
-}
-
 void showq(std::queue<ACommand *> gq)
 {
     std::queue<ACommand *> g = gq;
@@ -143,7 +79,7 @@ void showq(std::queue<ACommand *> gq)
         std::cout << "Ups, I'm empty!!\n";
     while (!g.empty()) {
         //std::cout << g.front()->getName() << std::endl;
-        printCommand(g.front());
+        g.front()->print();
         g.pop();
     }
     std::cout << '\n';
@@ -157,5 +93,20 @@ void showstringq(std::queue<std::string> gq)
     while (!g.empty()) {
         std::cout << g.front() << std::endl;
         g.pop();
+    }
+}
+
+void showdoublestringq(std::queue<std::string> gq, std::queue<std::string> gq2)
+{
+    std::queue<std::string> g = gq;
+    std::queue<std::string> g2 = gq2;
+    while (!g.empty()) {
+        std::cout << g.front() << "\t\t| ";
+        g.pop();
+        if (!g2.empty()) {
+            std::cout << g2.front();
+            g2.pop();
+        }
+        std::cout << std::endl;
     }
 }

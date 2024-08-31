@@ -11,11 +11,13 @@ inline std::string JOIN_CHANNEL(const std::string& nick, const std::string& user
 
 class Join: public ACommand {
 public:
-    Join(const Server& server, const Client& client);
+    Join(Server& server, Client& client);
     ~Join() {};
 
     void parsing(std::istringstream &input);
     void parsingToken(std::string token, int n);
+    void execute();
+    void print() const;
 
     std::string getChannel() { return _channel; };
     std::queue<std::string> getPassword() { return _password; };

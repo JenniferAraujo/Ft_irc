@@ -1,20 +1,29 @@
 #include "Includes.hpp"
 
-Client::Client(Server &server)
-    :   _authError(0),
+Client::Client(Server &server, time_t time)
+    :   _regError(0),
         _registration(false),
-        _server(server) {}
+        _server(server),
+        _lastActivityTime(time),
+        _connectTime(time) {}
 
-Client::Client(const Client &cpy): _authError(cpy.getAuthError()), _registration(cpy.getRegistration()), _server(cpy.getServer())
-{
-}
+
+Client::Client(const Client &cpy)
+    :   _socketFD(cpy.getSocketFD()),
+        _regError(cpy.getRegError()),
+        _registration(cpy.getRegistration()),
+        _ipAddr(cpy.getIpaddr()),
+        _password(cpy.getPassword()),
+        _nick(cpy.getNick()),
+        _username(cpy.getUsername()),
+        _realname(cpy.getRealname()),
+        _server(cpy.getServer()) {}
 
 ACommand* Client::createCap(std::istringstream &input) {
     ACommand *command = new Cap(this->_server, *this);
     command->parsing(input);
     return command;
 }
-
 
 ACommand* Client::createPass(std::istringstream &input){
     ACommand *command = new Pass(this->_server, *this);
@@ -58,15 +67,43 @@ ACommand* Client::createPing(std::istringstream &input){
     return command;
 }
 
+ACommand* Client::createKick(std::istringstream &input){
+    ACommand *command = new Kick(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
+ACommand* Client::createPart(std::istringstream &input){
+    ACommand *command = new Part(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
+ACommand* Client::createInvite(std::istringstream &input){
+    ACommand *command = new Invite(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
+ACommand* Client::createTopic(std::istringstream &input){
+    ACommand *command = new Topic(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
 //TODO
+// KICK: EXECUTE
+// PART: EXECUTE
+// INVITE: EXECUTE
+// TOPIC: EXECUTE
 
 std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
     std::string str(buf.begin(), buf.end());
     //std::cout << "BUF: " << str << std::endl;
     std::istringstream input(str);
-    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING"};
+    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING", "KICK", "PART", "INVITE", "TOPIC"};
     int N = static_cast<int>(ARRAY_SIZE(commands));
-    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createCap, &Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin, &Client::createMode, &Client::createWho, &Client::createPing};
+    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createCap, &Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin, &Client::createMode, &Client::createWho, &Client::createPing, &Client::createKick, &Client::createPart, &Client::createInvite, &Client::createTopic};
     std::string cmd;
     std::string line;
     std::queue<ACommand *> result;
@@ -83,22 +120,88 @@ std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
     return result;
 }
 
+void Client::welcome() {
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << "WELCOME" << std::endl;
+    std::string msg;
+    msg.append(RPL_WELCOME(this->_server.getHostname(), "Internet Fight Club", this->getNick(), this->getUsername(), this->getIpaddr()));
+    msg.append(RPL_YOURHOST(this->_server.getHostname(), "servername", this->getNick(), "version"));
+    msg.append(RPL_CREATED(this->_server.getHostname(), this->_server.getCreationTime(), this->getNick()));
+    msg.append(RPL_MYINFO(this->_server.getHostname(), this->getNick(), "servername"));
+    msg.append(RPL_ISUPPORT(this->_server.getHostname(), this->getNick()));
+    msg.append(RPL_MOTDSTART(this->_server.getHostname(), this->getNick(), "servername"));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "  ________________", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), " /______________ /|", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "|  ___________  | |", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "| |           | | |", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "| |  ft_irc   | | |", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "| |    by:    | | |", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "| |           | | |", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "| |  r, j, d  | | |", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "| |___________| | |  ___", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "|_______________|/  /  /", this->getNick()));
+    msg.append(RPL_MOTD(this->_server.getHostname(), "                   /__/", this->getNick()));
+    msg.append(RPL_ENDOFMOTD(this->_server.getHostname(), this->getNick()));
+    send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
+}
+
+/* If the server is waiting to complete a lookup of client information (such as hostname or ident for a username), 
+there may be an arbitrary wait at some point during registration. Servers SHOULD set a reasonable timeout for these lookups. */
+void    Client::registration(){
+    if(this->getNick().empty()
+                || this->getRealname().empty() ||this->getUsername().empty())
+                    return ;
+    std::string msg;
+    this->setRegistration(true);
+    if (this->_regError) {
+        msg = ERR_PASSWDMISMATCH(this->_server.getHostname(), this->_nick);
+        send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
+        this->_server.updateToRemove(this->_socketFD, "Connection Registration Failed");
+        return ;
+    }
+    if (this->_password.empty()) {
+        msg = ERR_UNKNOWNERROR(this->_server.getHostname(), this->_nick, "", "Missing password");
+        send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
+        this->_server.updateToRemove(this->_socketFD, "Connection Registration Failed");
+        return ;
+    }
+    if(this->_server.findClient(this->_nick, this->_socketFD) != NULL
+        && this->_server.findClient(this->_nick, this->_socketFD)->getRegistration()){
+            msg = ERR_NICKNAMEINUSE(this->_server.getHostname(), "*", this->_nick);
+            send(this->getSocketFD(), msg.c_str(), msg.length(), 0);
+            this->_server.updateToRemove(this->_socketFD, "Connection Registration Failed");
+            return ;
+    }
+    this->welcome();
+}
+
 // Função para verificar a conecção de clientes
 // inet_ntop FUNÇÃO PROIBIDA, PROVAVELMENTE TEMOS DE MUDAR TUDO PARA O IPv4
 void Client::verifyConnection(Server &server, const pollfd &pfd) {
     if (pfd.revents & POLLIN) {
-        Client *client = new Client(server);
-
+        Client *client = new Client(server, time(NULL));
         struct sockaddr_in6 client_addr;
         socklen_t client_addr_len = sizeof(client_addr);
         memset(&client_addr, 0, sizeof(client_addr));
-
-        client->_socketFD = accept(server.getSocketFD(), (struct sockaddr *)&client_addr, &client_addr_len);
-        if (client->_socketFD == -1) {
-            delete client;
-            throw IRCException("[ERROR] Opening client socket went wrong");
+        try {
+            client->_socketFD = accept(server.getSocketFD(), (struct sockaddr *)&client_addr, &client_addr_len);
+            if (client->_socketFD == -1) {
+                if (errno != EWOULDBLOCK && errno != EAGAIN){
+                    delete client;
+                    throw IRCException("[ERROR] Opening client socket went wrong");
+                }
+            }
+            // Set the client socket to non-blocking mode
+            int flags = fcntl(client->_socketFD, F_GETFL, 0);
+            if (flags == -1 || fcntl(client->_socketFD, F_SETFL, flags | O_NONBLOCK) == -1) {
+                std::string msg = ERROR("Oppening socket went wrong");
+                send(client->_socketFD, msg.c_str(), msg.length(), 0);
+                close(client->_socketFD);
+                delete client;
+                throw IRCException("[ERROR] Getting client socket flags went wrong");
+            }
+        } catch(const std::exception &e) {
+            std::cout << RED << e.what() << RESET << std::endl;
         }
-
         char client_ip[INET6_ADDRSTRLEN];
         inet_ntop(AF_INET6, &(client_addr.sin6_addr), client_ip, INET6_ADDRSTRLEN);
 
@@ -110,14 +213,13 @@ void Client::verifyConnection(Server &server, const pollfd &pfd) {
         // }
 
         std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", 0) << "Client " << GREEN << "[" << client->_socketFD << "]" << RESET
-                  << " connected from " << BOLD_CYAN << client_ip << RESET << std::endl << std::endl;
+                  << " connected from " << BOLD_CYAN << client_ip << RESET << std::endl;
         client->setIpAddr(client_ip);
 
         server.updateNFDs(client->_socketFD);
         server.updateClients(client, client->_socketFD);
     }
 }
-
 
 
 Client::~Client() {}

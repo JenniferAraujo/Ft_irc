@@ -9,10 +9,12 @@ inline std::string PONG(const std::string& server, const std::string& token) {
 
 class Ping: public ACommand {
 public:
-    Ping(const Server& server, const Client& client);
+    Ping(Server& server, Client& client);
     ~Ping() {};
 
     void parsing(std::istringstream &input);
+    void execute();
+    void print() const;
 
     std::string getToken() { return _token; };
 

@@ -41,8 +41,3 @@ void Cap::execute() {
 void Cap::print() const{
     std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << std::endl;
 }
-
-//1o os clientes podem enviar
-//CAP LS [version] or CAP REQ
-
-//CAP EMD - COMPLETE REGISTRATION 

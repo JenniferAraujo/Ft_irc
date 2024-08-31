@@ -1,18 +1,18 @@
-#ifndef CAP_HPP
-# define CAP_HPP
+#ifndef QUIT_HPP
+# define QUIT_HPP
 
 # include "Includes.hpp"
 
-class Cap: public ACommand {
+class Quit: public ACommand {
 public:
-    Cap(Server& server, Client& client);
-    ~Cap() {};
+    Quit(Server& server, Client& client);
+    ~Quit() {};
     void parsing(std::istringstream &input);
     void execute();
     void print() const;
 
 private:
-    Cap();
+    Quit();
 };
 
 #endif // CAP_HPP

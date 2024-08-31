@@ -14,6 +14,7 @@
 # include <arpa/inet.h>
 # include <poll.h>
 # include <vector>
+# include <fcntl.h>
 # include <map>
 # include <string>
 # include <cstring>
@@ -22,6 +23,14 @@
 # include <fstream>
 # include <sstream>
 # include <queue>
+
+# define MAX_MESSAGE_SIZE   512
+# define USERLEN            12
+# define MAXCHARS           30
+# define CONNECTIONTIMEOUT  60 //2 minuts in seconds
+# define TIMEOUT            300 //5 minuts in seconds
+# define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
+
 # include "IRCException.hpp"
 # include "Server.hpp"
 # include "Client.hpp"
@@ -32,10 +41,14 @@
 # include "Commands/Nick.hpp"
 # include "Commands/User.hpp"
 # include "Commands/Join.hpp"
+# include "Commands/Part.hpp"
 # include "Commands/Who.hpp"
 # include "Commands/Mode.hpp"
 # include "Commands/Cap.hpp"
 # include "Commands/Ping.hpp"
+# include "Commands/Kick.hpp"
+# include "Commands/Invite.hpp"
+# include "Commands/Topic.hpp"
 # define RED "\033[31m"
 # define GREEN "\033[32m"
 # define PURPLE "\033[35m"
@@ -50,12 +63,6 @@
 # define BOLD_CYAN "\033[1;36m"
 # define RESET "\033[0m"
 
-# define NEEDMOREPARAMS 461
-# define PASSWDMISMATCH 464
-
-# define INVALIDNICK 2
-# define INVALIDUSER 3
-# define INVALIDCAP  4
 
 # define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 
@@ -76,5 +83,6 @@ std::string intToString(int value);
 std::string formatServerMessage(const std::string& color, const std::string& label, int clients);
 void showq(std::queue<ACommand *> gq);
 void showstringq(std::queue<std::string> gq);
+void showdoublestringq(std::queue<std::string> gq, std::queue<std::string> gq2);
 
 #endif // INCLUDES_HPP
