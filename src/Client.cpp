@@ -91,19 +91,19 @@ ACommand* Client::createTopic(std::istringstream &input){
     return command;
 }
 
-//TODO
-// KICK: EXECUTE
-// PART: EXECUTE
-// INVITE: EXECUTE
-// TOPIC: EXECUTE
+ACommand* Client::createQuit(std::istringstream &input){
+    ACommand *command = new Quit(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
 
 std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
     std::string str(buf.begin(), buf.end());
     //std::cout << "BUF: " << str << std::endl;
     std::istringstream input(str);
-    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING", "KICK", "PART", "INVITE", "TOPIC"};
+    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING", "KICK", "PART", "INVITE", "TOPIC", "QUIT"};
     int N = static_cast<int>(ARRAY_SIZE(commands));
-    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createCap, &Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin, &Client::createMode, &Client::createWho, &Client::createPing, &Client::createKick, &Client::createPart, &Client::createInvite, &Client::createTopic};
+    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createCap, &Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin, &Client::createMode, &Client::createWho, &Client::createPing, &Client::createKick, &Client::createPart, &Client::createInvite, &Client::createTopic, &Client::createQuit};
     std::string cmd;
     std::string line;
     std::queue<ACommand *> result;
@@ -124,11 +124,11 @@ void Client::welcome() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << "WELCOME" << std::endl;
     std::string msg;
     msg.append(RPL_WELCOME(this->_server.getHostname(), "Internet Fight Club", this->getNick(), this->getUsername(), this->getIpaddr()));
-    msg.append(RPL_YOURHOST(this->_server.getHostname(), "servername", this->getNick(), "version"));
+    msg.append(RPL_YOURHOST(this->_server.getHostname(), "rdjIRC", this->getNick(), "1.0"));
     msg.append(RPL_CREATED(this->_server.getHostname(), this->_server.getCreationTime(), this->getNick()));
-    msg.append(RPL_MYINFO(this->_server.getHostname(), this->getNick(), "servername"));
+    msg.append(RPL_MYINFO(this->_server.getHostname(), this->getNick(), "rdjIRC", "1.0"));
     msg.append(RPL_ISUPPORT(this->_server.getHostname(), this->getNick()));
-    msg.append(RPL_MOTDSTART(this->_server.getHostname(), this->getNick(), "servername"));
+    msg.append(RPL_MOTDSTART(this->_server.getHostname(), this->getNick(), "rdjIRC"));
     msg.append(RPL_MOTD(this->_server.getHostname(), "  ________________", this->getNick()));
     msg.append(RPL_MOTD(this->_server.getHostname(), " /______________ /|", this->getNick()));
     msg.append(RPL_MOTD(this->_server.getHostname(), "|  ___________  | |", this->getNick()));
@@ -176,6 +176,12 @@ void    Client::registration(){
 
 // Função para verificar a conecção de clientes
 // inet_ntop FUNÇÃO PROIBIDA, PROVAVELMENTE TEMOS DE MUDAR TUDO PARA O IPv4
+/*         struct hostent *host = NULL;
+        if (IN6_IS_ADDR_V4MAPPED(&client_addr.sin6_addr)) {
+             struct in_addr ipv4_addr;
+             memcpy(&ipv4_addr, &client_addr.sin6_addr.s6_addr[12], sizeof(ipv4_addr));
+             host = gethostbyname(inet_ntoa(ipv4_addr));
+        } */
 void Client::verifyConnection(Server &server, const pollfd &pfd) {
     if (pfd.revents & POLLIN) {
         Client *client = new Client(server, time(NULL));
@@ -205,17 +211,11 @@ void Client::verifyConnection(Server &server, const pollfd &pfd) {
         char client_ip[INET6_ADDRSTRLEN];
         inet_ntop(AF_INET6, &(client_addr.sin6_addr), client_ip, INET6_ADDRSTRLEN);
 
-        // struct hostent *host = NULL;
-        // if (IN6_IS_ADDR_V4MAPPED(&client_addr.sin6_addr)) {
-        //     struct in_addr ipv4_addr;
-        //     memcpy(&ipv4_addr, &client_addr.sin6_addr.s6_addr[12], sizeof(ipv4_addr));
-        //     host = gethostbyname(inet_ntoa(ipv4_addr));
-        // }
 
         std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", 0) << "Client " << GREEN << "[" << client->_socketFD << "]" << RESET
                   << " connected from " << BOLD_CYAN << client_ip << RESET << std::endl;
-        client->setIpAddr(client_ip);
 
+        client->setIpAddr(client_ip);
         server.updateNFDs(client->_socketFD);
         server.updateClients(client, client->_socketFD);
     }

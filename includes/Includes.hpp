@@ -49,6 +49,8 @@
 # include "Commands/Kick.hpp"
 # include "Commands/Invite.hpp"
 # include "Commands/Topic.hpp"
+# include "Commands/Quit.hpp"
+
 # define RED "\033[31m"
 # define GREEN "\033[32m"
 # define PURPLE "\033[35m"

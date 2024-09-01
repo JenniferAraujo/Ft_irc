@@ -32,6 +32,7 @@ public:
     ACommand*                   createPart(std::istringstream &input);
     ACommand*                   createInvite(std::istringstream &input);
     ACommand*                   createTopic(std::istringstream &input);
+    ACommand*                   createQuit(std::istringstream &input);
 
     //getters
     int             getSocketFD() const { return _socketFD; } ;
@@ -64,6 +65,7 @@ private:
     bool                    _regError;
     bool                    _registration;
     std::string             _ipAddr;
+    std::string             _hostname;
     std::string             _password;
     std::string             _nick;
     std::string             _username;

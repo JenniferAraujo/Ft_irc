@@ -13,6 +13,7 @@ public:
 
 private:
     Quit();
+    std::string _reason;
 };
 
 #endif // CAP_HPP

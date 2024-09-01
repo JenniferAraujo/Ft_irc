@@ -8,22 +8,29 @@
 # define UNKNOWNCOMMAND 421
 # define NEEDMOREPARAMS 461
 
-inline std::string ERR_UNKNOWNERROR(const std::string& client, const std::string& nick, const std::string& command, const std::string& info) {
+inline std::string ERR_UNKNOWNERROR(const std::string& source, const std::string& target, const std::string& command, const std::string& info) {
+    std::string _target = target;
+    if(target.empty())
+        _target = "*";
     if(command.empty())
-        return ":" + client + " 421 " + nick + " :" + info + "\r\n";
-    return ":" + client + " 400 " + nick + " " + command + " :" + info + "\r\n";
+        return ":" + source + " 421 " + _target + " :" + info + "\r\n";
+    return ":" + source + " 400 " + _target + " " + command + " :" + info + "\r\n";
 }
 
-inline std::string ERR_UNKNOWNCOMMAND(const std::string& client, const std::string& nick, const std::string& command) {
-    return ":" + client + " 421 " + nick + " " + command + " :Unknown command\r\n";
+inline std::string ERR_UNKNOWNCOMMAND(const std::string& source, const std::string& target, const std::string& command) {
+    if(target.empty())
+        return ":" + source + " 421 " + "*" + " " + command + " :Unknown command\r\n";
+    return ":" + source + " 421 " + target + " " + command + " :Unknown command\r\n";
 }
 
-inline std::string ERR_NEEDMOREPARAMS(const std::string& client, const std::string& nick, const std::string& command) {
-    return ":" + client + " 461 " + nick + " " + command + " :Not enough parameters\r\n";
+inline std::string ERR_NEEDMOREPARAMS(const std::string& source, const std::string& target, const std::string& command) {
+    if(target.empty())
+        return ":" + source + " 461 " + "*" + " " + command + " :Not enough parameters\r\n";
+    return ":" + source + " 461 " + target + " " + command + " :Not enough parameters\r\n";
 }
 
-inline std::string ERR_ALREADYREGISTERED(const std::string& client, const std::string& nick) {
-    return ":" + client + " 462 " + nick + " :You may not reregister\r\n";
+inline std::string ERR_ALREADYREGISTERED(const std::string& source, const std::string& target) {
+    return ":" + source + " 462 " + target + " :You may not reregister\r\n";
 }
 
 //A class abstrata ACommand tem uma string com o nome do comando e um int que guarda o erro de comando, se necessario, inicializado a 0 -> sem erro

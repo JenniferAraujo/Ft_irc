@@ -25,7 +25,6 @@ private:
     std::string _channel;
     std::string _client;
     std::string _reason;
-
 };
 
 #endif // KICK_HPP

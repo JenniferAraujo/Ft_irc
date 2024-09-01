@@ -1,15 +1,23 @@
 #include "Includes.hpp"
 
-void Server::removeClient(int fd, std::string error){
+//This is typically only dispatched to clients that share a channel with the exiting user. 
+//When the QUIT message is sent to clients, <source> represents the client that has exited the network.
+//:dan-!d@localhost QUIT :Quit: Bye for now!
+//                                 ; dan- is exiting the network with
+//                                 the message: "Quit: Bye for now!"
+void Server::removeClient(int fd, std::string reason){
     std::cout << "Removing Client with FD: " << fd << std::endl;
     if(this->_Clients.find(fd) != this->_Clients.end()){
         std::cout << "Found client: " << this->_Clients[fd]->getNick() << std::endl;
         for(std::map<std::string, Channel*>::iterator it = this->_Channels.begin(); it != this->_Channels.end(); ++it){
+            //mandar uma quit msg para os canais onde o cliente se encontra
+            //if(it->second->isClient(fd) || it->second->isOperator(fd))
+                //manda msg para o canal
             it->second->removeOperator(fd);
             it->second->removeClient(fd);
             it->second->removeInvited(fd);
         }
-        std::string msg = ERROR(error);
+        std::string msg = ERROR(reason);
         send(this->_Clients[fd]->getSocketFD(), msg.c_str(), msg.length(), 0);
         close(fd);
         delete this->_Clients[fd];

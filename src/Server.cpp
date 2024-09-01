@@ -45,8 +45,6 @@ void Server::updateToRemove(int fd, std::string error)
 Returned when a client command cannot be parsed as they are not yet registered. Servers offer only a limited subset of commands until clients are properly registered to the server. The text used in the last param of this message may vary.
  */
 
-//*Proximos passos: canais e mensagens
-//Ideia para executar os cmds
 void    Server::executeCommand(Client &client, ACommand *command){
     //REVIEW - Nao sei se esta condição é necessaria -> if((!client.getRegistration() || client.getRegError()) && !command->isRegistration())
     if(!client.getRegistration() && !command->isRegistration())
@@ -58,8 +56,9 @@ void    Server::executeCommand(Client &client, ACommand *command){
 }
 
 void    Server::handleCommand(Client &client, std::vector<char> &buf){
-    //std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
+    std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
     std::queue<ACommand *> commands = client.createCommand(buf);
+    std::cout << "FINAL BUF 2: " << buf.data() << "." << std::endl;
     if (commands.empty()) //Nao e um comando/ comando que nao tratamos -> //TODO - erro de unknoncommmand
             return ;
     std::cout << BOLD_GREEN << "[PRINT COMMANDS]\n" << RESET;
@@ -91,12 +90,12 @@ void Server::verifyEvent(const pollfd &pfd) {
 
         int bytesReceived = recv(client->getSocketFD(), temp.data(), temp.size(), 0);
         if(bytesReceived == 0){
-            this->updateToRemove(this->_socketFD, "Connection closed by client");
+            this->updateToRemove(client->getSocketFD(), "Connection closed by client");
             return ;
         }
         if(bytesReceived < 0){
             if (errno != EWOULDBLOCK || errno != EAGAIN){
-                this->updateToRemove(this->_socketFD, "Recv fail");
+                this->updateToRemove(client->getSocketFD(), "Recv fail");
             }
             return ;
         }
@@ -206,6 +205,7 @@ void Server::run()
     std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Socket with fd " << GREEN "[" << this->_socketFD << "]" << RESET
               << " bound on port " << YELLOW << this->_port << RESET << std::endl;
     // Meter a socket a ouvir aquela porta para um máximo de X conecções
+    //TODO - Testar too many connections
     if (listen(this->_socketFD, 10) == -1)
     {
         close(this->_socketFD);
