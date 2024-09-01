@@ -1,43 +1,17 @@
 #include "Includes.hpp"
 
-Cap::Cap(Server& server, Client& client): ACommand("CAP", server, client){};
+Quit::Quit(Server& server, Client& client): ACommand("CAP", server, client){};
 
-void Cap::parsing(std::istringstream &input){
-	std::string str;
-    std::getline(input, str, ' ');
-    if (str.empty())
-        this->_error = NEEDMOREPARAMS; //CAP
-    else {
-        this->trimChar(str, '\r');
-        if(str != "LS")
-            this->_error = UNKNOWNCOMMAND; //CAP dsjag
-    }
+void Quit::parsing(std::istringstream &input){
+    std::getline(input, this->_reason, ' ');
+    this->trimChar(this->_reason, '\r');
 }
 
-void Cap::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << this->_name << std::endl;
-    std::string msg;
-    switch (this->_error) {
-        case NEEDMOREPARAMS:
-            if (this->_client.getNick().empty())
-                msg.append(ERR_NEEDMOREPARAMS(this->_server.getHostname(), "*", this->_name));
-            else
-                msg.append(ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name));
-            break;
-        case UNKNOWNCOMMAND:
-            if (this->_client.getNick().empty())
-                msg.append(ERR_UNKNOWNCOMMAND(this->_server.getHostname(), "*" , this->_name));
-            else
-                msg.append(ERR_UNKNOWNCOMMAND(this->_server.getHostname(), this->_client.getNick(), this->_name));
-            break;
-        default:
-            if(this->_client.getRegistration())
-                    msg.append(ERR_ALREADYREGISTERED(this->_server.getHostname(), this->_client.getNick()));
-            break;
-    }
-    send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+//mandar msg para todos os clientes??
+void Quit::execute() {
+    this->_server.updateToRemove(this->_client.getSocketFD(), "Quit: " + this->_reason);
 }
 
-void Cap::print() const{
-    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << std::endl;
+void Quit::print() const{
+    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | Error: " << this->_reason << std::endl;
 }

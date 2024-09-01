@@ -27,11 +27,14 @@ _SUBFOLDERS		= Auxs Commands
 VPATH			= $(SRCS) $(addprefix $(SRCS)/, $(_SUBFOLDERS))
 
 _FILES 			= Client ClientAux Server ServerAux IRCException Aux Channel \
-					Join Nick Pass User Mode Who Cap Ping Kick Part Invite Topic
+					Join Nick Pass User Mode Who Cap Ping Kick Part Invite Topic Quit
 
 OBJ				= $(_FILES:%=%.o)
 TARGET			= $(addprefix $(OBJDIR)/, $(OBJ))
-_HEADERS		= Client.hpp Server.hpp Channel.hpp IRCException.hpp Includes.hpp Macros.hpp ACommand.hpp Commands/Cap.hpp Commands/Join.hpp Commands/Mode.hpp Commands/Nick.hpp Commands/Pass.hpp Commands/User.hpp Commands/Who.hpp Commands/Ping.hpp Commands/Kick.hpp Commands/Part.hpp Commands/Invite.hpp Commands/Topic.hpp
+_HEADERS		= Client.hpp Server.hpp Channel.hpp IRCException.hpp Includes.hpp Macros.hpp \
+					ACommand.hpp Commands/Cap.hpp Commands/Join.hpp Commands/Mode.hpp Commands/Nick.hpp \
+						Commands/Pass.hpp Commands/User.hpp Commands/Who.hpp Commands/Ping.hpp Commands/Kick.hpp \
+							Commands/Part.hpp Commands/Invite.hpp Commands/Topic.hpp Commands/Quit.hpp
 HDR				= $(addprefix $(INCLUDE)/, $(_HEADERS))
 
 #---------------------------------  RULES  --------------------------------------
