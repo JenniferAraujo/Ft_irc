@@ -21,6 +21,6 @@ int main(int argc, char **argv) {
         Server server(std::atoi(argv[1]), argv[2]);
         server.run();
     } catch(const std::exception &e) {
-        std::cout << RED << e.what() << RESET << std::endl;
+        std::cerr << RED << e.what() << RESET << std::endl;
     }
 }

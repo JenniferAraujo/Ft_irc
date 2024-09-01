@@ -33,9 +33,9 @@ void Server::updateNFDs(int fd)
 
 void Server::updateClients(Client *client, int fd) { this->_Clients[fd] = client; }
 
-void Server::updateToRemove(int fd, std::string error)
+void Server::updateToRemove(int fd, std::string reason)
 {
-    this->_toRemove[fd] = error;
+    this->_toRemove[fd] = reason;
 }
 
 /* ERR_NOTREGISTERED (451)
@@ -101,8 +101,7 @@ void Server::verifyEvent(const pollfd &pfd) {
         }
         // Ensure the buffer does not overflow
         if(bytesReceived > MAX_MESSAGE_SIZE){
-            std::string msg = ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected");
-            send(client->getSocketFD(), msg.c_str(), msg.length(), 0);
+            Send msg(client->getSocketFD(), ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected"), *this);
             buf.clear();
             return;
         }
@@ -110,12 +109,10 @@ void Server::verifyEvent(const pollfd &pfd) {
 
         // Ensure the buffer does not overflow
         if (buf.size() + bytesReceived > MAX_MESSAGE_SIZE) {
-            std::string msg = ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected");
-            send(client->getSocketFD(), msg.c_str(), msg.length(), 0);
+            Send msg(client->getSocketFD(), ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected"), *this);
             buf.clear();
             return;
         }
-
         // Insert received data into the buffer
         buf.insert(buf.end(), temp.begin(), temp.begin() + bytesReceived);
         //std::cout << "BUF: " << buf.data() << "." << std::endl;

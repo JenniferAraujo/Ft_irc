@@ -36,6 +36,7 @@
 # include "Client.hpp"
 # include "Macros.hpp"
 # include "Channel.hpp"
+# include "Send.hpp"
 # include "ACommand.hpp"
 # include "Commands/Pass.hpp"
 # include "Commands/Nick.hpp"
