@@ -10,8 +10,8 @@ void Server::removeClient(int fd, std::string reason){
     if(this->_Clients.find(fd) != this->_Clients.end()){
         std::cout << "Found client: " << this->_Clients[fd]->getNick() << std::endl;
         for(std::map<std::string, Channel*>::iterator it = this->_Channels.begin(); it != this->_Channels.end(); ++it){
-            //if(it->second->isClient(fd) || it->second->isOperator(fd))
-            //QUIT(this->_Clients[fd]->getNick(), this->_Clients[fd]->getUsername(), this->_Clients[fd]->getIpaddr(), reason);
+            if(it->second->isClient(fd) || it->second->isOperator(fd))
+                it->second->sendMessage(QUIT(this->_Clients[fd]->getNick(), this->_Clients[fd]->getUsername(), this->_Clients[fd]->getIpaddr(), reason), fd);
             it->second->removeOperator(fd);
             it->second->removeClient(fd);
             it->second->removeInvited(fd);
