@@ -58,7 +58,6 @@ void    Server::executeCommand(Client &client, ACommand *command){
 void    Server::handleCommand(Client &client, std::vector<char> &buf){
     std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
     std::queue<ACommand *> commands = client.createCommand(buf);
-    std::cout << "FINAL BUF 2: " << buf.data() << "." << std::endl;
     if (commands.empty()) //Nao e um comando/ comando que nao tratamos -> //TODO - erro de unknoncommmand
             return ;
     std::cout << BOLD_GREEN << "[PRINT COMMANDS]\n" << RESET;
@@ -101,28 +100,29 @@ void Server::verifyEvent(const pollfd &pfd) {
         }
         // Ensure the buffer does not overflow
         if(bytesReceived > MAX_MESSAGE_SIZE){
-            Send msg(client->getSocketFD(), ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected"), *this);
+            Message::sendMessage(client->getSocketFD(), ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected"), *this);
             buf.clear();
             return;
         }
-        //std::cout << "TEMP: " << temp.data() << "." << std::endl;
+        std::cout << "TEMP: " << temp.data() << "." << std::endl;
 
         // Ensure the buffer does not overflow
         if (buf.size() + bytesReceived > MAX_MESSAGE_SIZE) {
-            Send msg(client->getSocketFD(), ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected"), *this);
+            Message::sendMessage(client->getSocketFD(), ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected"), *this);
             buf.clear();
             return;
         }
         // Insert received data into the buffer
         buf.insert(buf.end(), temp.begin(), temp.begin() + bytesReceived);
-        //std::cout << "BUF: " << buf.data() << "." << std::endl;
+        std::cout << "BUF: " << buf.data() << "." << std::endl;
 
         // If the message contains a newline, process it
         if (std::find(temp.begin(), temp.end(), '\n') != temp.end()){
             this->handleCommand(*client, buf);
             buf.clear();
+            std::cout << "BUF after clear: " << buf.data() << "." << std::endl;
+            std::cout << "BUF SIZE: " << buf.size() << std::endl;
         }
-
         // If the client isn't registered, try registration
         if (!client->getRegistration())
             client->registration();

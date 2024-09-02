@@ -5,6 +5,34 @@
 
 class Server;
 
+//? :<Client> <Numeric Code> <Nick Intended>: <Msg Content>
+inline std::string RPL_WELCOME(const std::string& source, const std::string& networkName, const std::string& nick, const std::string& user, const std::string& host) {
+    return ":" + source + " 001 " + nick + " :Welcome to the " + networkName + " Network, " + nick + "!" + user + "@" + host + "\r\n";
+}
+inline std::string RPL_YOURHOST(const std::string& source, const std::string& serverName, const std::string& target, const std::string& version) {
+    return ":" + source + " 002 " + target + " :Your host is " + serverName + ", running version " + version + "\r\n";
+}
+inline std::string RPL_CREATED(const std::string& source, const std::string& dateTime, const std::string& target) {
+    return ":" + source + " 003 " + target + " :This server was created " + dateTime + "\r\n";
+}
+inline std::string RPL_MYINFO(const std::string& source, const std::string& target, const std::string& serverName, const std::string& version) {
+    return ":" + source + " 004 " + target + " " + serverName + " " + version + " NCcCtu\r\n";
+}
+inline std::string RPL_ISUPPORT(const std::string& source, const std::string& target) {
+    std::stringstream ss;
+    ss << ":" << source << " 005 " << target << " USERLEN=" << USERLEN << " :are supported by this server\r\n";
+    return ss.str();
+}
+inline std::string RPL_MOTDSTART(const std::string& source, const std::string& target, const std::string& serverName) {
+    return ":" + source + " 375 " + target + " :" + serverName + " Message of the day\r\n";
+}
+inline std::string RPL_MOTD(const std::string& source, const std::string& msg, const std::string& target) {
+    return ":" + source + " 372 " + target + " :" + msg + "\r\n";
+}
+inline std::string RPL_ENDOFMOTD(const std::string& source, const std::string& target) {
+    return ":" + source + " 376 " + target + " :End of /MOTD command.\r\n";
+}
+
 class Client {
 public:
     Client(Server &server, time_t lastActivityTime); // Constructor

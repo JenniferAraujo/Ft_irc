@@ -34,9 +34,8 @@
 # include "IRCException.hpp"
 # include "Server.hpp"
 # include "Client.hpp"
-# include "Macros.hpp"
+# include "Message.hpp"
 # include "Channel.hpp"
-# include "Send.hpp"
 # include "ACommand.hpp"
 # include "Commands/Pass.hpp"
 # include "Commands/Nick.hpp"
@@ -51,6 +50,7 @@
 # include "Commands/Invite.hpp"
 # include "Commands/Topic.hpp"
 # include "Commands/Quit.hpp"
+
 
 # define RED "\033[31m"
 # define GREEN "\033[32m"

@@ -31,32 +31,20 @@ void Nick::parsing(std::istringstream &input){
 //The NICK message may be sent from the server to clients to acknowledge their NICK command was successful, and to inform other clients about the change of nickname. In these cases, the <source> of the message will be the old nickname [ [ "!" user ] "@" host ] of the user who is changing their nickname.
 void Nick::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << this->_name << std::endl;
-    std::string msg;
     switch (this->_error) {
         case NONICKNAMEGIVEN:
-            if (this->_client.getNick().empty())
-                msg.append(ERR_NONICKNAMEGIVEN(this->_server.getHostname(), "*"));
-            else
-                msg.append(ERR_NONICKNAMEGIVEN(this->_server.getHostname(), this->_client.getNick()));
+            Message::sendMessage(this->_client.getSocketFD(), ERR_NONICKNAMEGIVEN(this->_server.getHostname(), this->_client.getNick()), this->_server);
             break;
         case ERRONEUSNICKNAME:
-            if (this->_client.getNick().empty())
-                msg.append(ERR_ERRONEUSNICKNAME(this->_server.getHostname(), "*" , this->_nick));
-            else
-                msg.append(ERR_ERRONEUSNICKNAME(this->_server.getHostname(), this->_client.getNick(), this->_nick));
+            Message::sendMessage(this->_client.getSocketFD(), ERR_ERRONEUSNICKNAME(this->_server.getHostname(), this->_client.getNick() , this->_nick), this->_server);
             break;
         case NICKNAMEINUSE:
-            if (this->_client.getNick().empty())
-                msg.append(ERR_NICKNAMEINUSE(this->_server.getHostname(), "*" , this->_nick));
-            else
-                msg.append(ERR_NICKNAMEINUSE(this->_server.getHostname(), this->_client.getNick(), this->_nick));
+            Message::sendMessage(this->_client.getSocketFD(), ERR_NICKNAMEINUSE(this->_server.getHostname(), this->_client.getNick(), this->_nick), this->_server);
             break;
         default:
             this->_client.setNick(this->_nick);
             break;
     }
-    if(!msg.empty())
-        send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
 }
 
 void Nick::print() const{

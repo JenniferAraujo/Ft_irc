@@ -24,21 +24,14 @@ void User::parsing(std::istringstream &input){
 void User::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << this->_name << std::endl;
     std::string msg;
-    if(this->_client.getRegistration()){
-        msg.append(ERR_ALREADYREGISTERED(this->_server.getHostname(), this->_client.getNick()));
-        send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        return ;
+    if(this->_client.getRegistration())
+        Message::sendMessage(this->_client.getSocketFD(), ERR_ALREADYREGISTERED(this->_server.getHostname(), this->_client.getNick()), this->_server);
+    else if (this->_error == NEEDMOREPARAMS)
+        Message::sendMessage(this->_client.getSocketFD(), ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name), this->_server);
+    else{
+        this->_client.setUsername(this->_username);
+        this->_client.setRealname(this->_realname);
     }
-    if (this->_error == NEEDMOREPARAMS){
-        if (this->_client.getNick().empty())
-            msg.append(ERR_NEEDMOREPARAMS(this->_server.getHostname(), "*", this->_name));
-        else
-            msg.append(ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name));
-        send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        return ;
-    }
-    this->_client.setUsername(this->_username);
-    this->_client.setRealname(this->_realname);
 }
 
 void User::print() const{

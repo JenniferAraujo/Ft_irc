@@ -121,7 +121,6 @@ std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
 }
 
 void Client::welcome() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << "WELCOME" << std::endl;
     std::string msg;
     msg.append(RPL_WELCOME(this->_server.getHostname(), "Internet Fight Club", this->getNick(), this->getUsername(), this->getIpaddr()));
     msg.append(RPL_YOURHOST(this->_server.getHostname(), "rdjIRC", this->getNick(), "1.0"));
@@ -141,7 +140,7 @@ void Client::welcome() {
     msg.append(RPL_MOTD(this->_server.getHostname(), "|_______________|/  /  /", this->getNick()));
     msg.append(RPL_MOTD(this->_server.getHostname(), "                   /__/", this->getNick()));
     msg.append(RPL_ENDOFMOTD(this->_server.getHostname(), this->getNick()));
-    Send msg(this->_socketFD, msg, this->_server);
+    Message::sendMessage(this->_socketFD, msg, this->_server);
 }
 
 /* If the server is waiting to complete a lookup of client information (such as hostname or ident for a username), 
@@ -152,18 +151,18 @@ void    Client::registration(){
                     return ;
     this->setRegistration(true);
     if (this->_regError) {
-        Send msg(this->_socketFD, ERR_PASSWDMISMATCH(this->_server.getHostname(), this->_nick), this->_server);
+        Message::sendMessage(this->_socketFD, ERR_PASSWDMISMATCH(this->_server.getHostname(), this->_nick), this->_server);
         this->_server.updateToRemove(this->_socketFD, "Connection Registration Failed");
         return ;
     }
     if (this->_password.empty()) {
-        Send msg(this->_socketFD, ERR_UNKNOWNERROR(this->_server.getHostname(), this->_nick, "", "Missing password"), this->_server);
+        Message::sendMessage(this->_socketFD, ERR_UNKNOWNERROR(this->_server.getHostname(), this->_nick, "", "Missing password"), this->_server);
         this->_server.updateToRemove(this->_socketFD, "Connection Registration Failed");
         return ;
     }
     if(this->_server.findClient(this->_nick, this->_socketFD) != NULL
         && this->_server.findClient(this->_nick, this->_socketFD)->getRegistration()){
-            Send msg(this->_socketFD, ERR_NICKNAMEINUSE(this->_server.getHostname(), "*", this->_nick), this->_server);
+            Message::sendMessage(this->_socketFD, ERR_NICKNAMEINUSE(this->_server.getHostname(), "*", this->_nick), this->_server);
             this->_server.updateToRemove(this->_socketFD, "Connection Registration Failed");
             return ;
     }
@@ -195,7 +194,7 @@ void Client::verifyConnection(Server &server, const pollfd &pfd) {
             // Set the client socket to non-blocking mode
             int flags = fcntl(client->_socketFD, F_GETFL, 0);
             if (flags == -1 || fcntl(client->_socketFD, F_SETFL, flags | O_NONBLOCK) == -1) {
-                Send msg(client->_socketFD, ERROR("Oppening socket went wrong"), server);
+                Message::sendMessage(client->_socketFD, ERROR("Oppening socket went wrong"), server);
                 close(client->_socketFD);
                 delete client;
                 throw IRCException("[ERROR] Getting client socket flags went wrong");

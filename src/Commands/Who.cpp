@@ -20,17 +20,13 @@ void Who::execute() {
             Client* c = it->second;
             names.append(c->getNick());
             names.append(" ");
-            msg = RPL_WHO(this->_server.getHostname(), this->_channel, this->_client.getNick(), *c);
-            send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+            Message::sendMessage(this->_client.getSocketFD(), RPL_WHO(this->_server.getHostname(), this->_channel, this->_client.getNick(), *c), this->_server);
         }
     }
-    msg = RPL_ENDWHO(this->_server.getHostname(), this->_channel, this->_client.getNick());
-    send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
-    msg = RPL_NAME(this->_server.getHostname(), this->_channel, this->_client.getNick(), names);
-    send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
-    msg = RPL_ENDNAME(this->_server.getHostname(), this->_channel, this->_client.getNick());
-    send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
-    send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+    Message::sendMessage(this->_client.getSocketFD(), RPL_ENDWHO(this->_server.getHostname(), this->_channel, this->_client.getNick()), this->_server);
+    Message::sendMessage(this->_client.getSocketFD(), RPL_NAME(this->_server.getHostname(), this->_channel, this->_client.getNick(), names), this->_server);
+    Message::sendMessage(this->_client.getSocketFD(), RPL_ENDNAME(this->_server.getHostname(), this->_channel, this->_client.getNick()), this->_server);
+    Message::sendMessage(this->_client.getSocketFD(), RPL_ENDNAME(this->_server.getHostname(), this->_channel, this->_client.getNick()), this->_server); //REVIEW - mandas 2x o RPL_ENDNAME
 }
 
 void Who::print() const{

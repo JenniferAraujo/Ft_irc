@@ -18,7 +18,7 @@ void Server::removeClient(int fd, std::string reason){
             it->second->removeInvited(fd);
         }
         if (!reason.empty())
-            Send msg(fd, ERROR(reason), *this);
+            Message::sendMessage(fd, ERROR(reason), *this);
         close(fd);
         delete this->_Clients[fd];
         this->_Clients.erase(fd);

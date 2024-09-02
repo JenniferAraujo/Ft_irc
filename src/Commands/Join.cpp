@@ -43,22 +43,19 @@ void Join::parsing(std::istringstream &input){
 
 void Join::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << this->_name << std::endl;
-    std::string msg;
     while(!this->_channels.empty()) {
         std::cout << "Channel: " << this->_channels.front() << std::endl;
 		if (this->_password.empty())
 		        this->_server.addInChannel(this->_channels.front(),  "", const_cast<Client&>(this->_client));
 		else
 	        this->_server.addInChannel(this->_channels.front(), this->_password.front(), const_cast<Client&>(this->_client));
-        msg.append(JOIN_CHANNEL(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channels.front()));
-        send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+        Message::sendMessage(this->_client.getSocketFD(), JOIN_CHANNEL(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channels.front()), this->_server);
         if (this->_server.getChannels().find(this->_channels.front()) != this->_server.getChannels().end()) {
             Channel* channel = this->_server.getChannels()[this->_channels.front()];
             if (channel->getTopic().empty())
-                msg.append(RPL_NOTOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick()));
+                Message::sendMessage(this->_client.getSocketFD(), RPL_NOTOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick()), this->_server);
             else
-                msg.append(RPL_TOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick(), channel->getTopic()));
-            send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+                Message::sendMessage(this->_client.getSocketFD(), RPL_TOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick(), channel->getTopic()), this->_server);
         }
         this->_channels.pop();
 		if (!this->_password.empty()) 

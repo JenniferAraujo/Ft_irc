@@ -1,4 +1,5 @@
 #include "Includes.hpp"
+#include "Server.hpp"
 
 void check_port(std::string port) {
     for (unsigned int i = 0; i < port.length(); i++) {
