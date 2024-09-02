@@ -10,9 +10,8 @@ void Server::removeClient(int fd, std::string reason){
     if(this->_Clients.find(fd) != this->_Clients.end()){
         std::cout << "Found client: " << this->_Clients[fd]->getNick() << std::endl;
         for(std::map<std::string, Channel*>::iterator it = this->_Channels.begin(); it != this->_Channels.end(); ++it){
-            //mandar uma quit msg para os canais onde o cliente se encontra
             //if(it->second->isClient(fd) || it->second->isOperator(fd))
-                //manda msg para o canal
+            //QUIT(this->_Clients[fd]->getNick(), this->_Clients[fd]->getUsername(), this->_Clients[fd]->getIpaddr(), reason);
             it->second->removeOperator(fd);
             it->second->removeClient(fd);
             it->second->removeInvited(fd);
@@ -31,7 +30,6 @@ void Server::removeClient(int fd, std::string reason){
     }
 }
 
-// FIXME - ISTO ESTÁ ERRADO PK NÃO SE PODE USAR A GETHOSTNAME, MAS SIM A GETHOSTBYNAME
 void Server::getServerInfo() {
     char hostbuffer[256];
     struct hostent *host_entry;
