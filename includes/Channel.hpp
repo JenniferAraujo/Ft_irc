@@ -12,9 +12,8 @@ public:
 	~Channel(); // Destructor
 
 	void	addClient(Client &client);
-	
 	std::map<int, Client*> getClients() const { return _Clients; } ;
-	
+	std::map<int, Client*> getOperators() const { return _operators; } ;
 	std::string getMode() const { return _mode; }
 	void	setMode(const std::string &mode) { _mode = mode; }
 
@@ -45,17 +44,12 @@ public:
 	bool	isInvited(const std::string& name) const { return std::find(_invitedNames.begin(), _invitedNames.end(), name) != _invitedNames.end(); }
 	void	addInvite(const std::string& name) { _invitedNames.push_back(name); }
 	void	setEnteredPassword(const std::string& password) { _password = password; }
-	bool	hasPassword(const std::string& password) const { 
-		if (password.empty()) {
-			std::cout << "entra aqui? " << std::endl;
-			return false;
-		}
-		std::cout << "hasPassword: " << (_password == password) << std::endl;
-		for (unsigned int i = 0; i < _password.length(); i++) {
-			std::cout << (int)_password[i] << std::endl;
-		}
-		return _password == password; };
-	
+	bool	hasPassword(const std::string& password) const { return password.empty() ? false : _password == password; };
+	bool	isClient(int fd) { return this->_Clients.find(fd) != this->_Clients.end() ? true : false; };
+	bool	isOperator(int fd) { return this->_operators.find(fd) != this->_operators.end() ? true : false;	};
+
+	void	sendMessage(std::string msg, int skipFD, bool onlyOP);
+
 private:
 	Channel();
 	std::string _name;
@@ -68,8 +62,8 @@ private:
 	//NOTE - Se o cliente desconectar tem que ser apagado de todas estas collections
 	std::vector<std::string>	_invitedNames; //NOTE - clientes que foram convidados p entrar em canal
 	std::vector<int>			_invitedClients; //NOTE - clientes que foram convidados p entrar em canal - fd
-	std::map<int, Client*>		_Clients; 
-	std::map<int, Client*>		_operators; //NOTE - channel operators 
+	std::map<int, Client*>		_Clients;
+	std::map<int, Client*>		_operators; //NOTE - channel operators
 };
 
 #endif // CHANNEL_HPP

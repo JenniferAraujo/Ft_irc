@@ -58,7 +58,7 @@ void Join::execute() {
                 Message::sendMessage(this->_client.getSocketFD(), RPL_TOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick(), channel->getTopic()), this->_server);
         }
         this->_channels.pop();
-		if (!this->_password.empty()) 
+		if (!this->_password.empty())
         	this->_password.pop();
     }
 }
