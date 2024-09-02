@@ -56,7 +56,7 @@ void Kick::execute() {
         Channel* channel = this->_server.getChannels()[this->_channel];
         if (this->_error == 0 ) {
             if (channel->isClient(this->_server.getClientByNick(this->_cliente)))
-                channel->sendMessage(KICK(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_cliente, this->_reason.empty() ? KICKDEFAULTMSG : this->_reason), 0, false);
+                channel->sendMessage(KICK(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_cliente, this->_reason.empty() ? KICKDEFAULTMSG : this->_reason), 0);
             else
                 std::cout << "Mensagens de erro" << std::endl;
         } else {
