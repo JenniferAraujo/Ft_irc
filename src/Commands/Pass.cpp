@@ -15,18 +15,12 @@ void Pass::parsing(std::istringstream &input){
 
 void Pass::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << this->_name << std::endl;
-    std::string msg;
     if (this->_error == NEEDMOREPARAMS){
-        if (this->_client.getNick().empty())
-            msg.append(ERR_NEEDMOREPARAMS(this->_server.getHostname(), "*", this->_name));
-        else
-            msg.append(ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name));
-        send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+        Message::sendMessage(this->_client.getSocketFD(), ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name), this->_server);
         return ;
     }
     if(this->_client.getRegistration()){
-        msg.append(ERR_ALREADYREGISTERED(this->_server.getHostname(), this->_client.getNick()));
-        send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+        Message::sendMessage(this->_client.getSocketFD(), ERR_ALREADYREGISTERED(this->_server.getHostname(), this->_client.getNick()), this->_server);
         return ;
     }
     if (this->_error) {

@@ -19,23 +19,16 @@ void Cap::execute() {
     std::string msg;
     switch (this->_error) {
         case NEEDMOREPARAMS:
-            if (this->_client.getNick().empty())
-                msg.append(ERR_NEEDMOREPARAMS(this->_server.getHostname(), "*", this->_name));
-            else
-                msg.append(ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name));
+            Message::sendMessage(this->_client.getSocketFD(), ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name), this->_server);
             break;
         case UNKNOWNCOMMAND:
-            if (this->_client.getNick().empty())
-                msg.append(ERR_UNKNOWNCOMMAND(this->_server.getHostname(), "*" , this->_name));
-            else
-                msg.append(ERR_UNKNOWNCOMMAND(this->_server.getHostname(), this->_client.getNick(), this->_name));
+            Message::sendMessage(this->_client.getSocketFD(), ERR_UNKNOWNCOMMAND(this->_server.getHostname(), this->_client.getNick(), this->_name), this->_server);
             break;
         default:
             if(this->_client.getRegistration())
-                    msg.append(ERR_ALREADYREGISTERED(this->_server.getHostname(), this->_client.getNick()));
+                Message::sendMessage(this->_client.getSocketFD(), ERR_ALREADYREGISTERED(this->_server.getHostname(), this->_client.getNick()), this->_server);
             break;
     }
-    send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
 }
 
 void Cap::print() const{

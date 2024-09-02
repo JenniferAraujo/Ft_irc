@@ -1,3 +1,4 @@
+
 #include "IRCException.hpp"
 
 IRCException::IRCException(const std::string& msg): _msg(msg) {}

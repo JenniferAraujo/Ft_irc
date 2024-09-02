@@ -78,15 +78,13 @@ void Mode::execute() {
 	std::string modeStr = this->getMode();
 	
 	if (channel.empty()) {
-		msg.append("Error(461): MODE Not enough parameters.\r\n");
-		send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+		Message::sendMessage(this->_client.getSocketFD(), "Error(461): MODE Not enough parameters.\r\n", this->_server);
 		return ;
 	}
 	std::map<std::string, Channel*> channels = this->_server.getChannels();
 	std::map<std::string, Channel*>::iterator it = channels.find(this->_channel);
-	if (it == channels.end()) {  
-		std::string msg = "Reply(403): No such channel " + this->_channel + "\r\n";
-		send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+	if (it == channels.end()) {
+		Message::sendMessage(this->_client.getSocketFD(), "Reply(403): No such channel " + this->_channel + "\r\n", this->_server);
 		return ;
 	}
 	Channel* channelObj = it->second;
@@ -99,32 +97,27 @@ void Mode::execute() {
 		
 		std::cout << "modo: " << modeChar << std::endl;
 		if (modeChar != '+' && modeChar != '-' && !isValidMode(modeChar)) {
-			msg.append("Error(472): " + std::string(1, modeChar) + " is not a recognised channel mode.\r\n");
-			send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+			Message::sendMessage(this->_client.getSocketFD(), "Error(472): " + std::string(1, modeChar) + " is not a recognised channel mode.\r\n", this->_server);
 			return ;
 		}
 		
 		if ((modeChar == 'k' || modeChar == 'l' || modeChar == 'o') && i + 1 < modeStr.length() && modeStr[i + 1] == '+') {
 			if (modeChar == 'k' && _password.empty()) {
-				msg.append("Error(461): MODE +k requires a password.\r\n");
-				send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+				Message::sendMessage(this->_client.getSocketFD(), "Error(461): MODE +k requires a password.\r\n", this->_server);
 				return ;
 			}
 			if (modeChar == 'l' && _userLimit < 0) {
-				msg.append("Error(461): MODE +l requires a user limit.\r\n");
-				send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+				Message::sendMessage(this->_client.getSocketFD(), "Error(461): MODE +l requires a user limit.\r\n", this->_server);
 				return ;
 			}
 			if (modeChar == 'o' && channelObj->getClientById(_clientId) == NULL) {
-				msg.append("Error(401): No such nick/channel.\r\n");
-				send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+				Message::sendMessage(this->_client.getSocketFD(), "Error(401): No such nick/channel.\r\n", this->_server);
 				return ;
 			}
 		}
 	}
 	channelObj->applyMode(*this);
-	std::string confirmationMsg = ":" + this->_client.getNick() + " MODE " + this->_channel + " " + this->_mode + "\r\n";
-	send(this->_client.getSocketFD(), confirmationMsg.c_str(), confirmationMsg.length(), 0);
+	Message::sendMessage(this->_client.getSocketFD(), ":" + this->_client.getNick() + " MODE " + this->_channel + " " + this->_mode + "\r\n", this->_server);
 }
 
 void Mode::print() const{

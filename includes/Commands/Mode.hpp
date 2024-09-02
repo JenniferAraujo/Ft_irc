@@ -3,6 +3,10 @@
 
 # include "Includes.hpp"
 
+inline std::string RPL_MODE(const std::string& source, const std::string& channel, const std::string& target, const std::string& mode) {
+    return ":" + source + " 324 " + target + " " + channel + " " + mode + "\r\n";
+}
+
 class Mode: public ACommand {
 public:
 	Mode(Server& server, Client& client);

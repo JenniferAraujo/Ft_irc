@@ -17,8 +17,8 @@ void Server::removeClient(int fd, std::string reason){
             it->second->removeClient(fd);
             it->second->removeInvited(fd);
         }
-        std::string msg = ERROR(reason);
-        send(this->_Clients[fd]->getSocketFD(), msg.c_str(), msg.length(), 0);
+        if (!reason.empty())
+            Message::sendMessage(fd, ERROR(reason), *this);
         close(fd);
         delete this->_Clients[fd];
         this->_Clients.erase(fd);
