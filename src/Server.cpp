@@ -106,7 +106,8 @@ void Server::verifyEvent(const pollfd &pfd) {
             buf.clear();
             return;
         }
-        std::cout << "TEMP: " << temp.data() << "." << std::endl;
+        //std::cout << "TEMP: " << temp.data() << "." << std::endl;
+
         // Ensure the buffer does not overflow
         if (bufSize + bytesReceived > MAX_MESSAGE_SIZE) {
             std::cout << "Buf size 2: " << bufSize + bytesReceived << std::endl;
@@ -120,7 +121,6 @@ void Server::verifyEvent(const pollfd &pfd) {
         buf.insert(it, temp.begin(), temp.begin() + bytesReceived);
         bufSize += bytesReceived;
         std::cout << "BUF SIZE: " << bufSize << std::endl;
-        //std::cout << "BUF: " << buf.data() << "." << std::endl;
 
         // If the message contains a newline, process it
         if (std::find(temp.begin(), temp.end(), '\n') != temp.end()){
