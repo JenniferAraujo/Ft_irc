@@ -11,6 +11,16 @@ inline std::string ERROR(const std::string & msg) {
     return "ERROR :" + msg + "\r\n";
 }
 
+inline std::string ERR_NOTREGISTERED(const std::string& source, const std::string& target) {
+    if(target.empty())
+        return ":" + source + " 451 " + "*" + " :You have not registered\r\n";
+    return ":" + source + " 451 " + target + " :You have not registered\r\n";
+}
+
+inline std::string QUIT(const std::string& nick, const std::string& user, const std::string& host, const std::string& msg) {
+    return ":" + nick + "!" + user + "@" + host + " QUIT :" + msg + "\r\n";
+}
+
 class Server {
 public:
 	Server(const int &port, const std::string &password);

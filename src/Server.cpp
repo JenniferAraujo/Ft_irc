@@ -38,19 +38,10 @@ void Server::updateToRemove(int fd, std::string reason)
     this->_toRemove[fd] = reason;
 }
 
-/* ERR_NOTREGISTERED (451)
-
-  "<client> :You have not registered"
-
-Returned when a client command cannot be parsed as they are not yet registered. Servers offer only a limited subset of commands until clients are properly registered to the server. The text used in the last param of this message may vary.
- */
-//TODO unknowncommand
 void    Server::executeCommand(Client &client, ACommand *command){
-    //REVIEW - Nao sei se esta condição é necessaria -> if((!client.getRegistration() || client.getRegError()) && !command->isRegistration())
+    //Comando extra registo enviado antes do registo estar terminado
     if(!client.getRegistration() && !command->isRegistration())
-            std::cout << RED << "ERROR: " << RESET
-            << "Auth not over -> client can not execute command: " <<
-            command->getName() << std::endl;
+        Message::sendMessage(client.getSocketFD(), ERR_NOTREGISTERED(this->getHostname(), client.getNick()), *this);
     else
         command->execute();
 }
@@ -58,8 +49,15 @@ void    Server::executeCommand(Client &client, ACommand *command){
 void    Server::handleCommand(Client &client, std::vector<char> &buf){
     //std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
     std::queue<ACommand *> commands = client.createCommand(buf);
-    if (commands.empty()) //Nao e um comando/ comando que nao tratamos -> //TODO - erro de unknoncommmand
-            return ;
+    //Comando que n existe
+    if (commands.empty()){
+        std::string str(buf.begin(), buf.end());
+        std::istringstream input(str);
+        std::string cmd;
+        getline(input, cmd, ' ');
+        Message::sendMessage(client.getSocketFD(), ERR_UNKNOWNCOMMAND(this->getHostname(), client.getNick(), cmd), *this);
+        return ;
+    }
     std::cout << BOLD_GREEN << "[PRINT COMMANDS]\n" << RESET;
     showq(commands);
     while(!commands.empty()){
@@ -71,8 +69,6 @@ void    Server::handleCommand(Client &client, std::vector<char> &buf){
 }
 
 //TODO PRIVMSG -> handle send errors
-//TODO QUIT -> tirar dos canais, remover client, mandar msg
-//TODO - buf
 void Server::verifyEvent(const pollfd &pfd) {
     if (pfd.revents == POLLIN) {
         Client *client = this->_Clients[pfd.fd];
