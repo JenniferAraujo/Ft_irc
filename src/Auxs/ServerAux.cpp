@@ -85,3 +85,19 @@ Client    *Server::findClient(std::string nick, int skipFd){
     }
     return NULL;
 }
+
+int     Server::getClientByNick(std::string nick) {
+    for (std::map <int, Client *>::iterator it = this->_Clients.begin(); it != _Clients.end(); ++it) {
+        if(it->second->getNick() == nick)
+            return it->second->getSocketFD();
+    }
+    return -1;
+}
+
+// Channel     *Server::findChannel(std::string channel) {
+//     for (std::map <std::string, Channel*>::iterator it = this->_Channels.begin(); it != _Channels.end(); ++it) {
+//         if(it->second->getName() == channel)
+//             return it->second;
+//     }
+//     return NULL;
+// }

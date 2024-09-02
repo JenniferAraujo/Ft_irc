@@ -29,26 +29,23 @@ void Kick::parsing(std::istringstream &input) {
                 break;
             case 1:
                 if (this->existentClient(token))
-                    this->_client = token;			//KICK #a Diogo
+                    this->_cliente = token;			//KICK #a Diogo
                 else {
                     this->_error = USERNOTINCHANNEL;
                     return ;
                 }
                 break;
             case 2:
+            //NOTE - CONFIRMAR SE NÃO FUDI PARA KICK #a Diogo idk
                 if (token[0] == ':') {
                     token.erase(token.begin());
                     this->_reason = token;			//KICK #a Diogo :idk
-                }
-                else {
-                    this->_error = NEEDMOREPARAMS;	//KICK #a Diogo idk
-                    return ;
                 }
                 break;
         }
         n++;
     }
-    if (this->_channel.empty() || this->_client.empty())
+    if (this->_channel.empty() || this->_cliente.empty())
 		this->_error = NEEDMOREPARAMS;
 }
 
@@ -57,13 +54,20 @@ void Kick::execute() {
     //TODO - Permissões de OPERADOR
     if (this->_server.getChannels().find(this->_channel) != this->_server.getChannels().end()) {
         Channel* channel = this->_server.getChannels()[this->_channel];
-        //if (channel.)
+        if (this->_error == 0 ) {
+            if (channel->isClient(this->_server.getClientByNick(this->_cliente)))
+                channel->sendMessage(KICK(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_cliente, this->_reason.empty() ? KICKDEFAULTMSG : this->_reason), 0, false);
+            else
+                std::cout << "Mensagens de erro" << std::endl;
+        } else {
+                std::cout << "Mensagens de erro" << std::endl;
+        }
     }
 }
 
 void Kick::print() const{
     std::cout << "Command: " << this->_name <<  " | Error: " << this->_error;
-    std::cout << " | Channel: " << this->_channel << " | Client: " << this->_client;
+    std::cout << " | Channel: " << this->_channel << " | Client: " << this->_cliente;
     if (!this->_reason.empty())
         std::cout << " | Reason: " << this->_reason;
     std::cout << std::endl;

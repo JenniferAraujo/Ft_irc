@@ -134,4 +134,22 @@ bool Channel::canJoin(const Client& client, std::string password) const {
 	return true;
 }
 
+void	Channel::sendMessage(std::string msg, int skipFD, bool onlyOP) {
+	if (!onlyOP) {
+		std::map<int, Client*> clients = this->getClients();
+		for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
+			Client* client = it->second;
+			if (client->getSocketFD() != skipFD)
+				Message::sendMessage(client->getSocketFD(), msg, client->getServer());
+		}
+	}
+	std::map<int, Client*> operators = this->getOperators();
+    for (std::map<int, Client*>::iterator it = operators.begin(); it != operators.end(); ++it) {
+        Client* client = it->second;
+        if (client->getSocketFD() != skipFD)
+            Message::sendMessage(client->getSocketFD(), msg, client->getServer());
+    }
+}
+
+
 Channel::~Channel() {}
