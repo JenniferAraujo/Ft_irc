@@ -56,7 +56,7 @@ void    Server::executeCommand(Client &client, ACommand *command){
 }
 
 void    Server::handleCommand(Client &client, std::vector<char> &buf){
-    std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
+    //std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
     std::queue<ACommand *> commands = client.createCommand(buf);
     if (commands.empty()) //Nao e um comando/ comando que nao tratamos -> //TODO - erro de unknoncommmand
             return ;
@@ -104,7 +104,7 @@ void Server::verifyEvent(const pollfd &pfd) {
             buf.clear();
             return;
         }
-        std::cout << "TEMP: " << temp.data() << "." << std::endl;
+        //std::cout << "TEMP: " << temp.data() << "." << std::endl;
 
         // Ensure the buffer does not overflow
         if (buf.size() + bytesReceived > MAX_MESSAGE_SIZE) {
@@ -114,14 +114,14 @@ void Server::verifyEvent(const pollfd &pfd) {
         }
         // Insert received data into the buffer
         buf.insert(buf.end(), temp.begin(), temp.begin() + bytesReceived);
-        std::cout << "BUF: " << buf.data() << "." << std::endl;
+        //std::cout << "BUF: " << buf.data() << "." << std::endl;
 
         // If the message contains a newline, process it
         if (std::find(temp.begin(), temp.end(), '\n') != temp.end()){
             this->handleCommand(*client, buf);
             buf.clear();
-            std::cout << "BUF after clear: " << buf.data() << "." << std::endl;
-            std::cout << "BUF SIZE: " << buf.size() << std::endl;
+            //std::cout << "BUF after clear: " << buf.data() << "." << std::endl;
+            //std::cout << "BUF SIZE: " << buf.size() << std::endl;
         }
         // If the client isn't registered, try registration
         if (!client->getRegistration())

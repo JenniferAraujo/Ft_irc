@@ -3,9 +3,16 @@
 
 # include "Includes.hpp"
 
-# define BADCHANMASK 476
 # define NOSUCHCHANNEL 403
 # define USERNOTINCHANNEL 441
+# define NOTONCHANNEL 442
+# define BADCHANMASK 476
+# define CHANOPRIVSNEEDED 482
+
+
+inline std::string KICK(const std::string& nick, const std::string& user, const std::string& host, const std::string& channel, const std::string& nickKicked, const std::string& reason) {
+    return ":" + nick + "!" + user + "@" + host + " KICK " + channel +  " " + nickKicked + " :" + reason + "\r\n";
+}
 
 class Kick: public ACommand {
 public:
