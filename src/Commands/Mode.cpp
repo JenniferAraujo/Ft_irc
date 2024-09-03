@@ -72,7 +72,7 @@ bool Mode::isValidMode(char mode) {
 }
 
 void Mode::execute() {
-	std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << this->_name << std::endl;
+	std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
 	std::string msg;
 	std::string channel = this->getChannel(); 
 	std::string modeStr = this->getMode();

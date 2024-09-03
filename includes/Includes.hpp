@@ -83,9 +83,9 @@ void printMap(const std::map<K, V>& map) {
 std::string getCurrentDateTime();
 void titleInfo(std::string title);
 std::string intToString(int value);
-std::string formatServerMessage(const std::string& color, const std::string& label, int clients);
 void showq(std::queue<ACommand *> gq);
 void showstringq(std::queue<std::string> gq);
 void showdoublestringq(std::queue<std::string> gq, std::queue<std::string> gq2);
+std::string formatServerMessage(const std::string& color, const std::string& label, int clients, const std::string& fdColor);
 
 #endif // INCLUDES_HPP

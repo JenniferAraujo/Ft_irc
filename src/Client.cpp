@@ -171,14 +171,6 @@ void    Client::registration(){
     this->welcome();
 }
 
-// Função para verificar a conecção de clientes
-// inet_ntop FUNÇÃO PROIBIDA, PROVAVELMENTE TEMOS DE MUDAR TUDO PARA O IPv4
-/*         struct hostent *host = NULL;
-        if (IN6_IS_ADDR_V4MAPPED(&client_addr.sin6_addr)) {
-             struct in_addr ipv4_addr;
-             memcpy(&ipv4_addr, &client_addr.sin6_addr.s6_addr[12], sizeof(ipv4_addr));
-             host = gethostbyname(inet_ntoa(ipv4_addr));
-        } */
 void Client::verifyConnection(Server &server, const pollfd &pfd) {
     if (pfd.revents & POLLIN) {
         Client *client = new Client(server, time(NULL));
@@ -201,17 +193,24 @@ void Client::verifyConnection(Server &server, const pollfd &pfd) {
                 delete client;
                 throw IRCException("[ERROR] Getting client socket flags went wrong");
             }
+            struct hostent *host = NULL;
+            if (IN6_IS_ADDR_V4MAPPED(&client_addr.sin6_addr)) {
+                struct in_addr ipv4_addr;
+                memcpy(&ipv4_addr, &client_addr.sin6_addr.s6_addr[12], sizeof(ipv4_addr));
+                host = gethostbyname(inet_ntoa(ipv4_addr));
+                if (host == NULL)
+                    throw IRCException("[ERROR] gethostbyname on client went wrong");
+                char *temp = strdup(host->h_name);
+                client->setIpAddr(temp);
+                free(temp);
+            }
         } catch(const std::exception &e) {
             std::cerr << RED << e.what() << RESET << std::endl;
         }
-        char client_ip[INET6_ADDRSTRLEN];
-        inet_ntop(AF_INET6, &(client_addr.sin6_addr), client_ip, INET6_ADDRSTRLEN);
 
+        std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", client->_socketFD, GREEN) << "Client " << GREEN << "[" << client->_socketFD << "]" << RESET
+                  << " connected from " << BOLD_GREEN << client->getIpaddr() << RESET << std::endl;
 
-        std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", 0) << "Client " << GREEN << "[" << client->_socketFD << "]" << RESET
-                  << " connected from " << BOLD_CYAN << client_ip << RESET << std::endl;
-
-        client->setIpAddr(client_ip);
         server.updateNFDs(client->_socketFD);
         server.updateClients(client, client->_socketFD);
     }

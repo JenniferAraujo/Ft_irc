@@ -48,7 +48,9 @@ public:
 	bool	isClient(int fd) { return this->_Clients.find(fd) != this->_Clients.end() ? true : false; };
 	bool	isOperator(int fd) { return this->_operators.find(fd) != this->_operators.end() ? true : false;	};
 
-	void	sendMessage(std::string msg, int skipFD, bool onlyOP);
+	void	sendMessage(std::string msg, int skipFD);
+	void	sendMessageToOperators(std::string msg, int skipFD);
+	void	sendMessageToClients(std::string msg, int skipFD);
 
 private:
 	Channel();

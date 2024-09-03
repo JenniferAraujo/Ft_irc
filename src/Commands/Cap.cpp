@@ -15,7 +15,7 @@ void Cap::parsing(std::istringstream &input){
 }
 
 void Cap::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << this->_name << std::endl;
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
     std::string msg;
     switch (this->_error) {
         case NEEDMOREPARAMS:

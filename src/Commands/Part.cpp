@@ -45,7 +45,7 @@ void Part::parsing(std::istringstream &input) {
 }
 
 void Part::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << this->_name << std::endl;
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
 }
 
 void Part::print() const{

@@ -50,14 +50,14 @@ void Kick::parsing(std::istringstream &input) {
 }
 
 void Kick::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << this->_name << std::endl;
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
     //TODO - Permissões de OPERADOR
     //TODO - FALTA RETIRAR DO MAP
     if (this->_server.getChannels().find(this->_channel) != this->_server.getChannels().end()) {
         Channel* channel = this->_server.getChannels()[this->_channel];
         if (this->_error == 0 ) {
             if (channel->isClient(this->_server.getClientByNick(this->_cliente)))
-                channel->sendMessage(KICK(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_cliente, this->_reason.empty() ? KICKDEFAULTMSG : this->_reason), 0, false);
+                channel->sendMessage(KICK(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_cliente, this->_reason.empty() ? KICKDEFAULTMSG : this->_reason), 0);
             else
                 std::cout << "Mensagens de erro" << std::endl;
         } else {
