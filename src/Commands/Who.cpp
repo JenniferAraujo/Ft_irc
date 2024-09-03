@@ -18,15 +18,25 @@ void Who::execute() {
         std::map<int, Client*> clients = channel->getClients();
         for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
             Client* c = it->second;
-            names.append(c->getNick());
-            names.append(" ");
-            Message::sendMessage(this->_client.getSocketFD(), RPL_WHO(this->_server.getHostname(), this->_channel, this->_client.getNick(), *c), this->_server);
+            names.append(c->getNick()).append(" ");
+            Message::sendMessage(this->_client.getSocketFD(), RPL_WHO(this->_server.getHostname(), this->_channel, this->_client.getNick(), "", *c), this->_server);
+        }
+        std::map<int, Client*> op = channel->getOperators();
+        for (std::map<int, Client*>::iterator it = op.begin(); it != op.end(); ++it) {
+            Client* c = it->second;
+            names.append("@").append(c->getNick()).append(" ");
+            Message::sendMessage(this->_client.getSocketFD(), RPL_WHO(this->_server.getHostname(), this->_channel, this->_client.getNick(), "@", *c), this->_server);
+        }
+        Message::sendMessage(this->_client.getSocketFD(), RPL_ENDWHO(this->_server.getHostname(), this->_channel, this->_client.getNick()), this->_server);
+        if (this->_client.getJustJoined()) {
+            Message::sendMessage(this->_client.getSocketFD(), RPL_NAME(this->_server.getHostname(), this->_channel, this->_client.getNick(), names), this->_server);
+            Message::sendMessage(this->_client.getSocketFD(), RPL_ENDNAME(this->_server.getHostname(), this->_channel, this->_client.getNick()), this->_server);
+            this->_client.setJustJoined(false);
         }
     }
-    Message::sendMessage(this->_client.getSocketFD(), RPL_ENDWHO(this->_server.getHostname(), this->_channel, this->_client.getNick()), this->_server);
-    Message::sendMessage(this->_client.getSocketFD(), RPL_NAME(this->_server.getHostname(), this->_channel, this->_client.getNick(), names), this->_server);
-    Message::sendMessage(this->_client.getSocketFD(), RPL_ENDNAME(this->_server.getHostname(), this->_channel, this->_client.getNick()), this->_server);
-    Message::sendMessage(this->_client.getSocketFD(), RPL_ENDNAME(this->_server.getHostname(), this->_channel, this->_client.getNick()), this->_server); //REVIEW - mandas 2x o RPL_ENDNAME
+    else {
+        std::cout << "Não entrou burro" << std::endl;
+    }
 }
 
 void Who::print() const{
