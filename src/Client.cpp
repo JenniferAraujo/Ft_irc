@@ -5,7 +5,8 @@ Client::Client(Server &server, time_t time)
         _registration(false),
         _server(server),
         _lastActivityTime(time),
-        _connectTime(time) {}
+        _connectTime(time),
+        _justJoined(false) {}
 
 
 Client::Client(const Client &cpy)
@@ -17,7 +18,8 @@ Client::Client(const Client &cpy)
         _nick(cpy.getNick()),
         _username(cpy.getUsername()),
         _realname(cpy.getRealname()),
-        _server(cpy.getServer()) {}
+        _server(cpy.getServer()),
+        _justJoined(cpy.getJustJoined()) {}
 
 ACommand* Client::createCap(std::istringstream &input) {
     ACommand *command = new Cap(this->_server, *this);

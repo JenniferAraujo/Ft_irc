@@ -63,7 +63,7 @@ void Server::addInChannel(std::string channelName, std::string password, Client 
         std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0, "") << client.getNick() << " created the channel " << BOLD_YELLOW << channelName << RESET << std::endl;
         Channel *channel = new Channel(channelName);
         this->_Channels[channelName] = channel;
-        this->_Channels[channelName]->addClient(client);
+        this->_Channels[channelName]->addOperator(client.getSocketFD(), &client);
     }
 }
 

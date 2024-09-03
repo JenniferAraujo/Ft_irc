@@ -74,6 +74,7 @@ public:
     Server          &getServer() const { return _server; } ;
     time_t          getLastActivityTime() const { return _lastActivityTime; } ;
     time_t          getConnectTime() const { return _connectTime; } ;
+    bool            getJustJoined() const { return _justJoined; } ;
 
     //setters
     void            setSocketFD(int socketFD) { _socketFD = socketFD; } ;
@@ -86,6 +87,8 @@ public:
     void            setRegistration(bool registration) { _registration = registration; } ;
     void            setLastActivityTime(time_t lastActivityTime) { _lastActivityTime = lastActivityTime; } ;
     void            setConnectTime(time_t connectTime) { _connectTime = connectTime; } ;
+    void            setJustJoined(bool justJoined) { _justJoined = justJoined; } ;
+
 
 private:
     Client();
@@ -101,6 +104,7 @@ private:
     Server&                 _server;
     time_t                  _lastActivityTime;
     time_t                  _connectTime;
+    bool                    _justJoined;
 };
 
 
