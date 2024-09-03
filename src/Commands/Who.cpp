@@ -2,6 +2,7 @@
 
 Who::Who(Server& server, Client& client): ACommand("WHO", server, client) {};
 
+//FIXME - Trabalhar no parsing
 void Who::parsing(std::istringstream &input){
 	std::string channel;
     std::getline(input, channel, '\n');

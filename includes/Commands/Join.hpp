@@ -19,7 +19,6 @@ public:
     void execute();
     void print() const;
 
-    std::string getChannel() { return _channel; };
     std::queue<std::string> getPassword() { return _password; };
     std::queue<std::string> getChannels() { return _channels; };
 
@@ -27,8 +26,6 @@ private:
     Join();
     std::queue<std::string> _channels;
     std::queue<std::string> _password;
-
-    std::string _channel;
 };
 
 #endif // JOIN_HPP

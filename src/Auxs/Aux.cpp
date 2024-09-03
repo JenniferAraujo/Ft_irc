@@ -91,10 +91,12 @@ void showstringq(std::queue<std::string> gq)
 {
     std::queue<std::string> g = gq;
     if(g.empty())
-        std::cout << "Ups, I'm empty!!\n";
+        std::cout << "-";
     while (!g.empty()) {
-        std::cout << g.front() << std::endl;
+        std::cout << g.front();
         g.pop();
+        if (!g.empty())
+            std::cout << ", ";
     }
 }
 

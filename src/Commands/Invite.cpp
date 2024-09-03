@@ -36,6 +36,7 @@ void Invite::parsing(std::istringstream &input) {
 		this->_error = NEEDMOREPARAMS;
 }
 
+//TODO - Execution do Invite
 void Invite::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
 }

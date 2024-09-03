@@ -15,7 +15,8 @@ void Cap::parsing(std::istringstream &input){
 }
 
 void Cap::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
+    this->print();
     std::string msg;
     switch (this->_error) {
         case NEEDMOREPARAMS:
@@ -32,7 +33,11 @@ void Cap::execute() {
 }
 
 void Cap::print() const{
-    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << std::endl;
+    //std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << std::endl;
+    if (this->_error != 0)
+        std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
+    else
+        std::cout << std::endl;
 }
 
 //1o os clientes podem enviar

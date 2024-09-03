@@ -49,10 +49,11 @@ void Kick::parsing(std::istringstream &input) {
 		this->_error = NEEDMOREPARAMS;
 }
 
+//TODO - Permissões de operador
+//TODO - Remover o cliente do canal
+//TODO - Tratamento de Erros
 void Kick::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
-    //TODO - Permissões de OPERADOR
-    //TODO - FALTA RETIRAR DO MAP
     if (this->_server.getChannels().find(this->_channel) != this->_server.getChannels().end()) {
         Channel* channel = this->_server.getChannels()[this->_channel];
         if (this->_error == 0 ) {

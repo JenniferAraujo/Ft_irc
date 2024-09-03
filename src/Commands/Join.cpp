@@ -41,8 +41,10 @@ void Join::parsing(std::istringstream &input){
 		this->_error = NEEDMOREPARAMS;
 }
 
+//TODO - Tratamento de Erros
 void Join::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
+    this->print();
     while(!this->_channels.empty()) {
 		if (this->_password.empty())
 		    this->_server.addInChannel(this->_channels.front(),(this->_password.empty() ? "" : this->_password.front()), const_cast<Client&>(this->_client));
@@ -62,7 +64,16 @@ void Join::execute() {
 }
 
 void Join::print() const{
-    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << std::endl;
-    std::cout << "Channels queue\t| Passwords queue" << std::endl;
-	showdoublestringq(this->_channels, this->_password);
+    //std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << std::endl;
+    //std::cout << "Channels queue\t| Passwords queue" << std::endl;
+	//showdoublestringq(this->_channels, this->_password);
+    if (this->_error != 0)
+        std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
+    else {
+        std::cout << "\t[";
+        showstringq(this->_channels);
+        std::cout << "] [";
+        showstringq(this->_password);
+        std::cout << "]" << std::endl; 
+    }
 }

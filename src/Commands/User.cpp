@@ -22,8 +22,8 @@ void User::parsing(std::istringstream &input){
 }
 
 void User::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << RESET << this->_name << std::endl;
-    std::string msg;
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
+    this->print();
     if(this->_client.getRegistration())
         Message::sendMessage(this->_client.getSocketFD(), ERR_ALREADYREGISTERED(this->_server.getHostname(), this->_client.getNick()), this->_server);
     else if (this->_error == NEEDMOREPARAMS)
@@ -35,5 +35,9 @@ void User::execute() {
 }
 
 void User::print() const{
-    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | Name: " << this->_username << " | Real name: " << this->_realname << std::endl;
+    //std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | Name: " << this->_username << " | Real name: " << this->_realname << std::endl;
+    if (this->_error != 0)
+        std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
+    else
+        std::cout << "\t[" << this->_username << "] [" << this->_realname << "]" << std::endl;
 }
