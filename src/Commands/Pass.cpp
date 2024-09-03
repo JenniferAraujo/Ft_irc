@@ -14,7 +14,7 @@ void Pass::parsing(std::istringstream &input){
 }
 
 void Pass::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << this->_name << std::endl;
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << RESET << this->_name << std::endl;
     if (this->_error == NEEDMOREPARAMS){
         Message::sendMessage(this->_client.getSocketFD(), ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name), this->_server);
         return ;

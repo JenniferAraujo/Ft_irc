@@ -81,8 +81,8 @@ void Server::verifyEvent(const pollfd &pfd) {
         static std::vector<char> buf(MAX_MESSAGE_SIZE, '\0');
         static int bufSize = 0;
 
-        std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size()) << "Event on Client " << GREEN << "[" << client->getSocketFD() << "]" << RESET <<  std::endl;
-        std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", 0) << "Nick " << GREEN << "[" << client->getNick() << "]" << RESET <<  " Registered " << GREEN << "[" << RESET << (client->getRegistration() ? "✓" : "") << GREEN << " ]" << RESET <<std::endl;
+        std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size(), "") << "Event on Client " << GREEN << "[" << client->getSocketFD() << "]" << RESET <<  std::endl;
+        std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", client->getSocketFD(), GREEN) << "Nick " << GREEN << "[" << client->getNick() << "]" << RESET <<  " Registered " << GREEN << "[" << RESET << (client->getRegistration() ? "✓" : "") << GREEN << " ]" << RESET <<std::endl;
 
         int bytesReceived = recv(client->getSocketFD(), temp.data(), temp.size(), 0);
         if(bytesReceived == 0){

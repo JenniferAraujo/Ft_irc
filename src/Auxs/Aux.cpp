@@ -63,12 +63,14 @@ std::string intToString(int value) {
     return oss.str();
 };
 
-std::string formatServerMessage(const std::string& color, const std::string& label, int clients) {
+std::string formatServerMessage(const std::string& color, const std::string& label, int clients, const std::string& fdColor) {
     std::ostringstream oss;
-    if (clients == 0)
+    if(clients == 0)
         oss << color << "[" << label << "]" << RESET << "[" << getCurrentTime() << "]\t";
+    else if (fdColor.empty())
+        oss << color << "[" << label << "]" << RESET << "[" << getCurrentTime() << "][ " << clients << " ]\t";
     else
-        oss << color << "[" << label << "]" << RESET << "[" << getCurrentTime() << "][ " << clients << " ] ";
+        oss << color << "[" << label << "]" << RESET << "[" << getCurrentTime() << "]" << fdColor << "[ " << clients << " ]\t" << RESET;
     return oss.str();
 }
 

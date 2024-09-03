@@ -1,6 +1,6 @@
 #include "Includes.hpp"
 
-Quit::Quit(Server& server, Client& client): ACommand("CAP", server, client){};
+Quit::Quit(Server& server, Client& client): ACommand("QUIT", server, client){};
 
 void Quit::parsing(std::istringstream &input){
     std::getline(input, this->_reason, ' ');
@@ -9,6 +9,7 @@ void Quit::parsing(std::istringstream &input){
 
 //mandar msg para todos os clientes??
 void Quit::execute() {
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
     this->_server.updateToRemove(this->_client.getSocketFD(), "Quit: " + this->_reason);
 }
 
