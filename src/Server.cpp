@@ -44,7 +44,7 @@ void Server::updateToRemove(int fd, std::string reason)
 
 Returned when a client command cannot be parsed as they are not yet registered. Servers offer only a limited subset of commands until clients are properly registered to the server. The text used in the last param of this message may vary.
  */
-
+//TODO unknowncommand
 void    Server::executeCommand(Client &client, ACommand *command){
     //REVIEW - Nao sei se esta condição é necessaria -> if((!client.getRegistration() || client.getRegError()) && !command->isRegistration())
     if(!client.getRegistration() && !command->isRegistration())
@@ -71,8 +71,8 @@ void    Server::handleCommand(Client &client, std::vector<char> &buf){
 }
 
 //TODO PRIVMSG -> handle send errors
-//TODO QUIT -> tirar dos canais (KICK), remover client, mandar msg
-//TODO handle size da msg -> ver qual o tamannho max que o server recebe/buffer overflow -> bytesReceived < 0 ??
+//TODO QUIT -> tirar dos canais, remover client, mandar msg
+//TODO - buf
 void Server::verifyEvent(const pollfd &pfd) {
     if (pfd.revents == POLLIN) {
         Client *client = this->_Clients[pfd.fd];
@@ -82,7 +82,8 @@ void Server::verifyEvent(const pollfd &pfd) {
 
         //Most IRC servers limit messages to 512 bytes in length
         std::vector<char> temp(MAX_MESSAGE_SIZE + 1);
-        static std::vector<char> buf;
+        static std::vector<char> buf(MAX_MESSAGE_SIZE, '\0');
+        static int bufSize = 0;
 
         std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size()) << "Event on Client " << GREEN << "[" << client->getSocketFD() << "]" << RESET <<  std::endl;
         std::cout << formatServerMessage(BOLD_PURPLE, "C.INFO", 0) << *client << std::endl;
@@ -100,6 +101,7 @@ void Server::verifyEvent(const pollfd &pfd) {
         }
         // Ensure the buffer does not overflow
         if(bytesReceived > MAX_MESSAGE_SIZE){
+            std::cout << "Buf size 1: " << bufSize + bytesReceived << std::endl;
             Message::sendMessage(client->getSocketFD(), ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected"), *this);
             buf.clear();
             return;
@@ -107,21 +109,26 @@ void Server::verifyEvent(const pollfd &pfd) {
         //std::cout << "TEMP: " << temp.data() << "." << std::endl;
 
         // Ensure the buffer does not overflow
-        if (buf.size() + bytesReceived > MAX_MESSAGE_SIZE) {
+        if (bufSize + bytesReceived > MAX_MESSAGE_SIZE) {
+            std::cout << "Buf size 2: " << bufSize + bytesReceived << std::endl;
             Message::sendMessage(client->getSocketFD(), ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected"), *this);
-            buf.clear();
+            buf = std::vector<char>(MAX_MESSAGE_SIZE, '\0');
+            bufSize = 0;
             return;
         }
         // Insert received data into the buffer
-        buf.insert(buf.end(), temp.begin(), temp.begin() + bytesReceived);
-        //std::cout << "BUF: " << buf.data() << "." << std::endl;
+        std::vector<char>::iterator it = std::find(buf.begin(), buf.end(), '\0');
+        buf.insert(it, temp.begin(), temp.begin() + bytesReceived);
+        bufSize += bytesReceived;
+        std::cout << "BUF SIZE: " << bufSize << std::endl;
 
         // If the message contains a newline, process it
         if (std::find(temp.begin(), temp.end(), '\n') != temp.end()){
             this->handleCommand(*client, buf);
-            buf.clear();
-            //std::cout << "BUF after clear: " << buf.data() << "." << std::endl;
-            //std::cout << "BUF SIZE: " << buf.size() << std::endl;
+            buf = std::vector<char>(MAX_MESSAGE_SIZE, '\0');
+            bufSize = 0;
+/*             std::cout << "BUF after clear: " << buf.data() << "." << std::endl;
+            std::cout << "BUF SIZE: " << buf.size() << std::endl; */
         }
         // If the client isn't registered, try registration
         if (!client->getRegistration())

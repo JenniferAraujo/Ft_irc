@@ -64,6 +64,7 @@ void Kick::execute() {
                 std::cout << "Mensagens de erro" << std::endl;
         }
     }
+
 }
 
 void Kick::print() const{
