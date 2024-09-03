@@ -8,8 +8,7 @@ Channel::Channel(std::string name) : _name(name), _password(""), _inviteOnly(fal
 
 void Channel::addClient(Client &client) {
 	this->_Clients[client.getSocketFD()] = &client;
-	std::cout << "Client added with FD: " << client.getSocketFD() << std::endl; //DEPOIS TIRAR
-
+	//std::cout << "Client added with FD: " << client.getSocketFD() << std::endl; //DEPOIS TIRAR
 }
 
 Client* Channel::getClientById(int socketFD) const {

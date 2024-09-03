@@ -53,9 +53,6 @@ void Server::getServerInfo() {
     this->_hostName = temp;
     free(temp);
     this->_hostIP = IPbuffer;
-
-    std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Hostname: " << this->_hostName << std::endl;
-    std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Host IP: " << this->_hostIP << "\n" << std::endl;
 }
 
 void Server::addInChannel(std::string channelName, std::string password, Client &client) {
@@ -92,10 +89,12 @@ int     Server::getClientByNick(std::string nick) {
     return -1;
 }
 
-// Channel     *Server::findChannel(std::string channel) {
-//     for (std::map <std::string, Channel*>::iterator it = this->_Channels.begin(); it != _Channels.end(); ++it) {
-//         if(it->second->getName() == channel)
-//             return it->second;
-//     }
-//     return NULL;
-// }
+void    Server::display() const {
+    std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0) << "Socket with fd " << CYAN "[" << this->_socketFD << "]" << RESET
+              << " bound on port " << CYAN << this->_port << RESET << std::endl;
+    std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0) << "Server listening only " << CYAN << 10 << RESET << " connections"
+              << std::endl;
+    std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0) << "Hostname: " << this->_hostName << std::endl;
+    std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0) << "Host IP: " << this->_hostIP << "\n" << std::endl;
+
+}

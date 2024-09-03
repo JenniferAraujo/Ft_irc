@@ -7,7 +7,7 @@ void Who::parsing(std::istringstream &input){
     std::getline(input, channel, '\n');
     this->trimChar(channel, '\r');
     this->_channel = channel;
-	 std::cout << "channel:" << this->_channel << std::endl;
+	//std::cout << "channel:" << this->_channel << std::endl;
 }
 
 void Who::execute() {

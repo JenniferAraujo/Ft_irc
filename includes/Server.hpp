@@ -56,6 +56,7 @@ public:
     void    addInChannel(std::string channelName, std::string password, Client &client);
     Client  *findClient(std::string nick, int skipFd);
     int     getClientByNick(std::string nick);
+    void    display() const;
 
 private:
 	Server();
