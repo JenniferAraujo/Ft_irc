@@ -206,8 +206,8 @@ void Client::verifyConnection(Server &server, const pollfd &pfd) {
             std::cerr << RED << e.what() << RESET << std::endl;
         }
 
-        std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", 0) << "Client " << GREEN << "[" << client->_socketFD << "]" << RESET
-                  << " connected from " << BOLD_CYAN << client->getIpaddr() << RESET << std::endl;
+        std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", client->_socketFD, GREEN) << "Client " << GREEN << "[" << client->_socketFD << "]" << RESET
+                  << " connected from " << BOLD_GREEN << client->getIpaddr() << RESET << std::endl;
 
         server.updateNFDs(client->_socketFD);
         server.updateClients(client, client->_socketFD);

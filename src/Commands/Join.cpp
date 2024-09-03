@@ -42,9 +42,9 @@ void Join::parsing(std::istringstream &input){
 }
 
 void Join::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << this->_name << std::endl;
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
     while(!this->_channels.empty()) {
-        std::cout << "Channel: " << this->_channels.front() << std::endl;
+        //std::cout << "Channel: " << this->_channels.front() << std::endl;
 		if (this->_password.empty())
 		        this->_server.addInChannel(this->_channels.front(),  "", const_cast<Client&>(this->_client));
 		else

@@ -8,8 +8,7 @@ Channel::Channel(std::string name) : _name(name), _password(""), _inviteOnly(fal
 
 void Channel::addClient(Client &client) {
 	this->_Clients[client.getSocketFD()] = &client;
-	std::cout << "Client added with FD: " << client.getSocketFD() << std::endl; //DEPOIS TIRAR
-
+	//std::cout << "Client added with FD: " << client.getSocketFD() << std::endl; //DEPOIS TIRAR
 }
 
 Client* Channel::getClientById(int socketFD) const {
@@ -134,21 +133,27 @@ bool Channel::canJoin(const Client& client, std::string password) const {
 	return true;
 }
 
-void	Channel::sendMessage(std::string msg, int skipFD, bool onlyOP) {
-	if (!onlyOP) {
-		std::map<int, Client*> clients = this->getClients();
-		for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
-			Client* client = it->second;
-			if (client->getSocketFD() != skipFD)
-				Message::sendMessage(client->getSocketFD(), msg, client->getServer());
-		}
-	}
+void	Channel::sendMessageToOperators(std::string msg, int skipFD) {
 	std::map<int, Client*> operators = this->getOperators();
     for (std::map<int, Client*>::iterator it = operators.begin(); it != operators.end(); ++it) {
         Client* client = it->second;
         if (client->getSocketFD() != skipFD)
             Message::sendMessage(client->getSocketFD(), msg, client->getServer());
     }
+}
+
+void	Channel::sendMessageToClients(std::string msg, int skipFD) {
+	std::map<int, Client*> clients = this->getClients();
+	for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
+		Client* client = it->second;
+		if (client->getSocketFD() != skipFD)
+			Message::sendMessage(client->getSocketFD(), msg, client->getServer());
+	}
+}
+
+void	Channel::sendMessage(std::string msg, int skipFD) {
+	this->sendMessageToOperators(msg, skipFD);
+	this->sendMessageToClients(msg, skipFD);
 }
 
 

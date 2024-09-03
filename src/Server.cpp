@@ -58,8 +58,8 @@ void    Server::handleCommand(Client &client, std::vector<char> &buf){
         Message::sendMessage(client.getSocketFD(), ERR_UNKNOWNCOMMAND(this->getHostname(), client.getNick(), cmd), *this);
         return ;
     }
-    std::cout << BOLD_GREEN << "[PRINT COMMANDS]\n" << RESET;
-    showq(commands);
+    //std::cout << BOLD_GREEN << "[PRINT COMMANDS]\n" << RESET;
+    //showq(commands);
     while(!commands.empty()){
         ACommand *command = commands.front();
         this->executeCommand(client, command);
@@ -81,8 +81,8 @@ void Server::verifyEvent(const pollfd &pfd) {
         static std::vector<char> buf(MAX_MESSAGE_SIZE, '\0');
         static int bufSize = 0;
 
-        std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size()) << "Event on Client " << GREEN << "[" << client->getSocketFD() << "]" << RESET <<  std::endl;
-        std::cout << formatServerMessage(BOLD_PURPLE, "C.INFO", 0) << *client << std::endl;
+        std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size(), "") << "Event on Client " << GREEN << "[" << client->getSocketFD() << "]" << RESET <<  std::endl;
+        std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", client->getSocketFD(), GREEN) << "Nick " << GREEN << "[" << client->getNick() << "]" << RESET <<  " Registered " << GREEN << "[" << RESET << (client->getRegistration() ? "✓" : "") << GREEN << " ]" << RESET <<std::endl;
 
         int bytesReceived = recv(client->getSocketFD(), temp.data(), temp.size(), 0);
         if(bytesReceived == 0){
@@ -116,7 +116,7 @@ void Server::verifyEvent(const pollfd &pfd) {
         std::vector<char>::iterator it = std::find(buf.begin(), buf.end(), '\0');
         buf.insert(it, temp.begin(), temp.begin() + bytesReceived);
         bufSize += bytesReceived;
-        std::cout << "BUF SIZE: " << bufSize << std::endl;
+        //std::cout << "BUF SIZE: " << bufSize << std::endl;
 
         // If the message contains a newline, process it
         if (std::find(temp.begin(), temp.end(), '\n') != temp.end()){
@@ -202,8 +202,6 @@ void Server::run()
         close(this->_socketFD);
         throw IRCException("[ERROR] Binding socket went wrong");
     }
-    std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Socket with fd " << GREEN "[" << this->_socketFD << "]" << RESET
-              << " bound on port " << YELLOW << this->_port << RESET << std::endl;
     // Meter a socket a ouvir aquela porta para um máximo de X conecções
     //TODO - Testar too many connections
     if (listen(this->_socketFD, 10) == -1)
@@ -211,9 +209,8 @@ void Server::run()
         close(this->_socketFD);
         throw IRCException("[ERROR] Listening socket went wrong");
     }
-    std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Server listening only " << YELLOW << 10 << RESET << " connections"
-              << std::endl;
     this->getServerInfo();
+    this->display();
     // Adicionar o FD da socket aqueles que a poll vai poder monitorizar
     this->updateNFDs(this->_socketFD);
     // Ciclo para correr a poll para esperar eventos

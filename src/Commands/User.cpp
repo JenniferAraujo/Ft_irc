@@ -22,7 +22,7 @@ void User::parsing(std::istringstream &input){
 }
 
 void User::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << RESET << this->_name << std::endl;
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << RESET << this->_name << std::endl;
     std::string msg;
     if(this->_client.getRegistration())
         Message::sendMessage(this->_client.getSocketFD(), ERR_ALREADYREGISTERED(this->_server.getHostname(), this->_client.getNick()), this->_server);
