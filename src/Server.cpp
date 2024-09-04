@@ -187,7 +187,7 @@ void Server::run()
         throw IRCException("[ERROR] Setting socket options went wrong");
     }
     // 3. Set the socket to non-blocking mode
-    int flags = fcntl(this->_socketFD, F_GETFL, 0);
+    int flags = fcntl(this->_socketFD, F_GETFL, O_NONBLOCK);
     if (flags == -1) {
         close(this->_socketFD);
         throw IRCException("[ERROR] Getting socket flags went wrong");
