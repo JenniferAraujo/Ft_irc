@@ -42,12 +42,12 @@ void Join::parsing(std::istringstream &input){
 }
 
 //TODO - Tratamento de Erros
+//TODO - Lógica de remover do invited caso tenha entrado (ou confirmar se o invite é efetivamente removido ou permanente)
 void Join::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
     this->print();
     while(!this->_channels.empty()) {
-		if (this->_password.empty())
-		    this->_server.addInChannel(this->_channels.front(),(this->_password.empty() ? "" : this->_password.front()), const_cast<Client&>(this->_client));
+		this->_server.addInChannel(this->_channels.front(),(this->_password.empty() ? "" : this->_password.front()), const_cast<Client&>(this->_client));
         if (this->_server.getChannels().find(this->_channels.front()) != this->_server.getChannels().end()) {
             Channel* ch = this->_server.getChannels()[this->_channels.front()];
             ch->sendMessage(JOIN_CHANNEL(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channels.front()), 0);
@@ -74,6 +74,6 @@ void Join::print() const{
         showstringq(this->_channels);
         std::cout << "] [";
         showstringq(this->_password);
-        std::cout << "]" << std::endl; 
+        std::cout << "]" << std::endl;
     }
 }

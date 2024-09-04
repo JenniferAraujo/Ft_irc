@@ -35,6 +35,7 @@ void Kick::parsing(std::istringstream &input) {
                     return ;
                 }
                 break;
+            //FIXME - Para o caso da razão a lógica têm de ser outra pk posso enviar uma frase inteira (KICK #a Diogo :Demasiado bonito)
             case 2:
             //NOTE - CONFIRMAR SE NÃO FUDI PARA KICK #a Diogo idk
                 if (token[0] == ':') {
@@ -53,7 +54,8 @@ void Kick::parsing(std::istringstream &input) {
 //TODO - Remover o cliente do canal
 //TODO - Tratamento de Erros
 void Kick::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
+    this->print();
     if (this->_server.getChannels().find(this->_channel) != this->_server.getChannels().end()) {
         Channel* channel = this->_server.getChannels()[this->_channel];
         if (this->_error == 0 ) {
@@ -69,9 +71,13 @@ void Kick::execute() {
 }
 
 void Kick::print() const{
-    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error;
-    std::cout << " | Channel: " << this->_channel << " | Client: " << this->_cliente;
-    if (!this->_reason.empty())
-        std::cout << " | Reason: " << this->_reason;
-    std::cout << std::endl;
+    // std::cout << "Command: " << this->_name <<  " | Error: " << this->_error;
+    // std::cout << " | Channel: " << this->_channel << " | Client: " << this->_cliente;
+    // if (!this->_reason.empty())
+    //     std::cout << " | Reason: " << this->_reason;
+    // std::cout << std::endl;
+    if (this->_error != 0)
+        std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
+    else
+        std::cout << "\t[" << this->_channel << "] [" << this->_cliente << "] [" << (this->_reason.empty() ? "-" : this->_reason) << "]" << std::endl;
 }

@@ -100,6 +100,20 @@ void showstringq(std::queue<std::string> gq)
     }
 }
 
+void showMap(std::map<int, Client*> m) {
+    if (m.empty()) {
+        std::cout << "-";
+        return;
+    }
+    std::map<int, Client*>::iterator it = m.begin();
+    while (it != m.end()) {
+        std::cout << it->second->getNick();
+        ++it;
+        if (it != m.end())
+            std::cout << ", ";
+    }
+}
+
 void showdoublestringq(std::queue<std::string> gq, std::queue<std::string> gq2)
 {
     std::queue<std::string> g = gq;

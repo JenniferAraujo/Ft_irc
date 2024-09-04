@@ -161,7 +161,7 @@ void Client::welcome() {
     Message::sendMessage(this->_socketFD, msg, this->_server);
 }
 
-/* If the server is waiting to complete a lookup of client information (such as hostname or ident for a username), 
+/* If the server is waiting to complete a lookup of client information (such as hostname or ident for a username),
 there may be an arbitrary wait at some point during registration. Servers SHOULD set a reasonable timeout for these lookups. */
 void    Client::registration(){
     if(this->getNick().empty()
