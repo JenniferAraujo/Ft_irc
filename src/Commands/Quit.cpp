@@ -3,7 +3,7 @@
 Quit::Quit(Server& server, Client& client): ACommand("QUIT", server, client){};
 
 void Quit::parsing(std::istringstream &input){
-    std::getline(input, this->_reason, ' ');
+    std::getline(input, this->_reason);
     this->trimChar(this->_reason, '\r');
 }
 
