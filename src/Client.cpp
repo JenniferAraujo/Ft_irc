@@ -123,6 +123,7 @@ std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
 }
 
 void Client::welcome() {
+    std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", this->_socketFD, GREEN) << BOLD_GREEN << "Registration completed!" << RESET << std::endl;
     std::string msg;
     msg.append(RPL_WELCOME(this->_server.getHostname(), "Internet Fight Club", this->getNick(), this->getUsername(), this->getIpaddr()));
     msg.append(RPL_YOURHOST(this->_server.getHostname(), "rdjIRC", this->getNick(), "1.0"));
@@ -184,14 +185,6 @@ void Client::verifyConnection(Server &server, const pollfd &pfd) {
                     delete client;
                     throw IRCException("[ERROR] Opening client socket went wrong");
                 }
-            }
-            // Set the client socket to non-blocking mode
-            int flags = fcntl(client->_socketFD, F_GETFL, 0);
-            if (flags == -1 || fcntl(client->_socketFD, F_SETFL, flags | O_NONBLOCK) == -1) {
-                Message::sendMessage(client->_socketFD, ERROR("Oppening socket went wrong"), server);
-                close(client->_socketFD);
-                delete client;
-                throw IRCException("[ERROR] Getting client socket flags went wrong");
             }
             struct hostent *host = NULL;
             if (IN6_IS_ADDR_V4MAPPED(&client_addr.sin6_addr)) {

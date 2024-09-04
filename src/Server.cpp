@@ -70,7 +70,8 @@ void    Server::handleCommand(Client &client, std::vector<char> &buf){
 
 //TODO PRIVMSG -> handle send errors
 void Server::verifyEvent(const pollfd &pfd) {
-    if (pfd.revents == POLLIN) {
+    //A condição é verdadeira se o bit POLLIN estiver definido em pfd.revents, permitindo que outros eventos também possam estar presentes.
+    if (pfd.revents & POLLIN) {
         Client *client = this->_Clients[pfd.fd];
 
         // Update the last activity time with the current time
@@ -82,8 +83,10 @@ void Server::verifyEvent(const pollfd &pfd) {
         static int bufSize = 0;
 
         std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size(), "") << "Event on Client " << GREEN << "[" << client->getSocketFD() << "]" << RESET <<  std::endl;
-        std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", client->getSocketFD(), GREEN) << "Nick " << GREEN << "[" << client->getNick() << "]" << RESET <<  " Registered " << GREEN << "[" << RESET << (client->getRegistration() ? "✓" : "") << GREEN << " ]" << RESET <<std::endl;
-
+        (client->getRegistration())
+            ? std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", client->getSocketFD(), GREEN) << "Nick " << GREEN << "[" << client->getNick() << "] " << "Resgistered" << RESET <<std::endl
+            : std::cout << formatServerMessage(BOLD_RED, "CLIENT", client->getSocketFD(), RED) << "Nick " << RED << "[" << client->getNick() << "] " << "Unresgistered" << RESET <<std::endl;
+        
         int bytesReceived = recv(client->getSocketFD(), temp.data(), temp.size(), 0);
         if(bytesReceived == 0){
             this->updateToRemove(client->getSocketFD(), "Connection closed by client");
@@ -97,7 +100,6 @@ void Server::verifyEvent(const pollfd &pfd) {
         }
         // Ensure the buffer does not overflow
         if(bytesReceived > MAX_MESSAGE_SIZE){
-            std::cout << "Buf size 1: " << bufSize + bytesReceived << std::endl;
             Message::sendMessage(client->getSocketFD(), ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected"), *this);
             buf.clear();
             return;
@@ -106,7 +108,6 @@ void Server::verifyEvent(const pollfd &pfd) {
 
         // Ensure the buffer does not overflow
         if (bufSize + bytesReceived > MAX_MESSAGE_SIZE) {
-            std::cout << "Buf size 2: " << bufSize + bytesReceived << std::endl;
             Message::sendMessage(client->getSocketFD(), ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected"), *this);
             buf = std::vector<char>(MAX_MESSAGE_SIZE, '\0');
             bufSize = 0;
@@ -185,16 +186,6 @@ void Server::run()
     if (setsockopt(this->_socketFD, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) == -1){
         close(this->_socketFD);
         throw IRCException("[ERROR] Setting socket options went wrong");
-    }
-    // 3. Set the socket to non-blocking mode
-    int flags = fcntl(this->_socketFD, F_GETFL, O_NONBLOCK);
-    if (flags == -1) {
-        close(this->_socketFD);
-        throw IRCException("[ERROR] Getting socket flags went wrong");
-    }
-    if (fcntl(this->_socketFD, F_SETFL, flags | O_NONBLOCK) == -1) {
-        close(this->_socketFD);
-        throw IRCException("[ERROR] Setting socket to non-blocking went wrong");
     }
     // 4. Dá bind aquela mesma socket numa porta específica
     if (bind(this->_socketFD, reinterpret_cast<struct sockaddr *>(&this->_socketInfo), sizeof(this->_socketInfo)) == -1)
