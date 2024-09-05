@@ -5,8 +5,9 @@ Kick::Kick(Server& server, Client& client): ACommand("KICK", server, client) {};
 void Kick::parsing(std::istringstream &input) {
 	std::string token;
     int n = 0;
-    while (std::getline(input, token, ' ') || n < 3) {
+    while (std::getline(input, token, ' ') && n < 3) {
         this->trimChar(token, '\r');
+        std::cout << "token: " << token << std::endl;
         if (token.empty()) {
             this->_error = NEEDMOREPARAMS;          //KICK  #a Diogo
             return;
@@ -23,24 +24,29 @@ void Kick::parsing(std::istringstream &input) {
                     }
                 }
                 else {
-                    this->_error = BADCHANMASK;     //KICK a
+                    this->_error = NOSUCHCHANNEL;     //KICK a
                     return ;
                 }
                 break;
             case 1:
-                if (this->existentClient(token))
-                    this->_cliente = token;			//KICK #a Diogo
+                if (this->existentClient(token)) {
+                    std::cout << "chegou aqui" << std::endl;
+                    if (this->existentClientOnChannel(token, this->_channel))
+                        this->_cliente = token;			//KICK #a Diogo
+                }
                 else {
                     this->_error = USERNOTINCHANNEL;
                     return ;
                 }
                 break;
-            //FIXME - Para o caso da razão a lógica têm de ser outra pk posso enviar uma frase inteira (KICK #a Diogo :Demasiado bonito)
             case 2:
-            //NOTE - CONFIRMAR SE NÃO FUDI PARA KICK #a Diogo idk
                 if (token[0] == ':') {
                     token.erase(token.begin());
-                    this->_reason = token;			//KICK #a Diogo :idk
+                    this->_reason = token;
+                    while (std::getline(input, token, ' ')) {
+                        this->trimChar(token, '\r');
+                        this->_reason.append(" ").append(token);			//KICK #a Diogo :idk
+                    }
                 }
                 break;
         }
@@ -53,19 +59,27 @@ void Kick::parsing(std::istringstream &input) {
 //TODO - Permissões de operador
 //TODO - Remover o cliente do canal
 //TODO - Tratamento de Erros
+//FIXME - SEGFAUlT ao tentar dar auto-kick
 void Kick::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
     this->print();
-    if (this->_server.getChannels().find(this->_channel) != this->_server.getChannels().end()) {
-        Channel* channel = this->_server.getChannels()[this->_channel];
-        if (this->_error == 0 ) {
-            if (channel->isClient(this->_server.getClientByNick(this->_cliente)))
-                channel->sendMessage(KICK(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_cliente, this->_reason.empty() ? KICKDEFAULTMSG : this->_reason), 0);
+    switch (this->_error) {
+        case NEEDMOREPARAMS:
+            Message::sendMessage(this->_client.getSocketFD(), ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name), this->_server);
+            break;
+        case NOSUCHCHANNEL:
+            Message::sendMessage(this->_client.getSocketFD(), ERR_NOSUCHCHANNEL(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
+            break;
+        case USERNOTINCHANNEL:
+            Message::sendMessage(this->_client.getSocketFD(), ERR_USERNOTINCHANNEL(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
+            break;
+        default:
+            Channel*    ch = this->_server.getChannels()[this->_channel];
+            if (ch->isClient(this->_server.getClientByNick(this->_cliente)))
+                ch->sendMessage(KICK(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_cliente, this->_reason.empty() ? KICKDEFAULTMSG : this->_reason), 0);
             else
                 std::cout << "Mensagens de erro" << std::endl;
-        } else {
-                std::cout << "Mensagens de erro" << std::endl;
-        }
+            break;
     }
 
 }
