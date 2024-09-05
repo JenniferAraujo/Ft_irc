@@ -2,7 +2,7 @@
 
 void Server::removeClient(int fd, std::string reason){
     if(this->_Clients.find(fd) != this->_Clients.end()){
-        std::cout << formatServerMessage(BOLD_RED, "CLIENT", fd, RED) << "Disconnecting" << std::endl;
+        std::cout << formatServerMessage(BOLD_RED, "CLIENT", fd, RED) << "Disconnecting " << RED << "[" << reason << "]" << RESET <<std::endl;
         for(std::map<std::string, Channel*>::iterator it = this->_Channels.begin(); it != this->_Channels.end(); ++it){
             if(it->second->isClient(fd) || it->second->isOperator(fd))
                 it->second->sendMessage(QUIT(this->_Clients[fd]->getNick(), this->_Clients[fd]->getUsername(), this->_Clients[fd]->getIpaddr(), reason), fd);

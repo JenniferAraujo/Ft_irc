@@ -14,7 +14,6 @@
 # include <arpa/inet.h>
 # include <poll.h>
 # include <vector>
-# include <fcntl.h>
 # include <map>
 # include <string>
 # include <cstring>
