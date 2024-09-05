@@ -23,8 +23,14 @@
 # include <sstream>
 # include <queue>
 
-# define MAX_MESSAGE_SIZE   512
+//RPL_ISUPPORT
+# define PREFIX             "(o)@"
+# define CHANTYPES          "i,t,k,l,o"
+# define STATUSMSG          "@"
 # define USERLEN            12
+
+# define MAX_TARGETS        10
+# define MAX_MESSAGE_SIZE   512
 # define MAXCHARS           30
 # define CONNECTIONTIMEOUT  60 //2 minuts in seconds
 # define TIMEOUT            300 //5 minuts in seconds
@@ -48,8 +54,8 @@
 # include "Commands/Kick.hpp"
 # include "Commands/Invite.hpp"
 # include "Commands/Topic.hpp"
+# include "Commands/Privmsg.hpp"
 # include "Commands/Quit.hpp"
-
 
 # define RED "\033[31m"
 # define GREEN "\033[32m"
@@ -64,9 +70,6 @@
 # define BOLD_WHITE 	"\033[1;37m"
 # define BOLD_CYAN "\033[1;36m"
 # define RESET "\033[0m"
-
-
-# define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 
 std::ostream &operator<<(std::ostream &out, const pollfd &pfd);
 std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs);

@@ -18,11 +18,15 @@ inline std::string RPL_CREATED(const std::string& source, const std::string& dat
 inline std::string RPL_MYINFO(const std::string& source, const std::string& target, const std::string& serverName, const std::string& version) {
     return ":" + source + " 004 " + target + " " + serverName + " " + version + " NCcCtu\r\n";
 }
+
+//:irc.example.com 005 YourNick PREFIX=(o)@ CHANTYPES=# CHANMODES=i,t,k,l,o STATUSMSG=@ USERLEN=12 :are supported by this server
 inline std::string RPL_ISUPPORT(const std::string& source, const std::string& target) {
     std::stringstream ss;
-    ss << ":" << source << " 005 " << target << " USERLEN=" << USERLEN << " :are supported by this server\r\n";
+    ss << ":" << source << " 005 " << target << "PREFIX=" <<  PREFIX << "CHANTYPES=" <<  CHANTYPES << "STATUSMSG=" << STATUSMSG
+    << "USERLEN=" << USERLEN << "<< :are supported by this server\r\n";
     return ss.str();
 }
+
 inline std::string RPL_MOTDSTART(const std::string& source, const std::string& target, const std::string& serverName) {
     return ":" + source + " 375 " + target + " :" + serverName + " Message of the day\r\n";
 }

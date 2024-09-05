@@ -3,10 +3,14 @@
 
 # include "Includes.hpp"
 
-# define UNKNOWNERROR   400
-# define NOSUCHNICK     401
-# define UNKNOWNCOMMAND 421
-# define NEEDMOREPARAMS 461
+# define UNKNOWNERROR       400
+# define NOSUCHNICK         401 //execuçao
+# define NOSUCHCHANNEL      403 //execuçao
+# define TOOMANYTARGETS     407
+# define NORECIPIENT        411
+# define NOTEXTTOSEND       412
+# define UNKNOWNCOMMAND     421
+# define NEEDMOREPARAMS     461
 
 inline std::string ERR_UNKNOWNERROR(const std::string& source, const std::string& target, const std::string& command, const std::string& info) {
     std::string _target = target;

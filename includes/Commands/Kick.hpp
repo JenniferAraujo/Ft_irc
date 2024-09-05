@@ -3,7 +3,6 @@
 
 # include "Includes.hpp"
 
-# define NOSUCHCHANNEL 403
 # define USERNOTINCHANNEL 441
 # define NOTONCHANNEL 442
 # define BADCHANMASK 476
