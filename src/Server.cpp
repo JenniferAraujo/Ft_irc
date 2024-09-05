@@ -53,8 +53,11 @@ void    Server::handleCommand(Client &client, std::vector<char> &buf){
     if (commands.empty()){
         std::string str(buf.begin(), buf.end());
         std::istringstream input(str);
+        std::string input_line;
+        getline(input, input_line);
+        std::istringstream line(input_line);
         std::string cmd;
-        getline(input, cmd, ' ');
+        getline(line, cmd, ' ');
         Message::sendMessage(client.getSocketFD(), ERR_UNKNOWNCOMMAND(this->getHostname(), client.getNick(), cmd), *this);
         return ;
     }
