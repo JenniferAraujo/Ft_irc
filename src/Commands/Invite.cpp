@@ -39,7 +39,7 @@ void Invite::parsing(std::istringstream &input) {
 }
 
 //TODO - Handle de erros
-//FIXME - SEGFAULT DE VEZ ENQUANDO, PENSO QUE É PK CONVIDO E A AUTENTICAÇÃO DO OUTRO USER AINDA NÃO FOI TERMINADA, MAS CONFIRMAR O PORQUE
+//FIXME - SEGFAULT DE VEZ ENQUANDO, PENSO QUE É PK CONVIDO E A AUTENTICAÇÃO DO OUTRO USER AINDA NÃO FOI TERMINADA, MAS CONFIRMAR
 void Invite::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
     this->print();
