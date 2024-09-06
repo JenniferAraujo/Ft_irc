@@ -5,8 +5,12 @@
 
 # define UNKNOWNERROR       400
 # define NOSUCHNICK         401
+# define NOSUCHCHANNEL      403
 # define UNKNOWNCOMMAND     421
+# define USERNOTINCHANNEL   441
+# define NOTONCHANNEL       442
 # define NEEDMOREPARAMS     461
+# define BADCHANMASK        476
 # define CHANOPRIVSNEEDED   482
 
 inline std::string ERR_UNKNOWNERROR(const std::string& source, const std::string& target, const std::string& command, const std::string& info) {
@@ -38,9 +42,18 @@ inline std::string ERR_NOSUCHCHANNEL(const std::string& source, const std::strin
     return ":" + source + " 403 " + nick + " " + channel + " :No such channel\r\n";
 }
 
-inline std::string ERR_USERNOTINCHANNEL(const std::string& source, const std::string& nick, const std::string& channel) {
-    return ":" + source + " 441 " + nick + " " + channel + " :They aren't on that channel\r\n";
+inline std::string ERR_NOSUCHNICK(const std::string& source, const std::string& nick, const std::string& nickSended) {
+    return ":" + source + " 401 " + nick + " " + nickSended + " :No such nick\r\n";
 }
+
+inline std::string ERR_USERNOTINCHANNEL(const std::string& source, const std::string& nick, const std::string& nickSended, const std::string& channel) {
+    return ":" + source + " 441 " + nick + " " + nickSended + " " + channel + " :is not on that channel\r\n";
+}
+
+inline std::string ERR_NOTONCHANNEL(const std::string& source, const std::string& nick, const std::string& channel) {
+    return ":" + source + " 442 " + nick  + " " + channel + " :You're not on that channel\r\n";
+}
+
 
 inline std::string ERR_CHANOPRIVSNEEDED(const std::string& source, const std::string& nick, const std::string& channel) {
     return ":" + source + " 482 " + nick + " " + channel + " :You're not channel operator\r\n";
@@ -88,10 +101,8 @@ public:
 
         for (it = clients.begin(); it != clients.end(); it++) {
             std::string clientNick = it->second->getNick();
-            if (clientNick == nickname) {
-                std::cout << "Found matching client: " << clientNick << std::endl;
+            if (clientNick == nickname)
                 return true;
-            }
         }
         return false;
     }
@@ -106,7 +117,12 @@ public:
             if (clientIt->second->getNick() == nickname)
                 return true;  // Found the client in the channel
         }
-        return false;  // Client not found in the channel
+        std::map<int, Client *> operators = ch->getOperators();
+        for (std::map<int, Client *>::iterator operatorIt = operators.begin(); operatorIt != operators.end(); ++operatorIt) {
+            if (operatorIt->second->getNick() == nickname)
+                return true;  // Found the Operator in the channel
+        }
+        return false;  // User not found in the channel
     }
 
     virtual void parsing(std::istringstream &input) = 0;
