@@ -30,7 +30,6 @@ void Kick::parsing(std::istringstream &input) {
                 break;
             case 1:
                 if (this->existentClient(token)) {
-                    std::cout << "chegou aqui" << std::endl;
                     if (this->existentClientOnChannel(token, this->_channel))
                         this->_cliente = token;			//KICK #a Diogo
                 }
