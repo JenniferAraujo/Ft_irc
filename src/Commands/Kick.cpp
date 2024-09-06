@@ -20,7 +20,7 @@ void Kick::parsing(std::istringstream &input) {
                         return ;
                 }
                 break;
-            case 1:
+            case 1: //KICK #a Diogo
                 this->_cliente = token;
                 if (this->_client.getNick() == token) {
                     this->_error = UNKNOWNERROR;        //AUTO-KICK
@@ -41,13 +41,13 @@ void Kick::parsing(std::istringstream &input) {
                     return ;
                 }
                 break;
-            case 2:
+            case 2: //KICK #a Diogo :idk
                 if (token[0] == ':') {
                     token.erase(token.begin());
                     this->_reason = token;
                     while (std::getline(input, token, ' ')) {
                         this->trimChar(token, '\r');
-                        this->_reason.append(" ").append(token);			//KICK #a Diogo :idk
+                        this->_reason.append(" ").append(token);
                     }
                 }
                 break;
@@ -98,7 +98,6 @@ void Kick::execute() {
             this->_server.printChannelInfo(this->_channel);
             break;
     }
-
 }
 
 void Kick::print() const{

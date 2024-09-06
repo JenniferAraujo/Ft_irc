@@ -10,6 +10,7 @@
 # define USERNOTINCHANNEL   441
 # define NOTONCHANNEL       442
 # define NEEDMOREPARAMS     461
+# define BADCHANNELKEY      475
 # define BADCHANMASK        476
 # define CHANOPRIVSNEEDED   482
 

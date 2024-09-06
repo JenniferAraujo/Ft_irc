@@ -3,8 +3,6 @@
 
 # include "Includes.hpp"
 
-# define BADCHANNELKEY 475
-
 inline std::string JOIN_CHANNEL(const std::string& nick, const std::string& user, const std::string& host, const std::string& channel) {
     return ":" + nick + "!" + user + "@" + host + " JOIN " + channel + "\r\n";
 }
