@@ -7,7 +7,6 @@ void Kick::parsing(std::istringstream &input) {
     int n = 0;
     while (std::getline(input, token, ' ') && n < 3) {
         this->trimChar(token, '\r');
-        std::cout << "token: " << token << std::endl;
         if (token.empty()) {
             this->_error = NEEDMOREPARAMS;          //KICK  #a Diogo
             return;
@@ -51,7 +50,10 @@ void Kick::parsing(std::istringstream &input) {
         }
         n++;
     }
-    if (this->_channel.empty() || this->_cliente.empty())
+    Channel *ch = this->_server.getChannels()[this->_channel];
+    if (!ch->isOperator(this->_client.getSocketFD()))
+        this->_error = CHANOPRIVSNEEDED;
+    if (this->_error == 0 && (this->_channel.empty() || this->_cliente.empty()))
 		this->_error = NEEDMOREPARAMS;
 }
 
@@ -71,6 +73,9 @@ void Kick::execute() {
             break;
         case USERNOTINCHANNEL:
             Message::sendMessage(this->_client.getSocketFD(), ERR_USERNOTINCHANNEL(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
+            break;
+        case CHANOPRIVSNEEDED:
+            Message::sendMessage(this->_client.getSocketFD(), ERR_CHANOPRIVSNEEDED(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
             break;
         default:
             Channel*    ch = this->_server.getChannels()[this->_channel];

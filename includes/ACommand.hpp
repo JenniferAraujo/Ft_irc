@@ -3,10 +3,11 @@
 
 # include "Includes.hpp"
 
-# define UNKNOWNERROR   400
-# define NOSUCHNICK     401
-# define UNKNOWNCOMMAND 421
-# define NEEDMOREPARAMS 461
+# define UNKNOWNERROR       400
+# define NOSUCHNICK         401
+# define UNKNOWNCOMMAND     421
+# define NEEDMOREPARAMS     461
+# define CHANOPRIVSNEEDED   482
 
 inline std::string ERR_UNKNOWNERROR(const std::string& source, const std::string& target, const std::string& command, const std::string& info) {
     std::string _target = target;
@@ -41,6 +42,9 @@ inline std::string ERR_USERNOTINCHANNEL(const std::string& source, const std::st
     return ":" + source + " 441 " + nick + " " + channel + " :They aren't on that channel\r\n";
 }
 
+inline std::string ERR_CHANOPRIVSNEEDED(const std::string& source, const std::string& nick, const std::string& channel) {
+    return ":" + source + " 482 " + nick + " " + channel + " :You're not channel operator\r\n";
+}
 
 //A class abstrata ACommand tem uma string com o nome do comando e um int que guarda o erro de comando, se necessario, inicializado a 0 -> sem erro
 class ACommand {
