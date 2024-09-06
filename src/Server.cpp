@@ -49,6 +49,7 @@ void    Server::executeCommand(Client &client, ACommand *command){
 void    Server::handleCommand(Client &client, std::vector<char> &buf){
     //std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
     std::queue<ACommand *> commands = client.createCommand(buf);
+    //Comando que n existe
     if (commands.empty()){
         std::string str(buf.begin(), buf.end());
         std::istringstream input(str);
@@ -67,7 +68,6 @@ void    Server::handleCommand(Client &client, std::vector<char> &buf){
             ? std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", client.getSocketFD(), GREEN) << "Nick " << GREEN << "[" << client.getNick() << "] " << "Resgistered" << RESET <<std::endl
             : std::cout << formatServerMessage(BOLD_RED, "CLIENT", client.getSocketFD(), RED) << "Nick " << RED << "[" << client.getNick() << "] " << "Unresgistered" << RESET <<std::endl;
     }
-    //Comando que n existe
     //std::cout << BOLD_GREEN << "[PRINT COMMANDS]\n" << RESET;
     //showq(commands);
     while(!commands.empty()){

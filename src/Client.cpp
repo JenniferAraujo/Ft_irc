@@ -94,7 +94,7 @@ ACommand* Client::createTopic(std::istringstream &input){
 }
 
 ACommand* Client::createPrivmsg(std::istringstream &input){
-    std::cout << "Entra aqui privmsg: "<< "\n";
+    std::cout << "Entra aqui privmsg: " << input.str() << "\n";
     ACommand *command = new Privmsg(this->_server, *this);
     command->parsing(input);
     return command;

@@ -12,6 +12,23 @@
 # define UNKNOWNCOMMAND     421
 # define NEEDMOREPARAMS     461
 
+inline std::string ERR_UNKNOWNERROR(const std::string& source, const std::string& target, const std::string& command, const std::string& info) {
+    std::string _target = target;
+    if(target.empty())
+        _target = "*";
+    if(command.empty())
+        return ":" + source + " 400 " + _target + " :" + info + "\r\n";
+    return ":" + source + " 400 " + _target + " " + command + " :" + info + "\r\n";
+}
+
+inline std::string ERR_NOSUCHNICK(const std::string& source, const std::string& target, const std::string& nick) {
+    return ":" + source + " 401 " + target + " " + nick + " :No such nick\r\n";
+}
+
+inline std::string ERR_NOSUCHCHANNEL(const std::string& source, const std::string& target, const std::string& channel) {
+    return ":" + source + " 403 " + target + " " + channel + " :No such channel\r\n";
+}
+
 inline std::string ERR_TOOMANYTARGETS(const std::string& source, const std::string& target, const std::string& command) {
     return ":" + source + " 407 " + target + " " + command + " :Too many targets\r\n";
 }
@@ -24,14 +41,6 @@ inline std::string ERR_NOTEXTTOSEND(const std::string& source, const std::string
     return ":" + source + " 412 " + target + " :No text to send\r\n";
 }
 
-inline std::string ERR_UNKNOWNERROR(const std::string& source, const std::string& target, const std::string& command, const std::string& info) {
-    std::string _target = target;
-    if(target.empty())
-        _target = "*";
-    if(command.empty())
-        return ":" + source + " 421 " + _target + " :" + info + "\r\n";
-    return ":" + source + " 400 " + _target + " " + command + " :" + info + "\r\n";
-}
 
 inline std::string ERR_UNKNOWNCOMMAND(const std::string& source, const std::string& target, const std::string& command) {
     if(target.empty())
@@ -66,16 +75,24 @@ public:
         return false;
     }
     bool existentChannel(std::string channelName) {
-		std::map<std::string, Channel *> channels = this->_server.getChannels();
+        //std::cout << "Checking channelName: '" << channelName << "'" << std::endl;
+        std::map<std::string, Channel *> channels = this->_server.getChannels();
+        //std::cout << "Total channels in map: " << channels.size() << std::endl;
         std::map<std::string, Channel *>::iterator it = channels.find(channelName);
-        if (it != this->_server.getChannels().end())
+        if (it != channels.end()) {
+            //std::cout << "Found channel: " << it->first << std::endl;
             return true;
+        }
+        //std::cout << "Channel not found: " << channelName << std::endl;
         return false;
     }
     bool existentClient(std::string nickname) {
         std::map<int, Client*>::iterator it;
-        for (it = this->_server.getClients().begin(); it != this->_server.getClients().end(); it++) {
-            if (it->second->getNick() == nickname)
+        std::map<int, Client*> clients = this->_server.getClients();
+
+        for (it = clients.begin(); it != clients.end(); it++) {
+            std::string clientNick = it->second->getNick();
+            if (clientNick == nickname)
                 return true;
         }
         return false;

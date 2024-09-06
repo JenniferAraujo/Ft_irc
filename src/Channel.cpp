@@ -146,8 +146,11 @@ void	Channel::sendMessageToClients(std::string msg, int skipFD) {
 	std::map<int, Client*> clients = this->getClients();
 	for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
 		Client* client = it->second;
-		if (client->getSocketFD() != skipFD)
+		std::cout << "Entra aqui 5: skipfd: " << skipFD << "\n";
+		if (client->getSocketFD() != skipFD){
+			std::cout << "Entra aqui 6\n";
 			Message::sendMessage(client->getSocketFD(), msg, client->getServer());
+		}
 	}
 }
 
