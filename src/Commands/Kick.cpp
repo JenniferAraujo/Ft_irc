@@ -13,27 +13,31 @@ void Kick::parsing(std::istringstream &input) {
         }
         switch (n)
         {
-            case 0:
-                if (token[0] == '#') {
-                    if (this->existentChannel(token))
-                        this->_channel = token;     //KICK #a Diogo
-                    else {
-                        this->_error = NOSUCHCHANNEL;
+            case 0: //KICK #a Diogo
+                this->_channel = token;
+                if (token[0] != '#' || !this->existentChannel(token)) {
+                        this->_error = NOSUCHCHANNEL;   //CANAL NÃO EXISTE || KICK a
                         return ;
-                    }
-                }
-                else {
-                    this->_error = NOSUCHCHANNEL;     //KICK a
-                    return ;
                 }
                 break;
             case 1:
-                if (this->existentClient(token)) {
-                    if (this->existentClientOnChannel(token, this->_channel))
-                        this->_cliente = token;			//KICK #a Diogo
+                this->_cliente = token;
+                if (this->_client.getNick() == token) {
+                    this->_error = UNKNOWNERROR;        //AUTO-KICK
+                    return ;
                 }
-                else {
-                    this->_error = USERNOTINCHANNEL;
+                if (!this->existentClient(token)) {
+                    this->_error = NOSUCHNICK;          //CLIENTE NÃO EXISTE
+                    return ;
+                }
+                if (!this->existentClientOnChannel(this->_client.getNick(), this->_channel)) {
+                    this->_error = NOTONCHANNEL;        //NÃO ESTIVER NO CANAL
+                    return;
+                }
+                if (!this->existentClientOnChannel(token, this->_channel)) {
+                    Channel*    ch = this->_server.getChannels()[this->_channel];
+                    Client*     c = this->_server.findClient(this->_cliente, 0);
+                    this->_error = ch->isOperator(c->getSocketFD()) ? UNKNOWNERROR : USERNOTINCHANNEL; //NÃO PODE KICKAR OPERADORES || CLIENTE NÃO ESTÁ NO CANAL
                     return ;
                 }
                 break;
@@ -50,17 +54,17 @@ void Kick::parsing(std::istringstream &input) {
         }
         n++;
     }
-    Channel *ch = this->_server.getChannels()[this->_channel];
-    if (!ch->isOperator(this->_client.getSocketFD()))
-        this->_error = CHANOPRIVSNEEDED;
-    if (this->_error == 0 && (this->_channel.empty() || this->_cliente.empty()))
-		this->_error = NEEDMOREPARAMS;
+    if (this->_error == 0) {
+        if (this->_channel.empty() || this->_cliente.empty())
+            this->_error = NEEDMOREPARAMS;
+        else {
+            Channel* ch = this->_server.getChannels()[this->_channel];
+            if (!ch->isOperator(this->_client.getSocketFD()))
+                this->_error = CHANOPRIVSNEEDED;
+        }
+    }
 }
 
-//TODO - Permissões de operador
-//TODO - Remover o cliente do canal
-//TODO - Tratamento de Erros
-//FIXME - SEGFAUlT ao tentar dar auto-kick
 void Kick::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
     this->print();
@@ -71,29 +75,33 @@ void Kick::execute() {
         case NOSUCHCHANNEL:
             Message::sendMessage(this->_client.getSocketFD(), ERR_NOSUCHCHANNEL(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
             break;
+        case NOSUCHNICK:
+            Message::sendMessage(this->_client.getSocketFD(), ERR_NOSUCHNICK(this->_server.getHostname(), this->_client.getNick(), this->_cliente), this->_server);
+            break;
         case USERNOTINCHANNEL:
-            Message::sendMessage(this->_client.getSocketFD(), ERR_USERNOTINCHANNEL(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
+            Message::sendMessage(this->_client.getSocketFD(), ERR_USERNOTINCHANNEL(this->_server.getHostname(), this->_client.getNick(), this->_cliente, this->_channel), this->_server);
+            break;
+        case NOTONCHANNEL:
+            Message::sendMessage(this->_client.getSocketFD(), ERR_NOTONCHANNEL(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
             break;
         case CHANOPRIVSNEEDED:
             Message::sendMessage(this->_client.getSocketFD(), ERR_CHANOPRIVSNEEDED(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
             break;
+        case UNKNOWNERROR:
+            Message::sendMessage(this->_client.getSocketFD(), ERR_UNKNOWNERROR(this->_server.getHostname(), this->_client.getNick(), this->_name, "You can't kick yourself, or kick channel operators"), this->_server);
+            break;
         default:
             Channel*    ch = this->_server.getChannels()[this->_channel];
-            if (ch->isClient(this->_server.getClientByNick(this->_cliente)))
-                ch->sendMessage(KICK(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_cliente, this->_reason.empty() ? KICKDEFAULTMSG : this->_reason), 0);
-            else
-                std::cout << "Mensagens de erro" << std::endl;
+            Client*     c = this->_server.findClient(this->_cliente, 0);
+            ch->sendMessage(KICK(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_cliente, this->_reason.empty() ? KICKDEFAULTMSG : this->_reason), 0);
+            ch->removeClient(c->getSocketFD());
+            this->_server.printChannelInfo(this->_channel);
             break;
     }
 
 }
 
 void Kick::print() const{
-    // std::cout << "Command: " << this->_name <<  " | Error: " << this->_error;
-    // std::cout << " | Channel: " << this->_channel << " | Client: " << this->_cliente;
-    // if (!this->_reason.empty())
-    //     std::cout << " | Reason: " << this->_reason;
-    // std::cout << std::endl;
     if (this->_error != 0)
         std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
     else
