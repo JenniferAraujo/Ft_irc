@@ -12,6 +12,18 @@
 # define UNKNOWNCOMMAND     421
 # define NEEDMOREPARAMS     461
 
+inline std::string ERR_TOOMANYTARGETS(const std::string& source, const std::string& target, const std::string& command) {
+    return ":" + source + " 407 " + target + " " + command + " :Too many targets\r\n";
+}
+
+inline std::string ERR_NORECIPIENT(const std::string& source, const std::string& target, const std::string& command) {
+    return ":" + source + " 411 " + target + " :No recipient given (" + command + ")\r\n";
+}
+
+inline std::string ERR_NOTEXTTOSEND(const std::string& source, const std::string& target) {
+    return ":" + source + " 412 " + target + " :No text to send\r\n";
+}
+
 inline std::string ERR_UNKNOWNERROR(const std::string& source, const std::string& target, const std::string& command, const std::string& info) {
     std::string _target = target;
     if(target.empty())
@@ -45,14 +57,6 @@ public:
     virtual ~ACommand() {};
     std::string getName() const { return _name; };
     int getError() const { return _error; };
-    void trimChar(std::string& str, char ch) {
-        std::string::size_type first = str.find_first_not_of(ch);
-        std::string::size_type last = str.find_last_not_of(ch);
-        if (first == std::string::npos)
-            str.clear();
-        else
-            str = str.substr(first, last - first + 1);
-    }
     bool isRegistration(){
         std::string commands[] = {"CAP", "PASS", "NICK", "USER"};
         for (int i = 0; i < 4; i++) {

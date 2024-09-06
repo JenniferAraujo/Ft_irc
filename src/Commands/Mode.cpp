@@ -11,11 +11,11 @@ void Mode::parsing(std::istringstream &input){
 	this->_channel = channel;
 
 	std::getline(input, mode, ' ');
-	this->trimChar(mode, ' ');
+	trimChar(mode, ' ');
 	this->_mode = mode;
 	
 	std::getline(input, parameters);
-	this->trimChar(mode, '\r');
+	trimChar(mode, '\r');
 	this->_parameters = parameters;
 	extractKeyAndLimit();
 	this->print();
@@ -28,7 +28,7 @@ void	Mode::extractKeyAndLimit() {
 
 	//TODO - fazer um loop para quando for mais de um mode
 	if (modeChar == 'k') {
-		this->trimChar(parameters, '\r');
+		trimChar(parameters, '\r');
 		this->_password = parameters;
 	}// ERR_INVALIDMODEPARAM se for invalid a senha (com espaços)
 	else if (modeChar == 'l') {

@@ -90,10 +90,10 @@ void showq(std::queue<ACommand *> gq)
 void showstringq(std::queue<std::string> gq)
 {
     std::queue<std::string> g = gq;
-    if(g.empty())
-        std::cout << "Ups, I'm empty!!\n";
     while (!g.empty()) {
-        std::cout << g.front() << std::endl;
+        std::cout << g.front();
+        if(g.size() > 1)
+            std::cout << ", ";
         g.pop();
     }
 }
@@ -111,4 +111,13 @@ void showdoublestringq(std::queue<std::string> gq, std::queue<std::string> gq2)
         }
         std::cout << std::endl;
     }
+}
+
+void trimChar(std::string& str, char ch) {
+    std::string::size_type first = str.find_first_not_of(ch);
+    std::string::size_type last = str.find_last_not_of(ch);
+    if (first == std::string::npos)
+        str.clear();
+    else
+        str = str.substr(first, last - first + 1);
 }

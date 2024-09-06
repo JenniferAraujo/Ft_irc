@@ -64,6 +64,7 @@ public:
     ACommand*                   createPart(std::istringstream &input);
     ACommand*                   createInvite(std::istringstream &input);
     ACommand*                   createTopic(std::istringstream &input);
+    ACommand*                   createPrivmsg(std::istringstream &input);
     ACommand*                   createQuit(std::istringstream &input);
 
     //getters

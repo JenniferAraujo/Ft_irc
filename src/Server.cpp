@@ -49,18 +49,25 @@ void    Server::executeCommand(Client &client, ACommand *command){
 void    Server::handleCommand(Client &client, std::vector<char> &buf){
     //std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
     std::queue<ACommand *> commands = client.createCommand(buf);
-    //Comando que n existe
     if (commands.empty()){
         std::string str(buf.begin(), buf.end());
         std::istringstream input(str);
-        std::string input_line;
-        getline(input, input_line);
-        std::istringstream line(input_line);
+        std::string line;
+        getline(input, line);
+        trimChar(line, '\r');
+        std::istringstream input_line(line);
         std::string cmd;
-        getline(line, cmd, ' ');
+        getline(input_line, cmd, ' ');
         Message::sendMessage(client.getSocketFD(), ERR_UNKNOWNCOMMAND(this->getHostname(), client.getNick(), cmd), *this);
         return ;
     }
+    if(commands.front()->getName() != "PING" && commands.front()->getName() != "WHO" ){
+        std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size(), "") << "Event on Client " << GREEN << "[" << client.getSocketFD() << "]" << RESET <<  std::endl;
+        (client.getRegistration())
+            ? std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", client.getSocketFD(), GREEN) << "Nick " << GREEN << "[" << client.getNick() << "] " << "Resgistered" << RESET <<std::endl
+            : std::cout << formatServerMessage(BOLD_RED, "CLIENT", client.getSocketFD(), RED) << "Nick " << RED << "[" << client.getNick() << "] " << "Unresgistered" << RESET <<std::endl;
+    }
+    //Comando que n existe
     //std::cout << BOLD_GREEN << "[PRINT COMMANDS]\n" << RESET;
     //showq(commands);
     while(!commands.empty()){
@@ -84,11 +91,6 @@ void Server::verifyEvent(const pollfd &pfd) {
         std::vector<char> temp(MAX_MESSAGE_SIZE + 1);
         static std::vector<char> buf(MAX_MESSAGE_SIZE, '\0');
         static int bufSize = 0;
-
-        std::cout << formatServerMessage(BOLD_CYAN, "SERVER", this->_Clients.size(), "") << "Event on Client " << GREEN << "[" << client->getSocketFD() << "]" << RESET <<  std::endl;
-        (client->getRegistration())
-            ? std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", client->getSocketFD(), GREEN) << "Nick " << GREEN << "[" << client->getNick() << "] " << "Resgistered" << RESET <<std::endl
-            : std::cout << formatServerMessage(BOLD_RED, "CLIENT", client->getSocketFD(), RED) << "Nick " << RED << "[" << client->getNick() << "] " << "Unresgistered" << RESET <<std::endl;
         
         int bytesReceived = recv(client->getSocketFD(), temp.data(), temp.size(), 0);
         if(bytesReceived == 0){

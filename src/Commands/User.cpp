@@ -18,7 +18,7 @@ void User::parsing(std::istringstream &input){
     std::getline(input, this->_realname);
     if(this->_realname.empty())
         _error = NEEDMOREPARAMS; //USER 0 * :
-    this->trimChar(this->_realname, '\r');
+    trimChar(this->_realname, '\r');
 }
 
 void User::execute() {

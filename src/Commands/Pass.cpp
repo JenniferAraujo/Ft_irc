@@ -7,7 +7,7 @@ void Pass::parsing(std::istringstream &input){
     if (this->_pass.empty())
         this->_error = NEEDMOREPARAMS; //PASS
     else{
-        this->trimChar(this->_pass, '\r');
+        trimChar(this->_pass, '\r');
         if(_server.getPassword() != this->_pass)
             this->_error = PASSWDMISMATCH; //PASS wrongpass
     }

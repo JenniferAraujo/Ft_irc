@@ -89,5 +89,6 @@ void showq(std::queue<ACommand *> gq);
 void showstringq(std::queue<std::string> gq);
 void showdoublestringq(std::queue<std::string> gq, std::queue<std::string> gq2);
 std::string formatServerMessage(const std::string& color, const std::string& label, int clients, const std::string& fdColor);
+void trimChar(std::string& str, char ch);
 
 #endif // INCLUDES_HPP
