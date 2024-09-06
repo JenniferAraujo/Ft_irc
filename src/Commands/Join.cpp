@@ -46,20 +46,25 @@ void Join::parsing(std::istringstream &input){
 void Join::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
     this->print();
-    while(!this->_channels.empty()) {
-		this->_server.addInChannel(this->_channels.front(),(this->_password.empty() ? "" : this->_password.front()), const_cast<Client&>(this->_client));
-        if (this->_server.getChannels().find(this->_channels.front()) != this->_server.getChannels().end()) {
-            Channel* ch = this->_server.getChannels()[this->_channels.front()];
-            ch->sendMessage(JOIN_CHANNEL(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channels.front()), 0);
-            this->_client.setJustJoined(true);
-            if (ch->getTopic().empty())
-                Message::sendMessage(this->_client.getSocketFD(), RPL_NOTOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick()), this->_server);
-            else
-                Message::sendMessage(this->_client.getSocketFD(), RPL_TOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick(), ch->getTopic()), this->_server);
-        }
-        this->_channels.pop();
-		if (!this->_password.empty())
-        	this->_password.pop();
+    switch (this->_error) {
+        case NEEDMOREPARAMS:
+            Message::sendMessage(this->_client.getSocketFD(), ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name), this->_server);
+            break;
+        default:
+            while(!this->_channels.empty()) {
+                this->_server.addInChannel(this->_channels.front(),(this->_password.empty() ? "" : this->_password.front()), const_cast<Client&>(this->_client));
+                Channel* ch = this->_server.getChannels()[this->_channels.front()];
+                ch->sendMessage(JOIN_CHANNEL(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channels.front()), 0);
+                this->_client.setJustJoined(true);
+                if (ch->getTopic().empty())
+                    Message::sendMessage(this->_client.getSocketFD(), RPL_NOTOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick()), this->_server);
+                else
+                    Message::sendMessage(this->_client.getSocketFD(), RPL_TOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick(), ch->getTopic()), this->_server);
+                this->_channels.pop();
+                if (!this->_password.empty())
+                    this->_password.pop();
+            }
+            break;
     }
 }
 

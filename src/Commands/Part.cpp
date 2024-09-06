@@ -2,27 +2,41 @@
 
 Part::Part(Server& server, Client& client): ACommand("PART", server, client) {};
 
-void Part::parsingToken(std::string token, int n) {
+void Part::parsingToken(std::string token, int n, std::istringstream &input) {
     if (n == 0) {
-        if (token[0] != '#' || token.empty())
-            this->_error = BADCHANNELKEY;   //PART a,#b //PART a,#b
-        else
-            this->_channels.push(token);    //PART #a //PART #a,#b
+        this->_channels.push(token);    //PART #a //PART #a,#b
+        if (token[0] != '#' || token.empty() || !this->existentChannel(token)) {
+            while (!this->_channels.empty()) {
+                this->_channels.pop();
+            }
+            this->_channels.push(token);
+            this->_error = NOSUCHCHANNEL;   //PART a,#b //PART a,#b
+            return;
+        } else if (!this->existentClientOnChannel(this->_client.getNick(), this->_channels.front())) {
+            while (!this->_channels.empty()) {
+                this->_channels.pop();
+            }
+            this->_channels.push(token);
+            this->_error = NOTONCHANNEL;        //NÃO ESTIVER NO CANAL
+            return;
+        }
     }
     else {
         if (token[0] == ':') {
             token.erase(token.begin());
             this->_message = token;         //PART #a :Bye! //PART #a,#b :Bye!
+            while (std::getline(input, token, ' ')) {
+                this->trimChar(token, '\r');
+                this->_message.append(" ").append(token);
+            }
         }
-        else
-            this->_error = BADCHANNELKEY;   //PART #a Bye!
     }
 }
 
 void Part::parsing(std::istringstream &input) {
 	std::string token;
     int n = 0;
-    while (std::getline(input, token, ' ') || n < 1 ) {
+    while (this->_error == 0 && (std::getline(input, token, ' ') || n < 1 )) {
         this->trimChar(token, '\r');
         if (token.empty()) {
             this->_error = NEEDMOREPARAMS;  //PART  #a
@@ -30,44 +44,51 @@ void Part::parsing(std::istringstream &input) {
         }
         int count = std::count(token.begin(), token.end(), ',');
         if (count == 0)
-			this->parsingToken(token, n);
+			this->parsingToken(token, n, input);
         else {
             std::istringstream tokenstream(token);
             while (std::getline(tokenstream, token, ',')) {
                 this->trimChar(token, '\r');
-				this->parsingToken(token, n);
+				this->parsingToken(token, n, input);
             }
         }
         n++;
     }
-    if (this->_channels.empty())
+    if (this->_error == 0 && this->_channels.empty())
 		this->_error = NEEDMOREPARAMS;
 }
 
-//TODO - Remover o cliente do canal
-//TODO - Tratamento de Erros
 void Part::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
     this->print();
-    while (!this->_channels.empty()) {
-        if (this->_server.getChannels().find(this->_channels.front()) != this->_server.getChannels().end()) {
-            Channel* ch = this->_server.getChannels()[this->_channels.front()];
-            ch->sendMessage(PART(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channels.front(), this->_message), 0);
-        }
-        this->_channels.pop();
+    switch (this->_error) {
+        case NEEDMOREPARAMS:
+            Message::sendMessage(this->_client.getSocketFD(), ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name), this->_server);
+            break;
+        case NOSUCHCHANNEL:
+            Message::sendMessage(this->_client.getSocketFD(), ERR_NOSUCHCHANNEL(this->_server.getHostname(), this->_client.getNick(), this->_channels.front()), this->_server);
+            break;
+        case NOTONCHANNEL:
+            Message::sendMessage(this->_client.getSocketFD(), ERR_NOTONCHANNEL(this->_server.getHostname(), this->_client.getNick(), this->_channels.front()), this->_server);
+            break;
+        default:
+            while (!this->_channels.empty()) {
+                Channel* ch = this->_server.getChannels()[this->_channels.front()];
+                ch->sendMessage(PART(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channels.front(), this->_message), 0);
+                ch->removeClient(this->_client.getSocketFD());
+                this->_server.printChannelInfo(this->_channels.front());
+                this->_channels.pop();
+            }
+            break;
     }
 }
 
 void Part::print() const{
-    //std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << std::endl;
-    //std::cout << "Channels queue:" << std::endl;
-	//showstringq(this->_channels);
-    //std::cout << "Message: " << this->_message << std::endl;
     if (this->_error != 0)
         std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
     else {
         std::cout << "\t[";
         showstringq(this->_channels);
-        std::cout << "] [" << (this->_message.empty() ? "-" : this->_message) << "]" << std::endl; 
+        std::cout << "] [" << (this->_message.empty() ? "-" : this->_message) << "]" << std::endl;
     }
 }

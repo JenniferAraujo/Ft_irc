@@ -16,7 +16,7 @@ public:
     void execute();
     void print() const;
 
-    void parsingToken(std::string token, int n);
+    void parsingToken(std::string token, int n,  std::istringstream &input);
     std::queue<std::string> getChannels() { return _channels; };
     std::string getMessage() { return _message; };
 
