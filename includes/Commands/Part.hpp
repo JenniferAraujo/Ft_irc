@@ -3,6 +3,10 @@
 
 # include "Includes.hpp"
 
+inline std::string PART(const std::string& nick, const std::string& user, const std::string& host, const std::string& channel, const std::string& message) {
+    return ":" + nick + "!" + user + "@" + host + " PART " + channel + " :" + message + "\r\n";
+}
+
 class Part: public ACommand {
 public:
     Part(Server& server, Client& client);

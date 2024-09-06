@@ -89,7 +89,6 @@ void Server::verifyEvent(const pollfd &pfd) {
         (client->getRegistration())
             ? std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", client->getSocketFD(), GREEN) << "Nick " << GREEN << "[" << client->getNick() << "] " << "Resgistered" << RESET <<std::endl
             : std::cout << formatServerMessage(BOLD_RED, "CLIENT", client->getSocketFD(), RED) << "Nick " << RED << "[" << client->getNick() << "] " << "Unresgistered" << RESET <<std::endl;
-        
         int bytesReceived = recv(client->getSocketFD(), temp.data(), temp.size(), 0);
         if(bytesReceived == 0){
             this->updateToRemove(client->getSocketFD(), "Connection closed by client");

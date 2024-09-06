@@ -44,13 +44,30 @@ void Part::parsing(std::istringstream &input) {
 		this->_error = NEEDMOREPARAMS;
 }
 
+//TODO - Remover o cliente do canal
+//TODO - Tratamento de Erros
 void Part::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
+    this->print();
+    while (!this->_channels.empty()) {
+        if (this->_server.getChannels().find(this->_channels.front()) != this->_server.getChannels().end()) {
+            Channel* ch = this->_server.getChannels()[this->_channels.front()];
+            ch->sendMessage(PART(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channels.front(), this->_message), 0);
+        }
+        this->_channels.pop();
+    }
 }
 
 void Part::print() const{
-    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << std::endl;
-    std::cout << "Channels queue:" << std::endl;
-	showstringq(this->_channels);
-    std::cout << "Message: " << this->_message << std::endl;
+    //std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << std::endl;
+    //std::cout << "Channels queue:" << std::endl;
+	//showstringq(this->_channels);
+    //std::cout << "Message: " << this->_message << std::endl;
+    if (this->_error != 0)
+        std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
+    else {
+        std::cout << "\t[";
+        showstringq(this->_channels);
+        std::cout << "] [" << (this->_message.empty() ? "-" : this->_message) << "]" << std::endl; 
+    }
 }

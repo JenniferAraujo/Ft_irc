@@ -20,7 +20,6 @@ public:
 
 private:
     std::string _pass;
-    //A minha ideia e ter uma variavel por argumento do commando
 };
 
 #endif // CAP_HPP

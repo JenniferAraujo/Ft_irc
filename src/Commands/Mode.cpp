@@ -2,6 +2,7 @@
 
 Mode::Mode(Server& server, Client& client): ACommand("MODE", server, client) {};
 
+//FIXME - Trabalhar no parsing
 void Mode::parsing(std::istringstream &input){
 	std::string mode;
 	std::string channel;
