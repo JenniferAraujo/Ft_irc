@@ -97,6 +97,15 @@ public:
         }
         return false;
     }
+    bool findInQueue(std::queue<std::string> q, const std::string& target) {
+    while (!q.empty()) {
+        if (q.front() == target) {
+            return true;  // Found the target string
+        }
+        q.pop();  // Move to the next element
+    }
+    return false;  // String not found
+}
     virtual void parsing(std::istringstream &input) = 0;
     virtual void execute() = 0;
     virtual void print() const = 0;

@@ -11,21 +11,23 @@ Privmsg::Privmsg(Server& server, Client& client): ACommand("PRIVMSG", server, cl
 # define NOTEXTTOSEND       412 */ //check
 void Privmsg::parsingToken(std::string token) {
         if (token[0] == '#'){
-            std::cout << "TOKEN 3: " << token << "\n";
-            this->_channels.push(token); //#c
+            if(!findInQueue(this->_channels, token))
+                this->_channels.push(token); //#c
         }
-        else if (token[0] == '@' && token[1] == '#')
-            this->_opChannels.push(token); //@#c
-        else
-            this->_clients.push(token); //c
+        else if (token[0] == '@' && token[1] == '#'){
+            if(!findInQueue(this->_opChannels, token))
+                this->_opChannels.push(token); //@#c
+        }
+        else{
+            if(!findInQueue(this->_clients, token))
+                this->_clients.push(token); //c
+        }
 }
 
 void Privmsg::parsing(std::istringstream &input){
 	std::string token;
     std::getline(input, token, ' ');
-    std::cout << "TOKEN 1: " << token << "\n";
     trimChar(token, '\r');
-    std::cout << "TOKEN 2: " << token << "\n";
     if (token.empty()) {
         this->_error = NEEDMOREPARAMS;  //PRIVMSG -> check 
             return;
@@ -57,18 +59,14 @@ void Privmsg::parsing(std::istringstream &input){
 //mandar msg para canal, é para todos menos para ti mesmo -> done -> check
 //NOSUCHCHANNEL  403 //execuçao -> done -> check
 void Privmsg::sendToChannels(){
-    std::cout << "Entra aqui 1\n";
     while (!this->_channels.empty()) {
-        std::cout << "Entra aqui 2\n";
         std::string channelName = this->_channels.front();
         if(existentChannel(channelName)){
-            std::cout << "Entra aqui 3\n";
             this->_server.getChannels()[channelName]->sendMessage(
                 PRIV_MESSAGE(this->_client.getNick(), this->_client.getUsername(), 
                     this->_client.getIpaddr(), channelName, this->_message), this->_client.getSocketFD());
         }
         else{
-            std::cout << "Entra aqui 1\n";
             Message::sendMessage(this->_client.getSocketFD(), ERR_NOSUCHCHANNEL(this->_server.getHostname(), this->_client.getNick(), channelName), this->_server);
         }
         this->_channels.pop();
