@@ -81,27 +81,27 @@ void Channel::applyMode(const Mode& modeObj) {
 void Channel::addOperator(int clientId, Client* client) {
 	if (_operators.find(clientId) == _operators.end()) {
 		_operators[clientId] = client;
-		std::cout << "Operator added: " << clientId << std::endl;
+		//std::cout << "Operator added: " << clientId << std::endl;
 	} else {
-		std::cout << "Client " << clientId << " is already an operator." << std::endl;
+		//std::cout << "Client " << clientId << " is already an operator." << std::endl;
 	}
 }
 
 void Channel::removeOperator(int clientId) {
 	if (_operators.find(clientId) != _operators.end()) {
 		_operators.erase(clientId);
-		std::cout << "Operator removed: " << clientId << std::endl;
+		//std::cout << "Operator removed: " << clientId << std::endl;
 	} else {
-		std::cout << "Client " << clientId << " is not an operator of channel " << _name << std::endl;
+		//std::cout << "Client " << clientId << " is not an operator of channel " << _name << std::endl;
 	}
 }
 
 void Channel::removeClient(int clientId) {
 	if (_Clients.find(clientId) != _Clients.end()) {
 		_Clients.erase(clientId);
-		std::cout << "Client removed: " << clientId << std::endl;
+		//std::cout << "Client removed: " << clientId << std::endl;
 	} else {
-		std::cout << "Client " << clientId << " is not an client of channel " << _name << std::endl;
+		//std::cout << "Client " << clientId << " is not an client of channel " << _name << std::endl;
 	}
 }
 

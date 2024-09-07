@@ -40,6 +40,7 @@ inline std::string RPL_ENDOFMOTD(const std::string& source, const std::string& t
 class Client {
 public:
     Client(Server &server, time_t lastActivityTime); // Constructor
+    Client();
     ~Client(); // Destructor
     Client(const Client& cpy);
 
@@ -96,7 +97,6 @@ public:
 
 
 private:
-    Client();
     int                     _socketFD;
     bool                    _regError;
     bool                    _registration;

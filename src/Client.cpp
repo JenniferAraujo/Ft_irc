@@ -1,5 +1,21 @@
 #include "Includes.hpp"
 
+/*Client::Client(): _socketFD(0),
+                    _regError(0),
+                    _registration(0),
+                    _ipAddr(""),
+                    _hostname(""),
+                    _password(""),
+                    _nick(""),
+                    _username(""),
+                    _realname(""),
+                    _lastActivityTime(0),
+                    _connectTime(0),
+                    _justJoined(false) {
+                        Server a;
+                        _server = a;
+                    }*/
+
 Client::Client(Server &server, time_t time)
     :   _regError(0),
         _registration(false),
@@ -155,7 +171,7 @@ void Client::welcome() {
     Message::sendMessage(this->_socketFD, msg, this->_server);
 }
 
-/* If the server is waiting to complete a lookup of client information (such as hostname or ident for a username), 
+/* If the server is waiting to complete a lookup of client information (such as hostname or ident for a username),
 there may be an arbitrary wait at some point during registration. Servers SHOULD set a reasonable timeout for these lookups. */
 void    Client::registration(){
     if(this->getNick().empty()
@@ -210,8 +226,7 @@ void Client::verifyConnection(Server &server, const pollfd &pfd) {
             std::cerr << RED << e.what() << RESET << std::endl;
         }
 
-        std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", client->_socketFD, GREEN) << "Client " << GREEN << "[" << client->_socketFD << "]" << RESET
-                  << " connected from " << BOLD_GREEN << client->getIpaddr() << RESET << std::endl;
+        std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", client->_socketFD, GREEN) << "Connected from " << BOLD_GREEN << client->getIpaddr() << RESET << std::endl;
 
         server.updateNFDs(client->_socketFD);
         server.updateClients(client, client->_socketFD);

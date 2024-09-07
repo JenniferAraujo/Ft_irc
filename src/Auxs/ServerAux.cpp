@@ -56,15 +56,35 @@ void Server::addInChannel(std::string channelName, std::string password, Client 
 			// send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
 			return ;
     	}
-        std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0, "") << client.getNick() << " entered the channel " << BOLD_YELLOW << channelName << RESET << std::endl;
 		this->_Channels[channelName]->addClient(client);
+        std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0, "") << GREEN << "[" << client.getNick() << "]" << RESET << " entered Channel " << BOLD_YELLOW << channelName << RESET << std::endl;
+        this->printChannelInfo(channelName);
     }
     else {
-        std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0, "") << client.getNick() << " created the channel " << BOLD_YELLOW << channelName << RESET << std::endl;
         Channel *channel = new Channel(channelName);
         this->_Channels[channelName] = channel;
         this->_Channels[channelName]->addOperator(client.getSocketFD(), &client);
+        std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0, "") << GREEN << "[" << client.getNick() << "]" << RESET << " created Channel " << BOLD_YELLOW << channelName << RESET << std::endl;
+        this->printChannelInfo(channelName);
     }
+}
+
+void    Server::printChannelInfo(std::string channelName) {
+    std::cout << BOLD_YELLOW << "[CHANNEL INFO]\t\t" << RESET << "@[";
+    showMap(this->_Channels[channelName]->getOperators());
+    std::cout << "] [";
+    showMap(this->_Channels[channelName]->getClients());
+    std::cout << "] i[";
+    std::vector<int> fds = this->_Channels[channelName]->getInvited();
+    if (fds.empty())
+        std::cout << "-";
+    for (std::vector<int>::iterator it = fds.begin(); it != fds.end(); ++it) {
+        Client*     c = this->getClients()[*it];
+        std::cout << c->getNick();
+        if (it + 1 != fds.end())
+            std::cout << ", ";
+    }
+    std::cout << "]" << std::endl;
 }
 
 Client    *Server::findClient(std::string nick, int skipFd){

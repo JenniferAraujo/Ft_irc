@@ -30,7 +30,8 @@ void Nick::parsing(std::istringstream &input){
 //TODO - Send message to clients - May
 //The NICK message may be sent from the server to clients to acknowledge their NICK command was successful, and to inform other clients about the change of nickname. In these cases, the <source> of the message will be the old nickname [ [ "!" user ] "@" host ] of the user who is changing their nickname.
 void Nick::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << RESET << this->_name << std::endl;
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
+    this->print();
     switch (this->_error) {
         case NONICKNAMEGIVEN:
             Message::sendMessage(this->_client.getSocketFD(), ERR_NONICKNAMEGIVEN(this->_server.getHostname(), this->_client.getNick()), this->_server);
@@ -48,5 +49,9 @@ void Nick::execute() {
 }
 
 void Nick::print() const{
-    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | Nick: " << this->_nick << std::endl;
+    //std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | Nick: " << this->_nick << std::endl;
+    if (this->_error != 0)
+        std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
+    else
+        std::cout << "\t[" << this->_nick << "]" << std::endl;
 }
