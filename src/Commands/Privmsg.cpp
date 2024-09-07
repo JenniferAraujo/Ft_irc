@@ -100,8 +100,6 @@ void Privmsg::sendToClients(){
     }
 }
 
-
-
 void Privmsg::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "");
     switch (this->_error) {
