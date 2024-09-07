@@ -34,6 +34,10 @@ inline std::string ERR_NOSUCHCHANNEL(const std::string& source, const std::strin
     return ":" + source + " 403 " + target + " " + channel + " :No such channel\r\n";
 }
 
+inline std::string ERR_CANNOTSENDTOCHAN(const std::string& source, const std::string& target, const std::string& channel) {
+    return ":" + source + " 404 " + target + " " + channel + " :Cannot send to channel\r\n";
+}
+
 inline std::string ERR_TOOMANYTARGETS(const std::string& source, const std::string& target, const std::string& command) {
     return ":" + source + " 407 " + target + " " + command + " :Too many targets\r\n";
 }
@@ -46,11 +50,18 @@ inline std::string ERR_NOTEXTTOSEND(const std::string& source, const std::string
     return ":" + source + " 412 " + target + " :No text to send\r\n";
 }
 
-
 inline std::string ERR_UNKNOWNCOMMAND(const std::string& source, const std::string& target, const std::string& command) {
     if(target.empty())
         return ":" + source + " 421 " + "*" + " " + command + " :Unknown command\r\n";
     return ":" + source + " 421 " + target + " " + command + " :Unknown command\r\n";
+}
+
+inline std::string ERR_USERNOTINCHANNEL(const std::string& source, const std::string& target, const std::string& nick, const std::string& channel) {
+    return ":" + source + " 441 " + target + " " + nick + " " + channel + " :is not on that channel\r\n";
+}
+
+inline std::string ERR_NOTONCHANNEL(const std::string& source, const std::string& target, const std::string& channel) {
+    return ":" + source + " 442 " + target  + " " + channel + " :You're not on that channel\r\n";
 }
 
 inline std::string ERR_NEEDMOREPARAMS(const std::string& source, const std::string& target, const std::string& command) {
@@ -63,25 +74,8 @@ inline std::string ERR_ALREADYREGISTERED(const std::string& source, const std::s
     return ":" + source + " 462 " + target + " :You may not reregister\r\n";
 }
 
-inline std::string ERR_NOSUCHCHANNEL(const std::string& source, const std::string& nick, const std::string& channel) {
-    return ":" + source + " 403 " + nick + " " + channel + " :No such channel\r\n";
-}
-
-inline std::string ERR_NOSUCHNICK(const std::string& source, const std::string& nick, const std::string& nickSended) {
-    return ":" + source + " 401 " + nick + " " + nickSended + " :No such nick\r\n";
-}
-
-inline std::string ERR_USERNOTINCHANNEL(const std::string& source, const std::string& nick, const std::string& nickSended, const std::string& channel) {
-    return ":" + source + " 441 " + nick + " " + nickSended + " " + channel + " :is not on that channel\r\n";
-}
-
-inline std::string ERR_NOTONCHANNEL(const std::string& source, const std::string& nick, const std::string& channel) {
-    return ":" + source + " 442 " + nick  + " " + channel + " :You're not on that channel\r\n";
-}
-
-
-inline std::string ERR_CHANOPRIVSNEEDED(const std::string& source, const std::string& nick, const std::string& channel) {
-    return ":" + source + " 482 " + nick + " " + channel + " :You're not channel operator\r\n";
+inline std::string ERR_CHANOPRIVSNEEDED(const std::string& source, const std::string& target, const std::string& channel) {
+    return ":" + source + " 482 " + target + " " + channel + " :You're not channel operator\r\n";
 }
 
 //A class abstrata ACommand tem uma string com o nome do comando e um int que guarda o erro de comando, se necessario, inicializado a 0 -> sem erro
@@ -124,14 +118,14 @@ public:
         return false;
     }
     bool findInQueue(std::queue<std::string> q, const std::string& target) {
-    while (!q.empty()) {
-        if (q.front() == target) {
-            return true;  // Found the target string
+        while (!q.empty()) {
+            if (q.front() == target) {
+                return true;  // Found the target string
+            }
+            q.pop();  // Move to the next element
         }
-        q.pop();  // Move to the next element
+        return false;  // String not found
     }
-    return false;  // String not found
-}
     bool existentClientOnChannel(const std::string &nickname, const std::string &channelName) {
         std::map<std::string, Channel *> channels = this->_server.getChannels();
         std::map<std::string, Channel *>::iterator it = channels.find(channelName);
@@ -150,7 +144,6 @@ public:
         }
         return false;  // User not found in the channel
     }
-
     virtual void parsing(std::istringstream &input) = 0;
     virtual void execute() = 0;
     virtual void print() const = 0;
