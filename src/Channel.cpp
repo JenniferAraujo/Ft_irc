@@ -153,8 +153,6 @@ void	Channel::sendMessageToClients(std::string msg, int skipFD) {
 }
 
 void	Channel::sendMessage(std::string msg, int skipFD) {
-	printMap(this->_operators);
-	printMap(this->_Clients);
 	this->sendMessageToOperators(msg, skipFD);
 	this->sendMessageToClients(msg, skipFD);
 }

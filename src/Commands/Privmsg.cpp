@@ -62,8 +62,12 @@ void Privmsg::sendToChannels(){
     while (!this->_channels.empty()) {
         std::string channelName = this->_channels.front();
         if(existentChannel(channelName)){
-            this->_server.getChannels()[channelName]->sendMessage(
-                PRIV_MESSAGE(this->_client.getNick(), this->_client.getUsername(), 
+            Channel *channel = this->_server.getChannels()[channelName];
+            if(!channel->isClient(this->_client.getSocketFD()) && !channel->isOperator(this->_client.getSocketFD())){
+                Message::sendMessage(this->_client.getSocketFD(), ERR_CANNOTSENDTOCHAN(this->_server.getHostname(), this->_client.getNick(), channelName), this->_server);
+            }
+            else
+                channel->sendMessage(PRIV_MESSAGE(this->_client.getNick(), this->_client.getUsername(), 
                     this->_client.getIpaddr(), channelName, this->_message), this->_client.getSocketFD());
         }
         else{
@@ -77,8 +81,12 @@ void Privmsg::sendToOpChannels(){
     while (!this->_opChannels.empty()) {
         std::string channelName = this->_opChannels.front().substr(1, this->_opChannels.front().length() - 1);
         if(existentChannel(channelName)){
-            this->_server.getChannels()[channelName]->sendMessageToOperators(
-                PRIV_MESSAGE(this->_client.getNick(), this->_client.getUsername(), 
+            Channel *channel = this->_server.getChannels()[channelName];
+            if(!channel->isClient(this->_client.getSocketFD()) && !channel->isOperator(this->_client.getSocketFD())){
+                Message::sendMessage(this->_client.getSocketFD(), ERR_CANNOTSENDTOCHAN(this->_server.getHostname(), this->_client.getNick(), channelName), this->_server);
+            }
+            else
+                channel->sendMessageToOperators( PRIV_MESSAGE(this->_client.getNick(), this->_client.getUsername(), 
                     this->_client.getIpaddr(), channelName, this->_message), this->_client.getSocketFD());
         }
         else
