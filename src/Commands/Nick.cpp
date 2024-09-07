@@ -8,7 +8,7 @@ void Nick::parsing(std::istringstream &input){
         _error = NONICKNAMEGIVEN; //NICK
         return ;
     }
-    this->trimChar(this->_nick, '\r');
+    trimChar(this->_nick, '\r');
     if (this->_nick.find(' ') != std::string::npos || this->_nick.find('\t') != std::string::npos 
         || this->_nick.find('"') != std::string::npos || this->_nick.find(39) != std::string::npos
             || this->_nick.find('#') != std::string::npos || this->_nick.find('&') != std::string::npos

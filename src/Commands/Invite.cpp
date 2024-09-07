@@ -8,7 +8,7 @@ void Invite::parsing(std::istringstream &input) {
 	std::string token;
     int n = 0;
     while (std::getline(input, token, ' ') || n < 1 ) {
-        this->trimChar(token, '\r');
+        trimChar(token, '\r');
         if (token.empty()) {
             this->_error = NEEDMOREPARAMS;      //INVITE  dinoguei
             return;

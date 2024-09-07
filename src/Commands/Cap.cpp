@@ -8,7 +8,7 @@ void Cap::parsing(std::istringstream &input){
     if (str.empty())
         this->_error = NEEDMOREPARAMS; //CAP
     else {
-        this->trimChar(str, '\r');
+        trimChar(str, '\r');
         if(str != "LS")
             this->_error = UNKNOWNCOMMAND; //CAP dsjag
     }

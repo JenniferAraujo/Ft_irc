@@ -5,8 +5,8 @@ Kick::Kick(Server& server, Client& client): ACommand("KICK", server, client) {};
 void Kick::parsing(std::istringstream &input) {
 	std::string token;
     int n = 0;
-    while (std::getline(input, token, ' ') && n < 3) {
-        this->trimChar(token, '\r');
+    while (std::getline(input, token, ' ') || n < 3) {
+        trimChar(token, '\r');
         if (token.empty()) {
             this->_error = NEEDMOREPARAMS;          //KICK  #a Diogo
             return;
@@ -46,7 +46,7 @@ void Kick::parsing(std::istringstream &input) {
                     token.erase(token.begin());
                     this->_reason = token;
                     while (std::getline(input, token, ' ')) {
-                        this->trimChar(token, '\r');
+                        trimChar(token, '\r');
                         this->_reason.append(" ").append(token);
                     }
                 }

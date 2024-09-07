@@ -3,6 +3,11 @@
 
 # include "Includes.hpp"
 
+# define USERNOTINCHANNEL 441
+# define NOTONCHANNEL 442
+# define BADCHANMASK 476
+# define CHANOPRIVSNEEDED 482
+
 # define KICKDEFAULTMSG "Behave yourself please"
 
 inline std::string KICK(const std::string& nick, const std::string& user, const std::string& host, const std::string& channel, const std::string& nickKicked, const std::string& reason) {

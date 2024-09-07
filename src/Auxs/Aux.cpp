@@ -128,3 +128,12 @@ void showdoublestringq(std::queue<std::string> gq, std::queue<std::string> gq2)
         std::cout << std::endl;
     }
 }
+
+void trimChar(std::string& str, char ch) {
+    std::string::size_type first = str.find_first_not_of(ch);
+    std::string::size_type last = str.find_last_not_of(ch);
+    if (first == std::string::npos)
+        str.clear();
+    else
+        str = str.substr(first, last - first + 1);
+}

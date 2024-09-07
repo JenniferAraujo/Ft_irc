@@ -146,12 +146,15 @@ void	Channel::sendMessageToClients(std::string msg, int skipFD) {
 	std::map<int, Client*> clients = this->getClients();
 	for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
 		Client* client = it->second;
-		if (client->getSocketFD() != skipFD)
+		if (client->getSocketFD() != skipFD){
 			Message::sendMessage(client->getSocketFD(), msg, client->getServer());
+		}
 	}
 }
 
 void	Channel::sendMessage(std::string msg, int skipFD) {
+	printMap(this->_operators);
+	printMap(this->_Clients);
 	this->sendMessageToOperators(msg, skipFD);
 	this->sendMessageToClients(msg, skipFD);
 }

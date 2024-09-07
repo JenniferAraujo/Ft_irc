@@ -20,7 +20,7 @@ void Join::parsing(std::istringstream &input){
 	std::string token;
 	int n = 0;
     while (std::getline(input, token, ' ') && n < 2) {
-        this->trimChar(token, '\r');
+        trimChar(token, '\r');
         if (token.empty()) {
             this->_error = NEEDMOREPARAMS;  //JOIN  #a
             return;
@@ -31,7 +31,7 @@ void Join::parsing(std::istringstream &input){
         else {
             std::istringstream tokenstream(token);
             while (std::getline(tokenstream, token, ',')) {
-                this->trimChar(token, '\r');
+                trimChar(token, '\r');
 				this->parsingToken(token, n);
             }
         }

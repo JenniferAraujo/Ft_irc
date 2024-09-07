@@ -4,7 +4,7 @@ Quit::Quit(Server& server, Client& client): ACommand("QUIT", server, client){};
 
 void Quit::parsing(std::istringstream &input){
     std::getline(input, this->_reason);
-    this->trimChar(this->_reason, '\r');
+    trimChar(this->_reason, '\r');
 }
 
 //mandar msg para todos os clientes??

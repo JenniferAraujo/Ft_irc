@@ -4,8 +4,11 @@
 # include "Includes.hpp"
 
 # define UNKNOWNERROR       400
-# define NOSUCHNICK         401
-# define NOSUCHCHANNEL      403
+# define NOSUCHNICK         401 
+# define NOSUCHCHANNEL      403 
+# define TOOMANYTARGETS     407
+# define NORECIPIENT        411
+# define NOTEXTTOSEND       412
 # define UNKNOWNCOMMAND     421
 # define USERNOTINCHANNEL   441
 # define NOTONCHANNEL       442
@@ -22,6 +25,27 @@ inline std::string ERR_UNKNOWNERROR(const std::string& source, const std::string
         return ":" + source + " 400 " + _target + " :" + info + "\r\n";
     return ":" + source + " 400 " + _target + " " + command + " :" + info + "\r\n";
 }
+
+inline std::string ERR_NOSUCHNICK(const std::string& source, const std::string& target, const std::string& nick) {
+    return ":" + source + " 401 " + target + " " + nick + " :No such nick\r\n";
+}
+
+inline std::string ERR_NOSUCHCHANNEL(const std::string& source, const std::string& target, const std::string& channel) {
+    return ":" + source + " 403 " + target + " " + channel + " :No such channel\r\n";
+}
+
+inline std::string ERR_TOOMANYTARGETS(const std::string& source, const std::string& target, const std::string& command) {
+    return ":" + source + " 407 " + target + " " + command + " :Too many targets\r\n";
+}
+
+inline std::string ERR_NORECIPIENT(const std::string& source, const std::string& target, const std::string& command) {
+    return ":" + source + " 411 " + target + " :No recipient given (" + command + ")\r\n";
+}
+
+inline std::string ERR_NOTEXTTOSEND(const std::string& source, const std::string& target) {
+    return ":" + source + " 412 " + target + " :No text to send\r\n";
+}
+
 
 inline std::string ERR_UNKNOWNCOMMAND(const std::string& source, const std::string& target, const std::string& command) {
     if(target.empty())
@@ -68,14 +92,6 @@ public:
     virtual ~ACommand() {};
     std::string getName() const { return _name; };
     int getError() const { return _error; };
-    void trimChar(std::string& str, char ch) {
-        std::string::size_type first = str.find_first_not_of(ch);
-        std::string::size_type last = str.find_last_not_of(ch);
-        if (first == std::string::npos)
-            str.clear();
-        else
-            str = str.substr(first, last - first + 1);
-    }
     bool isRegistration(){
         std::string commands[] = {"CAP", "PASS", "NICK", "USER"};
         for (int i = 0; i < 4; i++) {
@@ -107,6 +123,15 @@ public:
         }
         return false;
     }
+    bool findInQueue(std::queue<std::string> q, const std::string& target) {
+    while (!q.empty()) {
+        if (q.front() == target) {
+            return true;  // Found the target string
+        }
+        q.pop();  // Move to the next element
+    }
+    return false;  // String not found
+}
     bool existentClientOnChannel(const std::string &nickname, const std::string &channelName) {
         std::map<std::string, Channel *> channels = this->_server.getChannels();
         std::map<std::string, Channel *>::iterator it = channels.find(channelName);

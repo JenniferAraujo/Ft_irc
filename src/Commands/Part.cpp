@@ -26,7 +26,7 @@ void Part::parsingToken(std::string token, int n, std::istringstream &input) {
             token.erase(token.begin());
             this->_message = token;         //PART #a :Bye! //PART #a,#b :Bye!
             while (std::getline(input, token, ' ')) {
-                this->trimChar(token, '\r');
+                trimChar(token, '\r');
                 this->_message.append(" ").append(token);
             }
         }
@@ -36,8 +36,13 @@ void Part::parsingToken(std::string token, int n, std::istringstream &input) {
 void Part::parsing(std::istringstream &input) {
 	std::string token;
     int n = 0;
+<<<<<<< HEAD
+    while (std::getline(input, token, ' ') || n < 1 ) {
+        trimChar(token, '\r');
+=======
     while (this->_error == 0 && (std::getline(input, token, ' ') || n < 1 )) {
         this->trimChar(token, '\r');
+>>>>>>> main
         if (token.empty()) {
             this->_error = NEEDMOREPARAMS;  //PART  #a
             return;
@@ -48,8 +53,13 @@ void Part::parsing(std::istringstream &input) {
         else {
             std::istringstream tokenstream(token);
             while (std::getline(tokenstream, token, ',')) {
+<<<<<<< HEAD
+                trimChar(token, '\r');
+				this->parsingToken(token, n);
+=======
                 this->trimChar(token, '\r');
 				this->parsingToken(token, n, input);
+>>>>>>> main
             }
         }
         n++;

@@ -6,13 +6,13 @@ Who::Who(Server& server, Client& client): ACommand("WHO", server, client) {};
 void Who::parsing(std::istringstream &input){
 	std::string channel;
     std::getline(input, channel, '\n');
-    this->trimChar(channel, '\r');
+    trimChar(channel, '\r');
     this->_channel = channel;
 	//std::cout << "channel:" << this->_channel << std::endl;
 }
 
 void Who::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
+    //std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
     std::string msg, names;
     if (this->_server.getChannels().find(this->_channel) != this->_server.getChannels().end()) {
         Channel* channel = this->_server.getChannels()[this->_channel];

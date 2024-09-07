@@ -109,6 +109,13 @@ ACommand* Client::createTopic(std::istringstream &input){
     return command;
 }
 
+ACommand* Client::createPrivmsg(std::istringstream &input){
+    std::cout << "Entra aqui privmsg: " << input.str() << "\n";
+    ACommand *command = new Privmsg(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
 ACommand* Client::createQuit(std::istringstream &input){
     ACommand *command = new Quit(this->_server, *this);
     command->parsing(input);
@@ -116,16 +123,18 @@ ACommand* Client::createQuit(std::istringstream &input){
 }
 
 std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
-    std::string str(buf.begin(), buf.end());
-    //std::cout << "BUF: " << str << std::endl;
+    std::string str(buf.begin(), buf.end());;
     std::istringstream input(str);
-    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING", "KICK", "PART", "INVITE", "TOPIC", "QUIT"};
+    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING", "KICK", "PART", "INVITE", "TOPIC", "PRIVMSG", "QUIT"};
     int N = static_cast<int>(ARRAY_SIZE(commands));
-    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createCap, &Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin, &Client::createMode, &Client::createWho, &Client::createPing, &Client::createKick, &Client::createPart, &Client::createInvite, &Client::createTopic, &Client::createQuit};
+    ACommand* (Client::*p[])(std::istringstream&) = {&Client::createCap, &Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin, 
+        &Client::createMode, &Client::createWho, &Client::createPing, &Client::createKick, &Client::createPart, &Client::createInvite, &Client::createTopic, 
+            &Client::createPrivmsg, &Client::createQuit};
     std::string cmd;
     std::string line;
     std::queue<ACommand *> result;
     while(std::getline(input, line)){
+        trimChar(line, '\r');
         std::istringstream  input_line(line);
         std::getline(input_line, cmd, ' ');
         for (int i = 0; i < N; i++) {
