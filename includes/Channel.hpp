@@ -42,7 +42,6 @@ public:
 	//aux mode
 	bool	isInvited(const std::string& name) const { return std::find(_invitedNames.begin(), _invitedNames.end(), name) != _invitedNames.end(); }
 	void	addInvite(const std::string& name) { _invitedNames.push_back(name); }
-	void	setEnteredPassword(const std::string& password) { _password = password; }
 	bool	hasPassword(const std::string& password) const { 
 		if (password.empty()) {
 			std::cout << "entra aqui? " << std::endl;
@@ -63,7 +62,7 @@ private:
 	bool		_inviteOnly;
 	bool		_topicProtected;
 	int			_userLimit;
-	std::vector<std::string> _invitedNames; //NOTE - clientes que foram convidados p entrar em canal
+	std::vector<std::string> _invitedNames; //FIXME - clientes que foram convidados p entrar em canal - MUDAR PARA FD
 	std::map<int, Client*>   _Clients; //NOTE - sugestion: key ser uma bool - true se é operador
 	std::map<int, Client*>	_operators; //NOTE - channel operators 
 };

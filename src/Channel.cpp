@@ -43,7 +43,6 @@ void Channel::applyMode(const Mode& modeObj) {
 			case 'k':
 				if (adding) {
 					setPassword(modeObj.getPassword());
-					std::cout << "OLA CARALHO" << std::endl;
 					std::cout << "Password set to: " << modeObj.getPassword() << std::endl;
 				} else {
 					setPassword("");
@@ -105,8 +104,7 @@ bool Channel::canJoin(const Client& client, std::string password) const {
 		}
 	}
 	if (!_password.empty()) {
-		std::cout << "QUAL A PASS? " << password << "!!!!" << std::endl;
-		if (!hasPassword(password)) { //FIXME - se mando uma senha valida ele entra e nao deveria
+		if (!hasPassword(password)) { 
 			std::cout << "Client " << client.getSocketFD() << " cannot join: invalid password" << std::endl;
 			//TODO - ERR_BADCHANNELKEY (475) -- Adicionar validações de senha esta correta, se estiver invalida ERR_INVALIDMODEPARAM
 			return false;
