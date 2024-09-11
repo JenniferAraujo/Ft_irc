@@ -91,7 +91,7 @@ void Server::verifyEvent(const pollfd &pfd) {
         std::vector<char> temp(MAX_MESSAGE_SIZE + 1);
         static std::vector<char> buf(MAX_MESSAGE_SIZE, '\0');
         static int bufSize = 0;
-        
+
         int bytesReceived = recv(client->getSocketFD(), temp.data(), temp.size(), 0);
         if(bytesReceived == 0){
             this->updateToRemove(client->getSocketFD(), "Connection closed by client");

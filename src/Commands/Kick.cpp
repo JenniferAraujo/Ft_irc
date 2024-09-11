@@ -34,6 +34,7 @@ void Kick::parsing(std::istringstream &input) {
                     this->_error = NOTONCHANNEL;        //NÃO ESTIVER NO CANAL
                     return;
                 }
+                //NOTE - Verificar a condição de não deixar kickar operadores
                 if (!this->existentClientOnChannel(token, this->_channel)) {
                     Channel*    ch = this->_server.getChannels()[this->_channel];
                     Client*     c = this->_server.findClient(this->_cliente, 0);
