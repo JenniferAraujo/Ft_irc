@@ -1,6 +1,6 @@
 #include "Includes.hpp"
 
-Mode::Mode(Server& server, Client& client): ACommand("MODE", server, client) {};
+Mode::Mode(Server& server, Client& client): ACommand("MODE", server, client) { this->_userLimit = -1;};
 
 //FIXME - Trabalhar no parsing
 void Mode::parsing(std::istringstream &input){
@@ -18,48 +18,67 @@ void Mode::parsing(std::istringstream &input){
 	std::getline(input, parameters);
 	trimChar(mode, '\r');
 	this->_parameters = parameters;
-	extractKeyAndLimit();
+	extractParameters();
 	this->print();
-	std::cout << "Password: " << this->_password <<  " | User limit: " << this->_userLimit << " | Client ID: " << this->_clientId << std::endl;
 }
 
-void	Mode::extractKeyAndLimit() {
-	char modeChar = _mode[1];
-	std::string parameters = _parameters;
-
-	//TODO - fazer um loop para quando for mais de um mode
-	if (modeChar == 'k') {
-		trimChar(parameters, '\r');
-		this->_password = parameters;
-	}// ERR_INVALIDMODEPARAM se for invalid a senha (com espaços)
-	else if (modeChar == 'l') {
-		bool isValid = true;
-		for (size_t i = 0; i < parameters.length(); ++i) {
-			if (!isdigit(parameters[i])) {
-				isValid = false;
+void Mode::extractParameters() {
+	std::string aux = _parameters;
+	std::string::size_type spacePos;
+	for (std::string::size_type i = 0; i < _mode.length(); ++i) {
+		char modeChar = _mode[i];
+		if (modeChar == '+' || modeChar == '-')
+			continue;
+		switch (modeChar) {
+			case 'k':
+				spacePos = aux.find(' ');
+				if (spacePos != std::string::npos) {
+					this->_password = aux.substr(0, spacePos);
+					aux.erase(0, spacePos + 1);
+				} else
+					this->_password = aux;
 				break;
-			}
-		}
-		if (isValid)
-			this->_userLimit = atoi(parameters.c_str());
-		else {
-			std::cout << "Error: Invalid user limit parameter." << std::endl;
-			return ;
-		}
-	} else if (modeChar == 'o') {
-		bool isValid = true;
-		for (size_t i = 0; i < parameters.length(); ++i) {
-			if (!isdigit(parameters[i])) {
-				isValid = false;
+			case 'l':
+				spacePos = aux.find(' ');
+				if (spacePos != std::string::npos) {
+					std::string limitStr = aux.substr(0, spacePos);
+					bool isValid = true;
+					for (std::string::size_type j = 0; j < limitStr.length(); ++j) {
+						if (!isdigit(limitStr[j])) {
+							isValid = false;
+							break;
+						}
+					}
+					if (isValid) {
+						std::stringstream ss(limitStr);
+						ss >> this->_userLimit;
+					}
+					aux.erase(0, spacePos + 1);
+				} else {
+					std::string limitStr = aux;
+					bool isValid = true;
+					for (std::string::size_type j = 0; j < limitStr.length(); ++j) {
+						if (!isdigit(limitStr[j])) {
+							isValid = false;
+							break;
+						}
+					}
+					if (isValid) {
+						std::stringstream ss(limitStr);
+						ss >> this->_userLimit;
+					}
+				}
 				break;
-			}
+			case 'o':
+				spacePos = aux.find(' ');
+				if (spacePos != std::string::npos) {
+					this->_clientNick = aux.substr(0, spacePos);
+					aux.erase(0, spacePos + 1);
+				} else
+					this->_clientNick = aux;
+				break;
 		}
-		if (isValid)
-			this->_clientId = atoi(parameters.c_str());
-		else
-			std::cout << "Error: Invalid client ID parameter." << std::endl;
-	} else
-		std::cout << "Error: Unrecognized mode character: " << modeChar << std::endl;
+	}
 }
 
 bool Mode::isValidMode(char mode) {
@@ -75,10 +94,7 @@ bool Mode::isValidMode(char mode) {
 void Mode::execute() {
 	std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
 	std::string msg;
-	std::string channel = this->getChannel(); 
-	std::string modeStr = this->getMode();
-	
-	if (channel.empty()) {
+	if (_channel.empty()) {
 		Message::sendMessage(this->_client.getSocketFD(), "Error(461): MODE Not enough parameters.\r\n", this->_server);
 		return ;
 	}
@@ -93,16 +109,13 @@ void Mode::execute() {
 		std::cout << "Error: channelObj is null." << std::endl;
 		return ;
 	}
-	for (size_t i = 0; i < modeStr.length(); ++i) {
-		char modeChar = modeStr[i];
-		
-		std::cout << "modo: " << modeChar << std::endl;
+	for (size_t i = 0; i < _mode.length(); ++i) {
+		char modeChar = _mode[i];
 		if (modeChar != '+' && modeChar != '-' && !isValidMode(modeChar)) {
 			Message::sendMessage(this->_client.getSocketFD(), "Error(472): " + std::string(1, modeChar) + " is not a recognised channel mode.\r\n", this->_server);
 			return ;
 		}
-		
-		if ((modeChar == 'k' || modeChar == 'l' || modeChar == 'o') && i + 1 < modeStr.length() && modeStr[i + 1] == '+') {
+		if ((modeChar == 'k' || modeChar == 'l' || modeChar == 'o') && i + 1 < _mode.length() && _mode[i + 1] == '+') {
 			if (modeChar == 'k' && _password.empty()) {
 				Message::sendMessage(this->_client.getSocketFD(), "Error(461): MODE +k requires a password.\r\n", this->_server);
 				return ;
@@ -111,16 +124,17 @@ void Mode::execute() {
 				Message::sendMessage(this->_client.getSocketFD(), "Error(461): MODE +l requires a user limit.\r\n", this->_server);
 				return ;
 			}
-			if (modeChar == 'o' && channelObj->getClientById(_clientId) == NULL) {
+			if (modeChar == 'o' && channelObj->getClientByNick(_clientNick) == NULL) {
 				Message::sendMessage(this->_client.getSocketFD(), "Error(401): No such nick/channel.\r\n", this->_server);
 				return ;
 			}
 		}
 	}
 	channelObj->applyMode(*this);
+    this->_server.printChannelInfo(this->_channel);
 	Message::sendMessage(this->_client.getSocketFD(), ":" + this->_client.getNick() + " MODE " + this->_channel + " " + this->_mode + "\r\n", this->_server);
 }
 
 void Mode::print() const{
-	std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | Channel: " << this->_channel << " | Parameters: " << this->_parameters << " | Mode: " << this->_mode << std::endl;
+	std::cout << "User limit: " << this->_userLimit <<  " | Nick: " << this->_clientNick << " | Password: " << this->_password << " | Parameters: " << this->_parameters << " | Mode: " << this->_mode << std::endl;
 }

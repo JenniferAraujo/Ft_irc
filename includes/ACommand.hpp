@@ -13,9 +13,11 @@
 # define USERNOTINCHANNEL   441
 # define NOTONCHANNEL       442
 # define NEEDMOREPARAMS     461
+# define CHANNELISFULL      471
 # define BADCHANNELKEY      475
 # define BADCHANMASK        476
 # define CHANOPRIVSNEEDED   482
+# define INVITEONLYCHAN     473
 
 inline std::string ERR_UNKNOWNERROR(const std::string& source, const std::string& target, const std::string& command, const std::string& info) {
     std::string _target = target;
@@ -72,6 +74,18 @@ inline std::string ERR_NEEDMOREPARAMS(const std::string& source, const std::stri
 
 inline std::string ERR_ALREADYREGISTERED(const std::string& source, const std::string& target) {
     return ":" + source + " 462 " + target + " :You may not reregister\r\n";
+}
+
+inline std::string ERR_CHANNELISFULL(const std::string& source, const std::string& target, const std::string& channel) {
+    return ":" + source + " 471 " + target + " " + channel + " :Cannot join channel (+l)\r\n";
+}
+
+inline std::string ERR_INVITEONLYCHAN(const std::string& source, const std::string& target, const std::string& channel) {
+    return ":" + source + " 473 " + target + " " + channel + " :Cannot join channel (+i)\r\n";
+}
+
+inline std::string ERR_BADCHANNELKEY(const std::string& source, const std::string& target, const std::string& channel) {
+    return ":" + source + " 475 " + target + " " + channel + " :Cannot join channel (+k)\r\n";
 }
 
 inline std::string ERR_CHANOPRIVSNEEDED(const std::string& source, const std::string& target, const std::string& channel) {

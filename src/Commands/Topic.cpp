@@ -64,10 +64,10 @@ void Topic::execute() {
         default:
             Channel* ch = this->_server.getChannels()[this->_channel];
             if (!this->_msg.empty()) {
-                ch->setTopic(this->_msg);
+                ch->setTopic(this->_msg, this->_client.getSocketFD());
                 Message::sendMessage(this->_client.getSocketFD(), RPL_TOPIC(this->_server.getHostname(), this->_channel, this->_client.getNick(), ch->getTopic()), this->_server);
             } else if (this->_removeTopic) {
-                ch->setTopic(NULL);
+                ch->setTopic("", this->_client.getSocketFD());
                 // Confirmar se tenho de enviar isto
                 Message::sendMessage(this->_client.getSocketFD(), RPL_NOTOPIC(this->_server.getHostname(), this->_channel, this->_client.getNick()), this->_server);
             } else {
