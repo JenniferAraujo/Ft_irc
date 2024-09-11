@@ -77,8 +77,7 @@ void Channel::removeInvited(int clientId) {
 	_invitedClients.erase(std::remove(_invitedClients.begin(), _invitedClients.end(), clientId), _invitedClients.end());
 }
 
-int Channel::canJoin(const Client& client, std::string password) const {
-	std::cout << "OPS ENTRA?" << std::endl;
+int	Channel::canJoin(const Client& client, std::string password) const {
 	 if (_inviteOnly) {
 		if (!isInvited(client.getSocketFD()))
 			return INVITEONLYCHAN;

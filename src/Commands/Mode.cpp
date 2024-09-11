@@ -86,9 +86,10 @@ bool Mode::isValidMode(char mode) {
 	size_t numValidModes = sizeof(validModes) / sizeof(validModes[0]);
 	for (size_t i = 0; i < numValidModes; ++i) {
 		if (validModes[i] == mode)
-			return true;
+			return false;
 	}
-	return false;
+	std::cout << "ENTRA AQUI?" << std::endl;
+	return true;
 }
 
 void Mode::execute() {
@@ -111,7 +112,8 @@ void Mode::execute() {
 	}
 	for (size_t i = 0; i < _mode.length(); ++i) {
 		char modeChar = _mode[i];
-		if (modeChar != '+' && modeChar != '-' && !isValidMode(modeChar)) {
+		std::cout << "modeStr: " << modeChar << std::endl;
+		if (modeChar != '+' && modeChar != '-' && isValidMode(modeChar)) {
 			Message::sendMessage(this->_client.getSocketFD(), "Error(472): " + std::string(1, modeChar) + " is not a recognised channel mode.\r\n", this->_server);
 			return ;
 		}
