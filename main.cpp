@@ -1,4 +1,5 @@
 #include "Includes.hpp"
+#include "Server.hpp"
 
 void check_port(std::string port) {
     for (unsigned int i = 0; i < port.length(); i++) {
@@ -21,6 +22,6 @@ int main(int argc, char **argv) {
         Server server(std::atoi(argv[1]), argv[2]);
         server.run();
     } catch(const std::exception &e) {
-        std::cout << RED << e.what() << RESET << std::endl;
+        std::cerr << RED << e.what() << RESET << std::endl;
     }
 }

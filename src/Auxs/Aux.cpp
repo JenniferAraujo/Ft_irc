@@ -19,20 +19,15 @@ std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs)
     return out;
 }
 
-/*     int                     _socketFD;
-    bool                    _validCmd;
-    std::string             _nick;
-    std::string             _name;
-    std::string             _user;
-    std::string             _realName;
-    std::string             _command; */
-//O nick e o user só imprime com \n e eu n percebo porque \n
 std::ostream& operator<<(std::ostream& out, const Client &client)
 {
     out << "FD: " << BOLD_GREEN << client.getSocketFD() << RESET
     << "\t| Nick: " << client.getNick()
     << " | Username: " << client.getUsername()
-    << " | Realname: " << client.getRealname();
+    << " | Realname: " << client.getRealname()
+    << " | Password: " << client.getPassword()
+    << " | Reg Error: " << client.getRegError()
+    << " | Registration bool: " << client.getRegistration();
     return(out);
 }
 
@@ -68,12 +63,14 @@ std::string intToString(int value) {
     return oss.str();
 };
 
-std::string formatServerMessage(const std::string& color, const std::string& label, int clients) {
+std::string formatServerMessage(const std::string& color, const std::string& label, int clients, const std::string& fdColor) {
     std::ostringstream oss;
-    if (clients == 0)
+    if(clients == 0)
         oss << color << "[" << label << "]" << RESET << "[" << getCurrentTime() << "]\t";
+    else if (fdColor.empty())
+        oss << color << "[" << label << "]" << RESET << "[" << getCurrentTime() << "][ " << clients << " ]\t";
     else
-        oss << color << "[" << label << "]" << RESET << "[" << getCurrentTime() << "][ " << clients << " ] ";
+        oss << color << "[" << label << "]" << RESET << "[" << getCurrentTime() << "]" << fdColor << "[ " << clients << " ]\t" << RESET;
     return oss.str();
 }
 
@@ -94,10 +91,26 @@ void showstringq(std::queue<std::string> gq)
 {
     std::queue<std::string> g = gq;
     if(g.empty())
-        std::cout << "Ups, I'm empty!!\n";
+        std::cout << "-";
     while (!g.empty()) {
-        std::cout << g.front() << std::endl;
+        std::cout << g.front();
         g.pop();
+        if (!g.empty())
+            std::cout << ", ";
+    }
+}
+
+void showMap(std::map<int, Client*> m) {
+    if (m.empty()) {
+        std::cout << "-";
+        return;
+    }
+    std::map<int, Client*>::iterator it = m.begin();
+    while (it != m.end()) {
+        std::cout << it->second->getNick();
+        ++it;
+        if (it != m.end())
+            std::cout << ", ";
     }
 }
 
@@ -114,4 +127,13 @@ void showdoublestringq(std::queue<std::string> gq, std::queue<std::string> gq2)
         }
         std::cout << std::endl;
     }
+}
+
+void trimChar(std::string& str, char ch) {
+    std::string::size_type first = str.find_first_not_of(ch);
+    std::string::size_type last = str.find_last_not_of(ch);
+    if (first == std::string::npos)
+        str.clear();
+    else
+        str = str.substr(first, last - first + 1);
 }

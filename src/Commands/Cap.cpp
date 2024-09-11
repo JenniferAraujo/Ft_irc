@@ -1,36 +1,43 @@
 #include "Includes.hpp"
 
-Cap::Cap(Server& server, Client& client): ACommand("CAP", server, client), _end(false){};
+Cap::Cap(Server& server, Client& client): ACommand("CAP", server, client){};
 
 void Cap::parsing(std::istringstream &input){
 	std::string str;
     std::getline(input, str, ' ');
-    this->trimChar(str, '\r');
-    if(!str.compare("END"))
-        this->_end = true;
-    else if(str != "LS")
-        this->_error = 1;
+    if (str.empty())
+        this->_error = NEEDMOREPARAMS; //CAP
+    else {
+        trimChar(str, '\r');
+        if(str != "LS")
+            this->_error = UNKNOWNCOMMAND; //CAP dsjag
+    }
 }
 
 void Cap::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << this->_name << std::endl;
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
+    this->print();
     std::string msg;
-    if(this->_client.getRegistration() && !this->_end){
-        msg.append(ERROR("You may not reregister"));
-        send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        return ;
+    switch (this->_error) {
+        case NEEDMOREPARAMS:
+            Message::sendMessage(this->_client.getSocketFD(), ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name), this->_server);
+            break;
+        case UNKNOWNCOMMAND:
+            Message::sendMessage(this->_client.getSocketFD(), ERR_UNKNOWNCOMMAND(this->_server.getHostname(), this->_client.getNick(), this->_name), this->_server);
+            break;
+        default:
+            if(this->_client.getRegistration())
+                Message::sendMessage(this->_client.getSocketFD(), ERR_ALREADYREGISTERED(this->_server.getHostname(), this->_client.getNick()), this->_server);
+            break;
     }
-    if (!this->_end) { //LS
-        this->_client.setCap(true); 
-        msg.append(CLIENT_NEGOTIATION(this->_server.getHostname()));
-        send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
-    }
-    if(this->_end == true)
-        this->_client.setCapend(true);
 }
 
 void Cap::print() const{
-    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | End: " << this->_end << std::endl;
+    //std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << std::endl;
+    if (this->_error != 0)
+        std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
+    else
+        std::cout << std::endl;
 }
 
 //1o os clientes podem enviar

@@ -7,18 +7,7 @@ Channel::Channel(std::string name) : _name(name), _password(""), _inviteOnly(fal
 // TODO copy
 
 void Channel::addClient(Client &client) {
-	this->_Clients[client.getSocketFD()] = &client;
-	std::cout << "Client added with FD: " << client.getSocketFD() << std::endl; //DEPOIS TIRAR
-
-}
-
-Client* Channel::getClientById(int socketFD) const {
-	std::map<int, Client*>::const_iterator it = _Clients.find(socketFD);
-	if (it != _Clients.end()) {
-		return it->second;
-	}
-	return NULL;
-}
+	this->_Clients[client.getSocketFD()] = &client; }
 
 void Channel::applyMode(const Mode& modeObj) {
 	std::string modeStr = modeObj.getMode();
@@ -60,45 +49,52 @@ void Channel::applyMode(const Mode& modeObj) {
 				break;
 			case 'o':
 				if (adding) {
-					Client* clientPtr = getClientById(modeObj.getClientId());
+					Client* clientPtr = getClientByNick(modeObj.getClientNick());
 					if (clientPtr) {
-						addOperator(modeObj.getClientId(), clientPtr);
-						std::cout << "Client with FD " << modeObj.getClientId() << " given operator privileges." << std::endl;
+						int clientFd = clientPtr->getSocketFD();
+						addOperator(clientFd, clientPtr);
+						printOperators();
+						std::cout << "Client with Nick " << modeObj.getClientNick() << " given operator privileges." << std::endl;
 					} else {
-						std::cout << "Client with FD " << modeObj.getClientId() << " not found." << std::endl;
+						std::cout << "Client with Nick " << modeObj.getClientNick() << " not found." << std::endl;
 					}
 				} else {
-					removeOperator(modeObj.getClientId());
-					std::cout << "Client with FD " << modeObj.getClientId() << " operator privileges removed." << std::endl;
+					Client* clientPtr = getClientByNick(modeObj.getClientNick());
+					if (clientPtr) {
+						int clientFd = clientPtr->getSocketFD();
+						removeOperator(clientFd);
+						std::cout << "Client with Nick " << modeObj.getClientNick() << " operator privileges removed." << std::endl;
+					} else {
+						std::cout << "Client with Nick " << modeObj.getClientNick() << " not found." << std::endl;
+					}
 				}
-				break;
-			default:
 				break;
 		}
 	}
 }
 
 void Channel::addOperator(int clientId, Client* client) {
-	if (_operators.find(clientId) == _operators.end()) {
+	if (_operators.find(clientId) == _operators.end())
 		_operators[clientId] = client;
-		std::cout << "Operator added: " << clientId << std::endl;
-	} else {
-		std::cout << "Client " << clientId << " is already an operator." << std::endl;
-	}
 }
 
 void Channel::removeOperator(int clientId) {
-	if (_operators.find(clientId) != _operators.end()) {
+	if (_operators.find(clientId) != _operators.end())
 		_operators.erase(clientId);
-		std::cout << "Operator removed: " << clientId << std::endl;
-	} else {
-		std::cout << "Client " << clientId << " is not an operator." << std::endl;
-	}
+}
+
+void Channel::removeClient(int clientId) {
+	if (_Clients.find(clientId) != _Clients.end())
+		_Clients.erase(clientId);
+}
+
+void Channel::removeInvited(int clientId) {
+	_invitedClients.erase(std::remove(_invitedClients.begin(), _invitedClients.end(), clientId), _invitedClients.end());
 }
 
 bool Channel::canJoin(const Client& client, std::string password) const {
 	 if (_inviteOnly) {
-		if (!isInvited(_name)) {
+		if (!isInvited(client.getSocketFD())) {
 			std::cout << "Client " << client.getSocketFD() << " cannot join: not invited." << std::endl;
 			return false;
 		}
@@ -116,6 +112,30 @@ bool Channel::canJoin(const Client& client, std::string password) const {
 	}
 	std::cout << "Client " << client.getSocketFD() << " can join the channel." << std::endl;
 	return true;
+}
+
+void	Channel::sendMessageToOperators(std::string msg, int skipFD) {
+	std::map<int, Client*> operators = this->getOperators();
+    for (std::map<int, Client*>::iterator it = operators.begin(); it != operators.end(); ++it) {
+        Client* client = it->second;
+        if (client->getSocketFD() != skipFD)
+            Message::sendMessage(client->getSocketFD(), msg, client->getServer());
+    }
+}
+
+void	Channel::sendMessageToClients(std::string msg, int skipFD) {
+	std::map<int, Client*> clients = this->getClients();
+	for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
+		Client* client = it->second;
+		if (client->getSocketFD() != skipFD){
+			Message::sendMessage(client->getSocketFD(), msg, client->getServer());
+		}
+	}
+}
+
+void	Channel::sendMessage(std::string msg, int skipFD) {
+	this->sendMessageToOperators(msg, skipFD);
+	this->sendMessageToClients(msg, skipFD);
 }
 
 Channel::~Channel() {}

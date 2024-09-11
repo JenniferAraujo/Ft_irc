@@ -15,7 +15,7 @@ CXX				= c++
 RM 				= rm -rf
 
 #-----------------------------------  FLAGS  -----------------------------------
-CXXFLAGS		= -Wall -Wextra -Werror -std=c++98 -fsanitize=address
+CXXFLAGS		= -Wall -Wextra -Werror -std=c++98 #-fsanitize=address
 NPD				= --no-print-directory
 
 #--------------------------------- FILES  ---------------------------------------
@@ -26,12 +26,15 @@ SRCS 			= src
 _SUBFOLDERS		= Auxs Commands
 VPATH			= $(SRCS) $(addprefix $(SRCS)/, $(_SUBFOLDERS))
 
-_FILES 			= Client ClientAux Server ServerAux IRCException Aux Channel \
-					Join Nick Pass User Mode Who Cap Ping Kick Part Invite Topic
+_FILES 			= Client ClientAux Server ServerAux IRCException Aux Channel Message\
+					Join Nick Pass User Mode Who Cap Ping Kick Part Invite Topic Privmsg Quit
 
 OBJ				= $(_FILES:%=%.o)
 TARGET			= $(addprefix $(OBJDIR)/, $(OBJ))
-_HEADERS		= Client.hpp Server.hpp Channel.hpp IRCException.hpp Includes.hpp Macros.hpp ACommand.hpp Commands/Cap.hpp Commands/Join.hpp Commands/Mode.hpp Commands/Nick.hpp Commands/Pass.hpp Commands/User.hpp Commands/Who.hpp Commands/Ping.hpp Commands/Kick.hpp Commands/Part.hpp Commands/Invite.hpp Commands/Topic.hpp
+_HEADERS		= Client.hpp Server.hpp Channel.hpp IRCException.hpp Message.hpp Includes.hpp \
+					ACommand.hpp Commands/Cap.hpp Commands/Join.hpp Commands/Mode.hpp Commands/Nick.hpp \
+						Commands/Pass.hpp Commands/User.hpp Commands/Who.hpp Commands/Ping.hpp Commands/Kick.hpp \
+							Commands/Part.hpp Commands/Invite.hpp Commands/Topic.hpp Commands/Privmsg.hpp Commands/Quit.hpp
 HDR				= $(addprefix $(INCLUDE)/, $(_HEADERS))
 
 #---------------------------------  RULES  --------------------------------------
@@ -61,10 +64,10 @@ fclean: clean
 re: fclean all
 
 run: all
-	clear && ./ircserv 9090 123
+	clear && ./ircserv 8080 123
 
 val:
-	clear && valgrind ./ircserv 9090 123
+	clear && valgrind ./ircserv 8080 123
 
 .SILENT:
 

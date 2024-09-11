@@ -1,9 +1,17 @@
 #include "Includes.hpp"
 
-void Server::removeClient(int fd){
-    std::cout << "Removing Client with FD: " << fd << std::endl;
+void Server::removeClient(int fd, std::string reason){
     if(this->_Clients.find(fd) != this->_Clients.end()){
-        std::cout << "Founded client: " << this->_Clients[fd]->getNick() << std::endl;
+        std::cout << formatServerMessage(BOLD_RED, "CLIENT", fd, RED) << "Disconnecting " << RED << "[" << reason << "]" << RESET <<std::endl;
+        for(std::map<std::string, Channel*>::iterator it = this->_Channels.begin(); it != this->_Channels.end(); ++it){
+            if(it->second->isClient(fd) || it->second->isOperator(fd))
+                it->second->sendMessage(QUIT(this->_Clients[fd]->getNick(), this->_Clients[fd]->getUsername(), this->_Clients[fd]->getIpaddr(), reason), fd);
+            it->second->removeOperator(fd);
+            it->second->removeClient(fd);
+            it->second->removeInvited(fd);
+        }
+        if (!reason.empty())
+            Message::sendMessage(fd, ERROR(reason), *this);
         close(fd);
         delete this->_Clients[fd];
         this->_Clients.erase(fd);
@@ -16,7 +24,6 @@ void Server::removeClient(int fd){
     }
 }
 
-// ISTO ESTÁ ERRADO PK NÃO SE PODE USAR A GETHOSTNAME, MAS SIM A GETHOSTBYNAME
 void Server::getServerInfo() {
     char hostbuffer[256];
     struct hostent *host_entry;
@@ -36,12 +43,10 @@ void Server::getServerInfo() {
     if (IPbuffer == NULL) {
         throw IRCException("[ERROR] inet_ntoa went wrong");
     }
-
-    this->_hostName = strdup(host_entry->h_name);
+    char *temp = strdup(host_entry->h_name);
+    this->_hostName = temp;
+    free(temp);
     this->_hostIP = IPbuffer;
-
-    std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Hostname: " << this->_hostName << std::endl;
-    std::cout << BOLD_YELLOW << "[SERVER INFO]\t" << RESET << "Host IP: " << this->_hostIP << "\n" << std::endl;
 }
 
 void Server::addInChannel(std::string channelName, std::string password, Client &client) {
@@ -51,22 +56,59 @@ void Server::addInChannel(std::string channelName, std::string password, Client 
 			// send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
 			return ;
     	}
-        std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0) << client.getNick() << " entered the channel " << BOLD_YELLOW << channelName << RESET << std::endl;
 		this->_Channels[channelName]->addClient(client);
+        std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0, "") << GREEN << "[" << client.getNick() << "]" << RESET << " entered Channel " << BOLD_YELLOW << channelName << RESET << std::endl;
+        this->printChannelInfo(channelName);
     }
     else {
-        std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0) << client.getNick() << " created the channel " << BOLD_YELLOW << channelName << RESET << std::endl;
         Channel *channel = new Channel(channelName);
         this->_Channels[channelName] = channel;
-        this->_Channels[channelName]->addClient(client);
+        this->_Channels[channelName]->addOperator(client.getSocketFD(), &client);
+        std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0, "") << GREEN << "[" << client.getNick() << "]" << RESET << " created Channel " << BOLD_YELLOW << channelName << RESET << std::endl;
+        this->printChannelInfo(channelName);
     }
 }
 
-bool Server::registration_command(std::string str){
-    std::string commands[] = {"CAP", "PASS", "NICK", "USER"};
-    for (int i = 0; i < 4; i++) {
-        if(str == commands[i])
-            return true;
+void    Server::printChannelInfo(std::string channelName) {
+    std::cout << BOLD_YELLOW << "[CHANNEL INFO]\t\t" << RESET << "@[";
+    showMap(this->_Channels[channelName]->getOperators());
+    std::cout << "] [";
+    showMap(this->_Channels[channelName]->getClients());
+    std::cout << "] i[";
+    std::vector<int> fds = this->_Channels[channelName]->getInvited();
+    if (fds.empty())
+        std::cout << "-";
+    for (std::vector<int>::iterator it = fds.begin(); it != fds.end(); ++it) {
+        Client*     c = this->getClients()[*it];
+        std::cout << c->getNick();
+        if (it + 1 != fds.end())
+            std::cout << ", ";
     }
-    return false;
+    std::cout << "]" << std::endl;
+}
+
+Client    *Server::findClient(std::string nick, int skipFd){
+    for (std::map <int, Client *>::iterator it = this->_Clients.begin(); it != _Clients.end(); ++it) {
+        if(it->second->getSocketFD() != skipFd && it->second->getNick() == nick)
+            return it->second;
+    }
+    return NULL;
+}
+
+int     Server::getClientByNick(std::string nick) {
+    for (std::map <int, Client *>::iterator it = this->_Clients.begin(); it != _Clients.end(); ++it) {
+        if(it->second->getNick() == nick)
+            return it->second->getSocketFD();
+    }
+    return -1;
+}
+
+void    Server::display() const {
+    std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0, "") << "Socket with fd " << CYAN "[" << this->_socketFD << "]" << RESET
+              << " bound on port " << CYAN << this->_port << RESET << std::endl;
+    std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0, "") << "Server listening only " << CYAN << 10 << RESET << " connections"
+              << std::endl;
+    std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0, "") << "Hostname: " << this->_hostName << std::endl;
+    std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0, "") << "Host IP: " << this->_hostIP << "\n" << std::endl;
+
 }

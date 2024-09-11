@@ -20,7 +20,7 @@ void Join::parsing(std::istringstream &input){
 	std::string token;
 	int n = 0;
     while (std::getline(input, token, ' ') && n < 2) {
-        this->trimChar(token, '\r');
+        trimChar(token, '\r');
         if (token.empty()) {
             this->_error = NEEDMOREPARAMS;  //JOIN  #a
             return;
@@ -31,7 +31,7 @@ void Join::parsing(std::istringstream &input){
         else {
             std::istringstream tokenstream(token);
             while (std::getline(tokenstream, token, ',')) {
-                this->trimChar(token, '\r');
+                trimChar(token, '\r');
 				this->parsingToken(token, n);
             }
         }
@@ -41,33 +41,44 @@ void Join::parsing(std::istringstream &input){
 		this->_error = NEEDMOREPARAMS;
 }
 
+//TODO - Tratamento de Erros
+//TODO - Lógica de remover do invited caso tenha entrado (ou confirmar se o invite é efetivamente removido ou permanente)
 void Join::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << this->_name << std::endl;
-    std::string msg;
-    while(!this->_channels.empty()) {
-        std::cout << "Channel: " << this->_channels.front() << std::endl;
-		if (this->_password.empty())
-		        this->_server.addInChannel(this->_channels.front(),  "", const_cast<Client&>(this->_client));
-		else
-	        this->_server.addInChannel(this->_channels.front(), this->_password.front(), const_cast<Client&>(this->_client));
-        msg.append(JOIN_CHANNEL(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channels.front()));
-        send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        if (this->_server.getChannels().find(this->_channels.front()) != this->_server.getChannels().end()) {
-            Channel* channel = this->_server.getChannels()[this->_channels.front()];
-            if (channel->getTopic().empty())
-                msg.append(RPL_NOTOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick()));
-            else
-                msg.append(RPL_TOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick(), channel->getTopic()));
-            send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
-        }
-        this->_channels.pop();
-		if (!this->_password.empty()) 
-        	this->_password.pop();
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
+    this->print();
+    switch (this->_error) {
+        case NEEDMOREPARAMS:
+            Message::sendMessage(this->_client.getSocketFD(), ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name), this->_server);
+            break;
+        default:
+            while(!this->_channels.empty()) {
+                this->_server.addInChannel(this->_channels.front(),(this->_password.empty() ? "" : this->_password.front()), const_cast<Client&>(this->_client));
+                Channel* ch = this->_server.getChannels()[this->_channels.front()];
+                ch->sendMessage(JOIN_CHANNEL(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channels.front()), 0);
+                this->_client.setJustJoined(true);
+                if (ch->getTopic().empty())
+                    Message::sendMessage(this->_client.getSocketFD(), RPL_NOTOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick()), this->_server);
+                else
+                    Message::sendMessage(this->_client.getSocketFD(), RPL_TOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick(), ch->getTopic()), this->_server);
+                this->_channels.pop();
+                if (!this->_password.empty())
+                    this->_password.pop();
+            }
+            break;
     }
 }
 
 void Join::print() const{
-    std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << std::endl;
-    std::cout << "Channels queue\t| Passwords queue" << std::endl;
-	showdoublestringq(this->_channels, this->_password);
+    //std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << std::endl;
+    //std::cout << "Channels queue\t| Passwords queue" << std::endl;
+	//showdoublestringq(this->_channels, this->_password);
+    if (this->_error != 0)
+        std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
+    else {
+        std::cout << "\t[";
+        showstringq(this->_channels);
+        std::cout << "] [";
+        showstringq(this->_password);
+        std::cout << "]" << std::endl;
+    }
 }

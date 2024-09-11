@@ -2,35 +2,42 @@
 
 Who::Who(Server& server, Client& client): ACommand("WHO", server, client) {};
 
+//FIXME - Trabalhar no parsing
 void Who::parsing(std::istringstream &input){
 	std::string channel;
     std::getline(input, channel, '\n');
-    this->trimChar(channel, '\r');
+    trimChar(channel, '\r');
     this->_channel = channel;
-	 std::cout << "channel:" << this->_channel << std::endl;
+	//std::cout << "channel:" << this->_channel << std::endl;
 }
 
 void Who::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0) << this->_name << std::endl;
+    //std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
     std::string msg, names;
     if (this->_server.getChannels().find(this->_channel) != this->_server.getChannels().end()) {
         Channel* channel = this->_server.getChannels()[this->_channel];
         std::map<int, Client*> clients = channel->getClients();
         for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
             Client* c = it->second;
-            names.append(c->getNick());
-            names.append(" ");
-            msg = RPL_WHO(this->_server.getHostname(), this->_channel, this->_client.getNick(), *c);
-            send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+            names.append(c->getNick()).append(" ");
+            Message::sendMessage(this->_client.getSocketFD(), RPL_WHO(this->_server.getHostname(), this->_channel, this->_client.getNick(), "", *c), this->_server);
+        }
+        std::map<int, Client*> op = channel->getOperators();
+        for (std::map<int, Client*>::iterator it = op.begin(); it != op.end(); ++it) {
+            Client* c = it->second;
+            names.append("@").append(c->getNick()).append(" ");
+            Message::sendMessage(this->_client.getSocketFD(), RPL_WHO(this->_server.getHostname(), this->_channel, this->_client.getNick(), "@", *c), this->_server);
+        }
+        Message::sendMessage(this->_client.getSocketFD(), RPL_ENDWHO(this->_server.getHostname(), this->_channel, this->_client.getNick()), this->_server);
+        if (this->_client.getJustJoined()) {
+            Message::sendMessage(this->_client.getSocketFD(), RPL_NAME(this->_server.getHostname(), this->_channel, this->_client.getNick(), names), this->_server);
+            Message::sendMessage(this->_client.getSocketFD(), RPL_ENDNAME(this->_server.getHostname(), this->_channel, this->_client.getNick()), this->_server);
+            this->_client.setJustJoined(false);
         }
     }
-    msg = RPL_ENDWHO(this->_server.getHostname(), this->_channel, this->_client.getNick());
-    send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
-    msg = RPL_NAME(this->_server.getHostname(), this->_channel, this->_client.getNick(), names);
-    send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
-    msg = RPL_ENDNAME(this->_server.getHostname(), this->_channel, this->_client.getNick());
-    send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
-    send(this->_client.getSocketFD(), msg.c_str(), msg.length(), 0);
+    else {
+        std::cout << "Não entrou burro" << std::endl;
+    }
 }
 
 void Who::print() const{

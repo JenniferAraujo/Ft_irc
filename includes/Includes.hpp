@@ -22,10 +22,24 @@
 # include <fstream>
 # include <sstream>
 # include <queue>
+
+//RPL_ISUPPORT
+# define PREFIX             "(o)@"
+# define CHANTYPES          "i,t,k,l,o"
+# define STATUSMSG          "@"
+# define USERLEN            12
+
+# define MAX_TARGETS        10
+# define MAX_MESSAGE_SIZE   512
+# define MAXCHARS           30
+# define CONNECTIONTIMEOUT  60 //2 minuts in seconds
+# define TIMEOUT            300 //5 minuts in seconds
+# define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
+
 # include "IRCException.hpp"
 # include "Server.hpp"
 # include "Client.hpp"
-# include "Macros.hpp"
+# include "Message.hpp"
 # include "Channel.hpp"
 # include "ACommand.hpp"
 # include "Commands/Pass.hpp"
@@ -40,6 +54,9 @@
 # include "Commands/Kick.hpp"
 # include "Commands/Invite.hpp"
 # include "Commands/Topic.hpp"
+# include "Commands/Privmsg.hpp"
+# include "Commands/Quit.hpp"
+
 # define RED "\033[31m"
 # define GREEN "\033[32m"
 # define PURPLE "\033[35m"
@@ -53,16 +70,6 @@
 # define BOLD_WHITE 	"\033[1;37m"
 # define BOLD_CYAN "\033[1;36m"
 # define RESET "\033[0m"
-
-# define NEEDMOREPARAMS 461
-# define PASSWDMISMATCH 464
-# define NOSUCHNICK 401
-
-# define INVALIDNICK 2
-# define INVALIDUSER 3
-# define INVALIDCAP  4
-
-# define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 
 std::ostream &operator<<(std::ostream &out, const pollfd &pfd);
 std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs);
@@ -78,9 +85,11 @@ void printMap(const std::map<K, V>& map) {
 std::string getCurrentDateTime();
 void titleInfo(std::string title);
 std::string intToString(int value);
-std::string formatServerMessage(const std::string& color, const std::string& label, int clients);
 void showq(std::queue<ACommand *> gq);
 void showstringq(std::queue<std::string> gq);
+void showMap(std::map<int, Client*> m);
 void showdoublestringq(std::queue<std::string> gq, std::queue<std::string> gq2);
+std::string formatServerMessage(const std::string& color, const std::string& label, int clients, const std::string& fdColor);
+void trimChar(std::string& str, char ch);
 
 #endif // INCLUDES_HPP

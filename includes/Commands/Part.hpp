@@ -3,6 +3,10 @@
 
 # include "Includes.hpp"
 
+inline std::string PART(const std::string& nick, const std::string& user, const std::string& host, const std::string& channel, const std::string& message) {
+    return ":" + nick + "!" + user + "@" + host + " PART " + channel + " :" + message + "\r\n";
+}
+
 class Part: public ACommand {
 public:
     Part(Server& server, Client& client);
@@ -12,7 +16,7 @@ public:
     void execute();
     void print() const;
 
-    void parsingToken(std::string token, int n);
+    void parsingToken(std::string token, int n,  std::istringstream &input);
     std::queue<std::string> getChannels() { return _channels; };
     std::string getMessage() { return _message; };
 
