@@ -57,7 +57,7 @@ public:
     Client  *findClient(std::string nick, int skipFd);
     int     getClientByNick(std::string nick);
     void    display() const;
-    void    printChannelInfo(std::string channelName);
+    void    printChannelInfo(std::string channelName); //!SECTION
 
 private:
 	Server();
