@@ -23,29 +23,21 @@ void Channel::applyMode(const Mode& modeObj) {
 		switch (modeChar) {
 			case 'i':
 				_inviteOnly = adding;
-				std::cout << "Invite-Only mode set to: " << (adding ? "ON" : "OFF") << std::endl;
 				break;
 			case 't':
 				_topicProtected = adding;
-				std::cout << "Topic-Protection mode set to: " << (adding ? "ON" : "OFF") << std::endl;
 				break;
 			case 'k':
-				if (adding) {
+				if (adding)
 					setPassword(modeObj.getPassword());
-					std::cout << "Password set to: " << modeObj.getPassword() << std::endl;
-				} else {
+				else
 					setPassword("");
-					std::cout << "Password removed." << std::endl;
-				}
 				break;
 			case 'l':
-				if (adding) {
+				if (adding)
 					setUserLimit(modeObj.getLimit());
-					std::cout << "User limit set to: " << modeObj.getLimit() << std::endl;
-				} else {
+				else
 					setUserLimit(-1);
-					std::cout << "User limit removed." << std::endl;
-				}
 				break;
 			case 'o':
 				if (adding) {
@@ -53,22 +45,15 @@ void Channel::applyMode(const Mode& modeObj) {
 					if (clientPtr) {
 						int clientFd = clientPtr->getSocketFD();
 						addOperator(clientFd, clientPtr);
-						printOperators();
-						std::cout << "Client with Nick " << modeObj.getClientNick() << " given operator privileges." << std::endl;
-					} else {
-						std::cout << "Client with Nick " << modeObj.getClientNick() << " not found." << std::endl;
 					}
 				} else {
 					Client* clientPtr = getClientByNick(modeObj.getClientNick());
 					if (clientPtr) {
 						int clientFd = clientPtr->getSocketFD();
 						removeOperator(clientFd);
-						std::cout << "Client with Nick " << modeObj.getClientNick() << " operator privileges removed." << std::endl;
-					} else {
-						std::cout << "Client with Nick " << modeObj.getClientNick() << " not found." << std::endl;
 					}
-				}
 				break;
+				}
 		}
 	}
 }
@@ -92,26 +77,20 @@ void Channel::removeInvited(int clientId) {
 	_invitedClients.erase(std::remove(_invitedClients.begin(), _invitedClients.end(), clientId), _invitedClients.end());
 }
 
-bool Channel::canJoin(const Client& client, std::string password) const {
+int Channel::canJoin(const Client& client, std::string password) const {
+	std::cout << "OPS ENTRA?" << std::endl;
 	 if (_inviteOnly) {
-		if (!isInvited(client.getSocketFD())) {
-			std::cout << "Client " << client.getSocketFD() << " cannot join: not invited." << std::endl;
-			return false;
-		}
+		if (!isInvited(client.getSocketFD()))
+			return INVITEONLYCHAN;
 	}
 	if (!_password.empty()) {
-		if (!hasPassword(password)) { 
-			std::cout << "Client " << client.getSocketFD() << " cannot join: invalid password" << std::endl;
-			//TODO - ERR_BADCHANNELKEY (475) -- Adicionar validações de senha esta correta, se estiver invalida ERR_INVALIDMODEPARAM
-			return false;
-		}
+		if (!hasPassword(password))
+			return BADCHANNELKEY;
 	}
-	if (_userLimit > 0 && static_cast<size_t>(_Clients.size()) >= static_cast<size_t>(_userLimit)) {
-		std::cout << "Client " << client.getSocketFD() << " cannot join: channel is full." << std::endl;
-		return false;
+	if (_userLimit > 0 && (_Clients.size() + _operators.size()) >= (unsigned long)_userLimit) {
+		return CHANNELISFULL;
 	}
-	std::cout << "Client " << client.getSocketFD() << " can join the channel." << std::endl;
-	return true;
+	return 0;
 }
 
 void	Channel::sendMessageToOperators(std::string msg, int skipFD) {

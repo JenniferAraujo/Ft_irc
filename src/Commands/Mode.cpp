@@ -1,6 +1,6 @@
 #include "Includes.hpp"
 
-Mode::Mode(Server& server, Client& client): ACommand("MODE", server, client) {};
+Mode::Mode(Server& server, Client& client): ACommand("MODE", server, client) { this->_userLimit = -1;};
 
 //FIXME - Trabalhar no parsing
 void Mode::parsing(std::istringstream &input){
@@ -94,7 +94,6 @@ bool Mode::isValidMode(char mode) {
 void Mode::execute() {
 	std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
 	std::string msg;
-	
 	if (_channel.empty()) {
 		Message::sendMessage(this->_client.getSocketFD(), "Error(461): MODE Not enough parameters.\r\n", this->_server);
 		return ;
@@ -132,6 +131,7 @@ void Mode::execute() {
 		}
 	}
 	channelObj->applyMode(*this);
+    this->_server.printChannelInfo(this->_channel);
 	Message::sendMessage(this->_client.getSocketFD(), ":" + this->_client.getNick() + " MODE " + this->_channel + " " + this->_mode + "\r\n", this->_server);
 }
 

@@ -42,7 +42,7 @@ public:
 	bool	isTopicLocked() const { return _topicProtected; }
 	bool	isPasswordProtected() const { return !_password.empty(); }
 	bool	isOperator(int clientId) const { return _operators.find(clientId) != _operators.end(); }
-	bool	canJoin(const Client& client, std::string password) const;
+	int		canJoin(const Client& client, std::string password) const;
 	void	addOperator(int clientId, Client* client);
 	void	removeOperator(int clientId);
 	void	addClient(int clientId, Client* client) { _Clients[clientId] = client; }

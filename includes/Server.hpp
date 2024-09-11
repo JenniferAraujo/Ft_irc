@@ -53,7 +53,7 @@ public:
     //aux
     void    removeClient(int fd, std::string error);
     void    getServerInfo();
-    void    addInChannel(std::string channelName, std::string password, Client &client);
+    int    addInChannel(std::string channelName, std::string password, Client &client);
     Client  *findClient(std::string nick, int skipFd);
     int     getClientByNick(std::string nick);
     void    display() const;

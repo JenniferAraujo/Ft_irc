@@ -49,13 +49,11 @@ void Server::getServerInfo() {
     this->_hostIP = IPbuffer;
 }
 
-void Server::addInChannel(std::string channelName, std::string password, Client &client) {
+int Server::addInChannel(std::string channelName, std::string password, Client &client) {
+    int aux;
     if (this->_Channels.find(channelName) != this->_Channels.end()) {
-        if (!this->_Channels[channelName]->canJoin(client, password)) {
-			// std::string msg = "Error: You cannot join the channel " + channelName + ".\r\n"; //NOTE - arrumar msg de erro
-			// send(client.getSocketFD(), msg.c_str(), msg.length(), 0);
-			return ;
-    	}
+        if ((aux = this->_Channels[channelName]->canJoin(client, password)) != 0)
+			return aux;
 		this->_Channels[channelName]->addClient(client);
         std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0, "") << GREEN << "[" << client.getNick() << "]" << RESET << " entered Channel " << BOLD_YELLOW << channelName << RESET << std::endl;
         this->printChannelInfo(channelName);
@@ -67,6 +65,7 @@ void Server::addInChannel(std::string channelName, std::string password, Client 
         std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0, "") << GREEN << "[" << client.getNick() << "]" << RESET << " created Channel " << BOLD_YELLOW << channelName << RESET << std::endl;
         this->printChannelInfo(channelName);
     }
+    return 0;
 }
 
 void    Server::printChannelInfo(std::string channelName) {
@@ -84,7 +83,14 @@ void    Server::printChannelInfo(std::string channelName) {
         if (it + 1 != fds.end())
             std::cout << ", ";
     }
+    std::cout << "] l[";
+    if (this->_Channels[channelName]->getUserLimit() == -1)
+        std::cout << "-";
+    else
+        std::cout << this->_Channels[channelName]->getUserLimit();
+    std::cout << "] k[" << (this->_Channels[channelName]->getPassword().empty() ? "-" : this->_Channels[channelName]->getPassword());
     std::cout << "]" << std::endl;
+
 }
 
 Client    *Server::findClient(std::string nick, int skipFd){
