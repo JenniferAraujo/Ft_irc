@@ -3,8 +3,20 @@
 
 # include "Includes.hpp"
 
-inline std::string RPL_MODE(const std::string& source, const std::string& channel, const std::string& target, const std::string& mode) {
-    return ":" + source + " 324 " + target + " " + channel + " " + mode + "\r\n";
+inline std::string RPL_MODE(const std::string& nick, const std::string& user, const std::string& host, const std::string& channel, const std::string& mode, const std::string& userLimit, const std::string& password, const std::string& op) {
+	if (mode == "i" || mode == "+i" || mode == "-i")
+		return ":" + nick + "!" + user + "@" + host + " MODE " + channel + " :" + (mode == "i" ? "+" : "") + mode + "\r\n";
+	if (mode == "t" || mode == "+t" || mode == "-t")
+		return ":" + nick + "!" + user + "@" + host + " MODE " + channel + " :" + (mode == "t" ? "+" : "") + mode + "\r\n";
+	if (mode == "l" || mode == "+l")
+		return ":" + nick + "!" + user + "@" + host + " MODE " + channel + (mode == "l" ? " +" : " ") + mode + " :" + userLimit + "\r\n";
+	if ( mode == "-l")
+		return ":" + nick + "!" + user + "@" + host + " MODE " + channel + " :" + mode + "\r\n";
+	if (mode == "k" || mode == "+k" || mode == "-k")
+		return ":" + nick + "!" + user + "@" + host + " MODE " + channel + (mode == "k" ? " +" : " ") + mode + (mode == "+k" || mode == "k" ? " :" : " ") + password + "\r\n";
+	if (mode == "o" || mode == "+o" || mode == "-o")
+		return ":" + nick + "!" + user + "@" + host + " MODE " + channel + (mode == "o" ? " +" : " ") + mode + " :" + op + "\r\n";
+	return ":" + nick + "!" + user + "@" + host + " MODE " + channel + " :" + (mode == "i" ? "+" : "") + mode + "\r\n";
 }
 
 class Mode: public ACommand {
@@ -26,6 +38,7 @@ private:
 	std::string _mode;
 	std::string _password;
 	std::string	_parameters;
+	std::string	_modeChar;
 	int			_userLimit;
 	std::string	_clientNick;
 	
