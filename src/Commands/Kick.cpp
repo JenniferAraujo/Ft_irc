@@ -58,7 +58,7 @@ void Kick::parsing(std::istringstream &input) {
     if (this->_error == 0) {
         if (this->_channel.empty() || this->_cliente.empty())
             this->_error = NEEDMOREPARAMS;
-        else {
+        else { 
             Channel* ch = this->_server.getChannels()[this->_channel];
             if (!ch->isOperator(this->_client.getSocketFD()))
                 this->_error = CHANOPRIVSNEEDED;

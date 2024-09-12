@@ -25,16 +25,7 @@ public:
 	void	setMode(const std::string &mode) { _mode = mode; }
 	void	setPassword(const std::string& password) { _password = password; }
 	void	setUserLimit(int limit) { _userLimit = limit; }
-	void	setTopic(std::string topic, int clientFD) {
-		if (isTopicLocked() && !isOperator(clientFD)) {
-			std::cout << "Client " << clientFD << " cannot change the topic: not an operator.\n";
-			Message::sendMessage(clientFD, "Error(482): You're not a channel operator\n", _Clients[clientFD]->getServer());
-			return ;
-		}
-		_topic = topic;
-		std::cout << "Topic changed to: " << _topic << std::endl;
-   		std::string notification = ":" + _Clients[clientFD]->getNick() + " TOPIC " + _name + " :" + _topic + "\r\n";
-		sendMessageToClients(notification, clientFD); };
+	void	setTopic(std::string topic) { _topic = topic;};
 
 	//channel management
 	void	applyMode(const Mode& modeObj);
@@ -52,11 +43,10 @@ public:
 
 	//aux mode
 	bool	isInvited(const int& fd) const { return std::find(_invitedClients.begin(), _invitedClients.end(), fd) != _invitedClients.end(); }
-	bool	hasPassword(const std::string& password) const { 
+	bool	hasPassword(const std::string& password) const {
 		if (password.empty())
 			return false;
 		return _password == password; };
-	
 	void	addInviteFD(const int fd) { _invitedClients.push_back(fd); }
 	bool	isClient(int fd) { return this->_Clients.find(fd) != this->_Clients.end() ? true : false; };
 	bool	isOperator(int fd) { return this->_operators.find(fd) != this->_operators.end() ? true : false;	};

@@ -75,7 +75,9 @@ void Part::execute() {
             while (!this->_channels.empty()) {
                 Channel* ch = this->_server.getChannels()[this->_channels.front()];
                 ch->sendMessage(PART(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channels.front(), this->_message), 0);
-                ch->removeClient(this->_client.getSocketFD());
+                ch->isClient(this->_client.getSocketFD())
+                    ? ch->removeClient(this->_client.getSocketFD())
+                    : ch->removeOperator(this->_client.getSocketFD());
                 this->_server.printChannelInfo(this->_channels.front());
                 this->_channels.pop();
             }
