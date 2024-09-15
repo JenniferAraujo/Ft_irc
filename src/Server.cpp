@@ -93,6 +93,7 @@ void Server::verifyEvent(const pollfd &pfd) {
         static int bufSize = 0;
         
         std::cout << "TEMP BEFORE recv: " << temp.data() << "." << std::endl;
+
         int bytesReceived = recv(client->getSocketFD(), temp.data(), temp.size(), 0);
         if(bytesReceived == 0){
             this->updateToRemove(client->getSocketFD(), "Connection closed by client");
