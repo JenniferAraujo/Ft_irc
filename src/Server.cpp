@@ -91,9 +91,8 @@ void Server::verifyEvent(const pollfd &pfd) {
         std::vector<char> temp(MAX_MESSAGE_SIZE + 1);
         static std::vector<char> buf(MAX_MESSAGE_SIZE, '\0');
         static int bufSize = 0;
+        static bool ignoreCommand = false;
         
-        std::cout << "TEMP BEFORE recv: " << temp.data() << "." << std::endl;
-
         int bytesReceived = recv(client->getSocketFD(), temp.data(), temp.size(), 0);
         if(bytesReceived == 0){
             this->updateToRemove(client->getSocketFD(), "Connection closed by client");
@@ -105,24 +104,25 @@ void Server::verifyEvent(const pollfd &pfd) {
             }
             return ;
         }
-        // Ensure the buffer does not overflow
+        if(ignoreCommand == true){
+            ignoreCommand = false;
+            return ;
+        }
+/*         std::cout << "BYTES RECEIVEF: " << bytesReceived << " BUF SIZE: " << bufSize << std::endl;
         std::cout << "TEMP: " << temp.data() << "." << std::endl;
-        std::cout << "BUF: " << buf.data() << "." << std::endl;
+        std::cout << "BUF: " << buf.data() << "." << std::endl; */
+        // Ensure the buffer does not overflow
         if(bytesReceived > MAX_MESSAGE_SIZE){
-            std::cout << "AAAAAAAAAAAAA\n";
+            //std::cout << "bytesReceived > MAX_MESSAGE_SIZE";
+            ignoreCommand = true;
             Message::sendMessage(client->getSocketFD(), ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected"), *this);
-            buf = std::vector<char>(MAX_MESSAGE_SIZE, '\0');
             bufSize = 0;
-            std::cout << "TEMP 2: " << temp.data() << "." << std::endl;
-            std::cout << "BUF 2: " << buf.data() << "." << std::endl;
             return;
         }
-
         // Ensure the buffer does not overflow
         if (bufSize + bytesReceived > MAX_MESSAGE_SIZE) {
-            std::cout << "BBBBBBBBBBBBBB\n";
+            //std::cout << "bufSize + bytesReceived > MAX_MESSAGE_SIZE";
             Message::sendMessage(client->getSocketFD(), ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected"), *this);
-            buf = std::vector<char>(MAX_MESSAGE_SIZE, '\0');
             bufSize = 0;
             return;
         }
