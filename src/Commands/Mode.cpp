@@ -2,82 +2,24 @@
 
 Mode::Mode(Server& server, Client& client): ACommand("MODE", server, client) { this->_userLimit = -1;};
 
-//TODO - COPY
+//FIXME - Trabalhar no parsing
+void Mode::parsing(std::istringstream &input){
+	std::string mode;
+	std::string channel;
+	std::string parameters;
 
-void Mode::parsing(std::istringstream &input) {
-    std::string token;
-    int n = 0;
-    while (std::getline(input, token, ' ') && n < 3) {
-        trimChar(token, '\r');
-        if (token.empty()) {
-            this->_error = NEEDMOREPARAMS;
-            return;
-        }
-        switch (n) {
-            case 0:
-                this->_channel = token;
-                if (token[0] != '#' || !this->existentChannel(token)) {
-                    this->_error = NOSUCHCHANNEL;
-                    return;
-                }
-                break;
-            case 1:
-                this->_mode = token;
-                trimChar(_mode, ' ');
-                for (size_t i = 0; i < _mode.length(); ++i) {
-                    char modeChar = _mode[i];
-                    if (modeChar != '+' && modeChar != '-' && isValidMode(modeChar)) {
-                        this->_modeChar = modeChar;
-                        this->_error = UNKNOWNMODE;
-                        return;
-                    }
-				}
-				break;
-            case 2:
-                this->_parameters = token;
-                trimChar(_parameters, '\r');
-                extractParameters();
-                break;
-        }
-        n++;
-    }
-    if (this->_error == 0) {
-		bool	adding = true;
-		for (size_t i = 0; i < _mode.length(); ++i) {
-			char modeChar = _mode[i];
-            this->_modeChar = modeChar;
-			if (modeChar == '-')
-				adding = false;
-        	Channel* channelObj = this->_server.getChannels()[this->_channel];
-			if (adding) {
-            	if (modeChar == 'o' && (channelObj->getClientByNick(_clientNick) == NULL)) {
-                	this->_error = INVALIDMODEPARAM;
-                	return;
-				if (modeChar == 'l' && _userLimit < 0) {
-                	this->_error = INVALIDMODEPARAM;
-                	return;
-            	}
-				if (modeChar == 'k' && _password.empty()) {
-                	this->_error = INVALIDMODEPARAM;
-                	return;
-            	}
-			}
-			} else {
-				if (modeChar == 'o' && (channelObj->getOperatorByNick(_clientNick) == NULL)) {
-                	this->_error = INVALIDMODEPARAM;
-                	return;
-				}
-			}
-        }
-        if (this->_channel.empty()) {
-            this->_error = NEEDMOREPARAMS;
-        } else {
-            Channel* ch = this->_server.getChannels()[this->_channel];
-            if (!ch->isOperator(this->_client.getSocketFD())) {
-                this->_error = CHANOPRIVSNEEDED;
-            }
-        }
-    }
+	std::getline(input, channel, ' ');
+	this->_channel = channel;
+
+	std::getline(input, mode, ' ');
+	trimChar(mode, ' ');
+	this->_mode = mode;
+	
+	std::getline(input, parameters);
+	trimChar(mode, '\r');
+	this->_parameters = parameters;
+	extractParameters();
+	this->print();
 }
 
 void Mode::extractParameters() {
@@ -146,38 +88,55 @@ bool Mode::isValidMode(char mode) {
 		if (validModes[i] == mode)
 			return false;
 	}
+	std::cout << "ENTRA AQUI?" << std::endl;
 	return true;
 }
 
 void Mode::execute() {
-	std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
-    this->print();
-	switch (this->_error) {
-		case NOSUCHCHANNEL:
-			Message::sendMessage(this->_client.getSocketFD(), ERR_NOSUCHCHANNEL(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
-            break ;
-		case UNKNOWNMODE:
-			Message::sendMessage(this->_client.getSocketFD(), ERR_UNKNOWNMODE(this->_server.getHostname(), this->_client.getNick(), this->_modeChar), this->_server);
-            break ;
-		case INVALIDMODEPARAM:
-			Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, this->_modeChar), this->_server);
-            break ;
-		case NEEDMOREPARAMS:
-			Message::sendMessage(this->_client.getSocketFD(), ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name), this->_server);
-            break ;
-		case CHANOPRIVSNEEDED:
-			Message::sendMessage(this->_client.getSocketFD(), ERR_CHANOPRIVSNEEDED(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
-            break ;
-		default:
-			Channel* channelObj = this->_server.getChannels()[this->_channel];
-			channelObj->applyMode(*this);
-    		this->_server.printChannelInfo(this->_channel);
-			channelObj->sendMessage(RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_mode, intToString(this->_userLimit), this->_password, this->_clientNick), 0);
+	std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
+	std::string msg;
+	if (_channel.empty()) {
+		Message::sendMessage(this->_client.getSocketFD(), "Error(461): MODE Not enough parameters.\r\n", this->_server);
+		return ;
 	}
+	std::map<std::string, Channel*> channels = this->_server.getChannels();
+	std::map<std::string, Channel*>::iterator it = channels.find(this->_channel);
+	if (it == channels.end()) {
+		Message::sendMessage(this->_client.getSocketFD(), "Reply(403): No such channel " + this->_channel + "\r\n", this->_server);
+		return ;
+	}
+	Channel* channelObj = it->second;
+	if (channelObj == NULL) {
+		std::cout << "Error: channelObj is null." << std::endl;
+		return ;
+	}
+	for (size_t i = 0; i < _mode.length(); ++i) {
+		char modeChar = _mode[i];
+		std::cout << "modeStr: " << modeChar << std::endl;
+		if (modeChar != '+' && modeChar != '-' && isValidMode(modeChar)) {
+			Message::sendMessage(this->_client.getSocketFD(), "Error(472): " + std::string(1, modeChar) + " is not a recognised channel mode.\r\n", this->_server);
+			return ;
+		}
+		if ((modeChar == 'k' || modeChar == 'l' || modeChar == 'o') && i + 1 < _mode.length() && _mode[i + 1] == '+') {
+			if (modeChar == 'k' && _password.empty()) {
+				Message::sendMessage(this->_client.getSocketFD(), "Error(461): MODE +k requires a password.\r\n", this->_server);
+				return ;
+			}
+			if (modeChar == 'l' && _userLimit < 0) {
+				Message::sendMessage(this->_client.getSocketFD(), "Error(461): MODE +l requires a user limit.\r\n", this->_server);
+				return ;
+			}
+			if (modeChar == 'o' && channelObj->getClientByNick(_clientNick) == NULL) {
+				Message::sendMessage(this->_client.getSocketFD(), "Error(401): No such nick/channel.\r\n", this->_server);
+				return ;
+			}
+		}
+	}
+	channelObj->applyMode(*this);
+    this->_server.printChannelInfo(this->_channel);
+	Message::sendMessage(this->_client.getSocketFD(), ":" + this->_client.getNick() + " MODE " + this->_channel + " " + this->_mode + "\r\n", this->_server);
 }
 
 void Mode::print() const{
-	if (this->_error != 0)
-        std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
-	std::cout << "\nUser limit: " << this->_userLimit <<  " | Nick: " << this->_clientNick << " | Password: " << this->_password << " | Parameters: " << this->_parameters << " | Mode: " << this->_mode << std::endl;
+	std::cout << "User limit: " << this->_userLimit <<  " | Nick: " << this->_clientNick << " | Password: " << this->_password << " | Parameters: " << this->_parameters << " | Mode: " << this->_mode << std::endl;
 }

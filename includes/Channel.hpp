@@ -71,14 +71,6 @@ public:
 			}
 		}
 		return NULL;  };
-	Client* getOperatorByNick(const std::string& nick) const {
-		for (std::map<int, Client*>::const_iterator it = _operators.begin(); it != _operators.end(); ++it) {
-			Client* client = it->second;
-			if (client->getNick() == nick) {
-				return client;
-			}
-		}
-		return NULL;  };
 	void	printOperators() const { //NOTE - Apagar depois
 		std::cout << "Operators in the channel:" << std::endl;
 		for (std::map<int, Client*>::const_iterator it = _operators.begin(); it != _operators.end(); ++it) {
