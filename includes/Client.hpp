@@ -80,7 +80,7 @@ public:
     Server          &getServer() const { return _server; } ;
     time_t          getLastActivityTime() const { return _lastActivityTime; } ;
     time_t          getConnectTime() const { return _connectTime; } ;
-    bool            getJustJoined() const { return _justJoined; } ;
+    bool            getJustJoined(std::string channel) { return _justJoined[channel]; } ;
 
     //setters
     void            setSocketFD(int socketFD) { _socketFD = socketFD; } ;
@@ -93,7 +93,7 @@ public:
     void            setRegistration(bool registration) { _registration = registration; } ;
     void            setLastActivityTime(time_t lastActivityTime) { _lastActivityTime = lastActivityTime; } ;
     void            setConnectTime(time_t connectTime) { _connectTime = connectTime; } ;
-    void            setJustJoined(bool justJoined) { _justJoined = justJoined; } ;
+    void            setJustJoined(bool justJoined, std::string channel) { _justJoined[channel] = justJoined; } ;
 
 
 private:
@@ -109,7 +109,7 @@ private:
     Server&                 _server;
     time_t                  _lastActivityTime;
     time_t                  _connectTime;
-    bool                    _justJoined;
+    std::map <std::string, bool>         _justJoined;
 };
 
 

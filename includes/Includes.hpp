@@ -22,6 +22,7 @@
 # include <fstream>
 # include <sstream>
 # include <queue>
+# include <csignal>
 
 //RPL_ISUPPORT
 # define PREFIX             "(o)@"
@@ -74,13 +75,6 @@
 std::ostream &operator<<(std::ostream &out, const pollfd &pfd);
 std::ostream &operator<<(std::ostream &out, const std::vector<pollfd> &NFDs);
 std::ostream& operator<<(std::ostream& out, const Client &client);
-
-template <typename K, typename V>
-void printMap(const std::map<K, V>& map) {
-    for (typename std::map<K, V>::const_iterator it = map.begin(); it != map.end(); ++it) {
-        std::cout << GREEN << "[" << it->first << "]" << RESET << " => " << *it->second << std::endl;
-    }
-}
 
 std::string getCurrentDateTime();
 void titleInfo(std::string title);

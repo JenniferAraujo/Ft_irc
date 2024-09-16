@@ -109,7 +109,8 @@ void Privmsg::sendToClients(){
 }
 
 void Privmsg::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "");
+    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
+    this->print();
     switch (this->_error) {
         case NEEDMOREPARAMS:
             Message::sendMessage(this->_client.getSocketFD(), ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name), this->_server);
@@ -124,7 +125,6 @@ void Privmsg::execute() {
             Message::sendMessage(this->_client.getSocketFD(), ERR_TOOMANYTARGETS(this->_server.getHostname(), this->_client.getNick(), this->_name), this->_server);
             break;
         default:
-            this->print();
             this->sendToChannels();
             this->sendToOpChannels();
             this->sendToClients();
@@ -133,11 +133,15 @@ void Privmsg::execute() {
 }
 
 void Privmsg::print() const{
-    std::cout << this->_name <<  "\t[";
-    showstringq(this->_channels);
-    std::cout << "] [";
-    showstringq(this->_opChannels);
-    std::cout << "] [";
-    showstringq(this->_clients);
-    std::cout << "] [" << this->_message << "]\n";
+    if (this->_error != 0)
+		std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
+	else {
+        std::cout << "\t[";
+        showstringq(this->_channels);
+        std::cout << "] [";
+        showstringq(this->_opChannels);
+        std::cout << "] [";
+        showstringq(this->_clients);
+        std::cout << "] [" << this->_message << "]\n";
+    }
 }

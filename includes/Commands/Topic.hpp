@@ -8,7 +8,7 @@ inline std::string RPL_NOTOPIC(const std::string& client, const std::string& cha
 }
 
 inline std::string RPL_TOPIC(const std::string& client, const std::string& channel, const std::string& nick, const std::string& topic) {
-    return ":" + client + " 332 " + nick + " " + channel + " " + topic + "\r\n";
+    return ":" + client + " 332 " + nick + " " + channel + " :" + topic + "\r\n";
 }
 
 class Topic: public ACommand {

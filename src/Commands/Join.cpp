@@ -56,7 +56,7 @@ void Join::execute() {
 				if ((aux = this->_server.addInChannel(this->_channels.front(),(this->_password.empty() ? "" : this->_password.front()), const_cast<Client&>(this->_client))) == 0) {
 					Channel* ch = this->_server.getChannels()[this->_channels.front()];
 					ch->sendMessage(JOIN_CHANNEL(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channels.front()), 0);
-					this->_client.setJustJoined(true);
+					this->_client.setJustJoined(true, this->_channels.front());
 					if (ch->getTopic().empty())
 						Message::sendMessage(this->_client.getSocketFD(), RPL_NOTOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick()), this->_server);
 					else

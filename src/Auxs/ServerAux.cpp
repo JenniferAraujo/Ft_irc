@@ -73,7 +73,7 @@ void    Server::printChannelInfo(std::string channelName) {
     showMap(this->_Channels[channelName]->getOperators());
     std::cout << "] [";
     showMap(this->_Channels[channelName]->getClients());
-    std::cout << "] i[";
+    std::cout << "] I[";
     std::vector<int> fds = this->_Channels[channelName]->getInvited();
     if (fds.empty())
         std::cout << "-";
@@ -89,6 +89,16 @@ void    Server::printChannelInfo(std::string channelName) {
     else
         std::cout << this->_Channels[channelName]->getUserLimit();
     std::cout << "] k[" << (this->_Channels[channelName]->getPassword().empty() ? "-" : this->_Channels[channelName]->getPassword());
+    std::cout << "] i[";
+    if (!this->_Channels[channelName]->isInviteOnly())
+        std::cout << "-";
+    else
+        std::cout << "X";
+    std::cout << "] t[";
+    if (!this->_Channels[channelName]->isTopicLocked())
+        std::cout << "-";
+    else
+        std::cout << "X";
     std::cout << "]" << std::endl;
 
 }
@@ -110,11 +120,27 @@ int     Server::getClientByNick(std::string nick) {
 }
 
 void    Server::display() const {
-    std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0, "") << "Socket with fd " << CYAN "[" << this->_socketFD << "]" << RESET
-              << " bound on port " << CYAN << this->_port << RESET << std::endl;
-    std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0, "") << "Server listening only " << CYAN << 10 << RESET << " connections"
-              << std::endl;
+    std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0, "") << "Socket with fd " << CYAN "[" << this->_socketFD << "]" << RESET << " bound on port " << CYAN << this->_port << RESET << std::endl;
+    std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0, "") << "Server listening only " << CYAN << 10 << RESET << " connections" << std::endl;
     std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0, "") << "Hostname: " << this->_hostName << std::endl;
     std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0, "") << "Host IP: " << this->_hostIP << "\n" << std::endl;
 
+}
+
+void Server::stopCompilation(int signal) {
+    for(std::map<std::string, Channel*>::iterator it = this->_Channels.begin(); it != this->_Channels.end(); ++it){
+            delete it->second;
+    }
+    this->_Channels.clear();
+    for(std::map<int, Client*>::iterator it = this->_Clients.begin(); it != this->_Clients.end(); ++it){
+            delete it->second;
+    }
+    this->_Clients.clear();
+    (void)signal;
+}
+
+void	Server::signals()
+{
+    //Control + C
+	//signal(SIGINT, stopCompilation);
 }

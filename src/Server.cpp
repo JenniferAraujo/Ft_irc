@@ -163,7 +163,6 @@ void Server::checkEvents(int nEvents) {
     }
     this->_toRemove.clear();
     std::cout << std::endl;
-    //printMap(_Clients);
 }
 
 void Server::handleTimeouts(time_t inactivityTimeout, time_t connectionTimeout) {
@@ -217,6 +216,7 @@ void Server::run()
     this->display();
     // Adicionar o FD da socket aqueles que a poll vai poder monitorizar
     this->updateNFDs(this->_socketFD);
+    signals();
     // Ciclo para correr a poll para esperar eventos
     while (true)
     {
@@ -230,8 +230,6 @@ void Server::run()
         default:
             this->checkEvents(nEvents);
             this->handleTimeouts(TIMEOUT, CONNECTIONTIMEOUT);
-            //titleInfo("Clients Map");
-            //printMap(_Clients);
             break;
         }
     }

@@ -3,8 +3,6 @@
 Invite::Invite(Server& server, Client& client): ACommand("INVITE", server, client) {};
 
 void Invite::parsing(std::istringstream &input) {
-    // USERONCHANNEL 443
-    // CHANOPRIVNEEDED 482
 	std::string token;
     int n = 0;
     while (std::getline(input, token, ' ') || n < 1 ) {
@@ -44,7 +42,7 @@ void Invite::parsing(std::istringstream &input) {
             if (ch->isInviteOnly() && !ch->isOperator(this->_client.getSocketFD()))
                 this->_error = CHANOPRIVSNEEDED;
             else if (ch->isClient(c->getSocketFD()) || ch->isOperator(c->getSocketFD()))
-                this->_error == USERONCHANNEL;
+                this->_error = USERONCHANNEL;
         }
     }
 }

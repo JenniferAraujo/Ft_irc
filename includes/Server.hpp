@@ -58,6 +58,8 @@ public:
     int     getClientByNick(std::string nick);
     void    display() const;
     void    printChannelInfo(std::string channelName); //!SECTION
+    void	signals();
+    void    stopCompilation(int signal);
 
 private:
 	Server();
