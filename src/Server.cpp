@@ -90,9 +90,9 @@ void Server::verifyEvent(const pollfd &pfd) {
         //Most IRC servers limit messages to 512 bytes in length
         std::vector<char> temp(MAX_MESSAGE_SIZE + 1);
         static std::vector<char> buf(MAX_MESSAGE_SIZE, '\0');
-        static int bufSize = 0;
-        static bool ignoreCommand = false;
-        
+        static int	bufSize = 0;
+	static bool	ignoreCommand = false;
+	
         int bytesReceived = recv(client->getSocketFD(), temp.data(), temp.size(), 0);
         if(bytesReceived == 0){
             this->updateToRemove(client->getSocketFD(), "Connection closed by client");
@@ -104,25 +104,24 @@ void Server::verifyEvent(const pollfd &pfd) {
             }
             return ;
         }
-        if(ignoreCommand == true){
-            ignoreCommand = false;
-            return ;
+        if(ignoreCommand){
+        	ignoreCommand = false;
+        	return ;
         }
-/*         std::cout << "BYTES RECEIVEF: " << bytesReceived << " BUF SIZE: " << bufSize << std::endl;
-        std::cout << "TEMP: " << temp.data() << "." << std::endl;
-        std::cout << "BUF: " << buf.data() << "." << std::endl; */
         // Ensure the buffer does not overflow
         if(bytesReceived > MAX_MESSAGE_SIZE){
-            //std::cout << "bytesReceived > MAX_MESSAGE_SIZE";
-            ignoreCommand = true;
             Message::sendMessage(client->getSocketFD(), ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected"), *this);
+                        buf = std::vector<char>(MAX_MESSAGE_SIZE, '\0');
             bufSize = 0;
+            ignoreCommand = true;
             return;
         }
+        //std::cout << "TEMP: " << temp.data() << "." << std::endl;
+
         // Ensure the buffer does not overflow
         if (bufSize + bytesReceived > MAX_MESSAGE_SIZE) {
-            //std::cout << "bufSize + bytesReceived > MAX_MESSAGE_SIZE";
             Message::sendMessage(client->getSocketFD(), ERR_UNKNOWNERROR(this->_hostName, client->getNick(), "", "Buffer overflow detected"), *this);
+            buf = std::vector<char>(MAX_MESSAGE_SIZE, '\0');
             bufSize = 0;
             return;
         }

@@ -14,10 +14,12 @@
 # define NOTONCHANNEL       442
 # define NEEDMOREPARAMS     461
 # define CHANNELISFULL      471
+# define UNKNOWNMODE        472
 # define BADCHANNELKEY      475
 # define BADCHANMASK        476
 # define CHANOPRIVSNEEDED   482
 # define INVITEONLYCHAN     473
+# define INVALIDMODEPARAM   696
 
 inline std::string ERR_UNKNOWNERROR(const std::string& source, const std::string& target, const std::string& command, const std::string& info) {
     std::string _target = target;
@@ -61,7 +63,6 @@ inline std::string ERR_UNKNOWNCOMMAND(const std::string& source, const std::stri
 inline std::string ERR_USERNOTINCHANNEL(const std::string& source, const std::string& target, const std::string& nick, const std::string& channel) {
     return ":" + source + " 441 " + target + " " + nick + " " + channel + " :is not on that channel\r\n";
 }
-
 inline std::string ERR_NOTONCHANNEL(const std::string& source, const std::string& target, const std::string& channel) {
     return ":" + source + " 442 " + target  + " " + channel + " :You're not on that channel\r\n";
 }
@@ -80,6 +81,10 @@ inline std::string ERR_CHANNELISFULL(const std::string& source, const std::strin
     return ":" + source + " 471 " + target + " " + channel + " :Cannot join channel (+l)\r\n";
 }
 
+inline std::string ERR_UNKNOWNMODE(const std::string& source, const std::string& target, const std::string& modeChar) {
+    return ":" + source + " 472 " + target + " " + modeChar + " :is unknown mode char to me\r\n";
+}
+
 inline std::string ERR_INVITEONLYCHAN(const std::string& source, const std::string& target, const std::string& channel) {
     return ":" + source + " 473 " + target + " " + channel + " :Cannot join channel (+i)\r\n";
 }
@@ -90,6 +95,16 @@ inline std::string ERR_BADCHANNELKEY(const std::string& source, const std::strin
 
 inline std::string ERR_CHANOPRIVSNEEDED(const std::string& source, const std::string& target, const std::string& channel) {
     return ":" + source + " 482 " + target + " " + channel + " :You're not channel operator\r\n";
+}
+
+inline std::string ERR_INVALIDMODEPARAM(const std::string& source, const std::string& target, const std::string& channel, const std::string& modeChar) {
+    if (modeChar == "k")
+        return ":" + source + " 696 " + target + " " + channel + " :You must specify a parameter for the key mode\r\n";
+    else if (modeChar == "l")
+        return ":" + source + " 696 " + target + " " + channel + " :You must specify a parameter for the limit mode\r\n";
+    else if (modeChar == "o")
+        return ":" + source + " 696 " + target + " " + channel + " :You must specify a parameter for the op mode\r\n";
+    return ":" + source + " 696 " + target + " " + channel + "\r\n";
 }
 
 //A class abstrata ACommand tem uma string com o nome do comando e um int que guarda o erro de comando, se necessario, inicializado a 0 -> sem erro

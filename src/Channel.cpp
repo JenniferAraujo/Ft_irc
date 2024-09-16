@@ -45,6 +45,7 @@ void Channel::applyMode(const Mode& modeObj) {
 					if (clientPtr) {
 						int clientFd = clientPtr->getSocketFD();
 						addOperator(clientFd, clientPtr);
+						removeClient(clientPtr->getSocketFD());
 					}
 				} else {
 					Client* clientPtr = getClientByNick(modeObj.getClientNick());
