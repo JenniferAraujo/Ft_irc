@@ -110,8 +110,13 @@ ACommand* Client::createTopic(std::istringstream &input){
 }
 
 ACommand* Client::createPrivmsg(std::istringstream &input){
-    std::cout << "Entra aqui privmsg: " << input.str() << "\n";
     ACommand *command = new Privmsg(this->_server, *this);
+    command->parsing(input);
+    return command;
+}
+
+ACommand* Client::createNotice(std::istringstream &input){
+    ACommand *command = new Notice(this->_server, *this);
     command->parsing(input);
     return command;
 }
@@ -125,11 +130,11 @@ ACommand* Client::createQuit(std::istringstream &input){
 std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
     std::string str(buf.begin(), buf.end());;
     std::istringstream input(str);
-    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING", "KICK", "PART", "INVITE", "TOPIC", "PRIVMSG", "QUIT"};
+    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING", "KICK", "PART", "INVITE", "TOPIC", "PRIVMSG", "NOTICE" "QUIT"};
     int N = static_cast<int>(ARRAY_SIZE(commands));
     ACommand* (Client::*p[])(std::istringstream&) = {&Client::createCap, &Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin, 
         &Client::createMode, &Client::createWho, &Client::createPing, &Client::createKick, &Client::createPart, &Client::createInvite, &Client::createTopic, 
-            &Client::createPrivmsg, &Client::createQuit};
+            &Client::createPrivmsg, &Client::createNotice, &Client::createQuit};
     std::string cmd;
     std::string line;
     std::queue<ACommand *> result;

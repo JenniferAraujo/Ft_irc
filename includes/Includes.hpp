@@ -55,6 +55,7 @@
 # include "Commands/Invite.hpp"
 # include "Commands/Topic.hpp"
 # include "Commands/Privmsg.hpp"
+# include "Commands/Notice.hpp"
 # include "Commands/Quit.hpp"
 
 # define RED "\033[31m"

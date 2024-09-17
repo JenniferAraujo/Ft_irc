@@ -2,13 +2,6 @@
 
 Privmsg::Privmsg(Server& server, Client& client): ACommand("PRIVMSG", server, client) {};
 
-//Command: PRIVMSG
-//Parameters: <target>{,<target>} <text to be sent>
-//Syntax: PRIVMSG <target>{,<target>} :<text to be sent>
-
-/* # define TOOMANYTARGETS     407 check
-# define NORECIPIENT        411 amanha PRIVMSG :ola tudo bem
-# define NOTEXTTOSEND       412 */ //check
 void Privmsg::parsingToken(std::string token) {
         if (token[0] == '#'){
             if(!findInQueue(this->_channels, token))
@@ -63,12 +56,12 @@ void Privmsg::sendToChannels(){
         std::string channelName = this->_channels.front();
         if(existentChannel(channelName)){
             Channel *channel = this->_server.getChannels()[channelName];
-            if(!channel->isClient(this->_client.getSocketFD()) && !channel->isOperator(this->_client.getSocketFD())){
-                Message::sendMessage(this->_client.getSocketFD(), ERR_CANNOTSENDTOCHAN(this->_server.getHostname(), this->_client.getNick(), channelName), this->_server);
-            }
-            else
+            if(channel->isClient(this->_client.getSocketFD()) || channel->isOperator(this->_client.getSocketFD())){
                 channel->sendMessage(PRIV_MESSAGE(this->_client.getNick(), this->_client.getUsername(), 
                     this->_client.getIpaddr(), channelName, this->_message), this->_client.getSocketFD());
+            }
+            else
+                Message::sendMessage(this->_client.getSocketFD(), ERR_CANNOTSENDTOCHAN(this->_server.getHostname(), this->_client.getNick(), channelName), this->_server);
         }
         else{
             Message::sendMessage(this->_client.getSocketFD(), ERR_NOSUCHCHANNEL(this->_server.getHostname(), this->_client.getNick(), channelName), this->_server);
@@ -82,12 +75,12 @@ void Privmsg::sendToOpChannels(){
         std::string channelName = this->_opChannels.front().substr(1, this->_opChannels.front().length() - 1);
         if(existentChannel(channelName)){
             Channel *channel = this->_server.getChannels()[channelName];
-            if(!channel->isClient(this->_client.getSocketFD()) && !channel->isOperator(this->_client.getSocketFD())){
-                Message::sendMessage(this->_client.getSocketFD(), ERR_CANNOTSENDTOCHAN(this->_server.getHostname(), this->_client.getNick(), channelName), this->_server);
-            }
-            else
+            if(channel->isClient(this->_client.getSocketFD()) || channel->isOperator(this->_client.getSocketFD())){
                 channel->sendMessageToOperators( PRIV_MESSAGE(this->_client.getNick(), this->_client.getUsername(), 
                     this->_client.getIpaddr(), channelName, this->_message), this->_client.getSocketFD());
+            }
+            else
+                Message::sendMessage(this->_client.getSocketFD(), ERR_CANNOTSENDTOCHAN(this->_server.getHostname(), this->_client.getNick(), channelName), this->_server);
         }
         else
             Message::sendMessage(this->_client.getSocketFD(), ERR_NOSUCHCHANNEL(this->_server.getHostname(), this->_client.getNick(), channelName), this->_server);
