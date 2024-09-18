@@ -24,12 +24,13 @@ void Mode::parsing(std::istringstream &input) {
 					return ;
 				}
 				break ;
-			case 1:
-			if (token[0] == '+' || token[0] == '-') {
-					for (size_t i = 1; i < token.size(); ++i) {
+			case 1: // MODE #a +i || MODE #a i || MODE #a -i
+			if (isValidMode(token[0]) || token[0] == '+' || token[0] == '-') {
+					this->_mode += token[0];
+					token.erase(token.begin());
+					for (size_t i = 0; i < token.size(); ++i) {
 						char modeChar = token[i];
 						if (isValidMode(modeChar)) {
-							this->_mode += token[0];
 							this->_mode += modeChar;
 						} else {
 							this->_error = UNKNOWNMODE;
@@ -44,8 +45,10 @@ void Mode::parsing(std::istringstream &input) {
 				break ;
 			default:
 				if (modeFlag) {
-					if (token[0] == '+' || token[0] == '-')
+					if (token[0] == '+' || token[0] == '-') {
+                    	token.erase(token.begin());
 						this->_mode += token;
+					}
 					else
 						collectedParameters.push_back(token);
 				}
@@ -191,7 +194,10 @@ void Mode::execute() {
 			Channel* channelObj = this->_server.getChannels()[this->_channel];
 			channelObj->applyMode(*this);
 			this->_server.printChannelInfo(this->_channel);
-			channelObj->sendMessage(RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_mode, intToString(this->_userLimit), this->_password, this->_clientNick), 0);
+			if (!this->_mode.empty())
+				channelObj->sendMessage(RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_mode, intToString(this->_userLimit), this->_password, this->_clientNick), 0);
+			else
+				channelObj->sendMessage(RPL_ONLYMODE(this->_client.getNick(), this->_server.getHostname(),this->_channel, channelObj->getMode(), intToString(channelObj->getUserLimit()), channelObj->getPassword()), 0);
 	}
 }
 

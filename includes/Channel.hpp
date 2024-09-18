@@ -22,7 +22,6 @@ public:
 	std::string				getName() const { return _name; } ;
 
 	//!SECTION - Setters
-	void	setMode(const std::string &mode) { _mode = mode; }
 	void	setPassword(const std::string& password) { _password = password; }
 	void	setUserLimit(int limit) { _userLimit = limit; }
 	void	setTopic(std::string topic, int clientFD) {

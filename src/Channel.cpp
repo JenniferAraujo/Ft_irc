@@ -57,6 +57,15 @@ void Channel::applyMode(const Mode& modeObj) {
 				}
 		}
 	}
+	_mode.clear();
+	if (!_password.empty())
+		_mode.append("k");
+	if (isTopicLocked())
+		_mode.append("t");
+	if (_inviteOnly)
+		_mode.append("i");
+	if (_userLimit != -1)
+		_mode.append("l");
 }
 
 void Channel::addOperator(int clientId, Client* client) {

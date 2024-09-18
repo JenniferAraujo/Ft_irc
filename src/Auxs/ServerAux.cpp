@@ -73,7 +73,7 @@ void    Server::printChannelInfo(std::string channelName) {
     showMap(this->_Channels[channelName]->getOperators());
     std::cout << "] [";
     showMap(this->_Channels[channelName]->getClients());
-    std::cout << "] i[";
+    std::cout << "] I[";
     std::vector<int> fds = this->_Channels[channelName]->getInvited();
     if (fds.empty())
         std::cout << "-";
@@ -89,7 +89,17 @@ void    Server::printChannelInfo(std::string channelName) {
     else
         std::cout << this->_Channels[channelName]->getUserLimit();
     std::cout << "] k[" << (this->_Channels[channelName]->getPassword().empty() ? "-" : this->_Channels[channelName]->getPassword());
-    std::cout << "]" << std::endl;
+    std::cout << "] i[";
+    if (!this->_Channels[channelName]->isInviteOnly())
+        std::cout << "-";
+    else
+        std::cout << "X";
+    std::cout << "] t[";
+    if (!this->_Channels[channelName]->isTopicLocked())
+        std::cout << "-";
+    else
+        std::cout << "X";
+    std::cout << "] mode[" << this->_Channels[channelName]->getMode() << "]" << std::endl;
 
 }
 
