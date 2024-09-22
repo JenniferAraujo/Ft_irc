@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "Server.hpp"
 
+Server* Server::_instance = NULL;
+
 void check_port(std::string port) {
     for (unsigned int i = 0; i < port.length(); i++) {
         if (!isdigit(port[i]))

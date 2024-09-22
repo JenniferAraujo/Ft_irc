@@ -137,3 +137,9 @@ void trimChar(std::string& str, char ch) {
     else
         str = str.substr(first, last - first + 1);
 }
+
+void signalHandler(int signal) {
+    if (Server::_instance != NULL)
+        Server::_instance->stopCompilation(signal);
+}
+

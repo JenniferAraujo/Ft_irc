@@ -12,7 +12,7 @@ void Who::parsing(std::istringstream &input){
 }
 
 void Who::execute() {
-    std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
+    //std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
     std::string msg, names;
     if (this->_server.getChannels().find(this->_channel) != this->_server.getChannels().end()) {
         Channel* channel = this->_server.getChannels()[this->_channel];
@@ -29,10 +29,10 @@ void Who::execute() {
             Message::sendMessage(this->_client.getSocketFD(), RPL_WHO(this->_server.getHostname(), this->_channel, this->_client.getNick(), "@", *c), this->_server);
         }
         Message::sendMessage(this->_client.getSocketFD(), RPL_ENDWHO(this->_server.getHostname(), this->_channel, this->_client.getNick()), this->_server);
-        if (this->_client.getJustJoined()) {
+        if (this->_client.getJustJoined(this->_channel)) {
             Message::sendMessage(this->_client.getSocketFD(), RPL_NAME(this->_server.getHostname(), this->_channel, this->_client.getNick(), names), this->_server);
             Message::sendMessage(this->_client.getSocketFD(), RPL_ENDNAME(this->_server.getHostname(), this->_channel, this->_client.getNick()), this->_server);
-            this->_client.setJustJoined(false);
+            this->_client.setJustJoined(false, this->_channel);
         }
     }
     else {

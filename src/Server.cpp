@@ -1,6 +1,6 @@
 #include "Includes.hpp"
 
-Server::Server() {}
+Server::Server() { this->_instance = this;}
 
 Server::Server(const int &port, const std::string &password) : _port(port),
 															   _password(password)
@@ -10,6 +10,7 @@ Server::Server(const int &port, const std::string &password) : _port(port),
 	_socketInfo.sin6_port = htons(this->_port);
 	_socketInfo.sin6_addr = in6addr_any;
 	this->_creationTime = getCurrentDateTime();
+    this->_instance = this;
 }
 
 Server::Server(const Server &cpy)
@@ -91,8 +92,8 @@ void Server::verifyEvent(const pollfd &pfd) {
         std::vector<char> temp(MAX_MESSAGE_SIZE + 1);
         static std::vector<char> buf(MAX_MESSAGE_SIZE, '\0');
         static int	bufSize = 0;
-	static bool	ignoreCommand = false;
-	
+	    static bool	ignoreCommand = false;
+
         int bytesReceived = recv(client->getSocketFD(), temp.data(), temp.size(), 0);
         if(bytesReceived == 0){
             this->updateToRemove(client->getSocketFD(), "Connection closed by client");
@@ -161,7 +162,6 @@ void Server::checkEvents(int nEvents) {
         this->removeClient(it->first, it->second);
     }
     this->_toRemove.clear();
-    std::cout << std::endl;
     //printMap(_Clients);
 }
 
@@ -169,7 +169,7 @@ void Server::handleTimeouts(time_t inactivityTimeout, time_t connectionTimeout) 
     time_t now = time(NULL);
 
     for (std::map<int, Client *>::iterator it = this->_Clients.begin(); it != this->_Clients.end(); ++it) {
-/*         std::cout << "Now: " << now << " | Last time activity: " << it->second->getLastActivityTime() 
+/*         std::cout << "Now: " << now << " | Last time activity: " << it->second->getLastActivityTime()
         << "Dif: " << now - it->second->getLastActivityTime() << " | TIMEOUT: " << timeoutDuration << std::endl; */
         if (!it->second->getRegistration()){
             if(now - it->second->getConnectTime() >= connectionTimeout)
@@ -216,6 +216,7 @@ void Server::run()
     this->display();
     // Adicionar o FD da socket aqueles que a poll vai poder monitorizar
     this->updateNFDs(this->_socketFD);
+    this->signals();
     // Ciclo para correr a poll para esperar eventos
     while (true)
     {

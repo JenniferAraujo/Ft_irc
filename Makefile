@@ -15,7 +15,7 @@ CXX				= c++
 RM 				= rm -rf
 
 #-----------------------------------  FLAGS  -----------------------------------
-CXXFLAGS		= -Wall -Wextra -Werror -std=c++98 #-fsanitize=address
+CXXFLAGS		= -Wall -Wextra -Werror -g -std=c++98 #-fsanitize=address
 NPD				= --no-print-directory
 
 #--------------------------------- FILES  ---------------------------------------
