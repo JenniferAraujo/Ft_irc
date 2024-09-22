@@ -10,8 +10,9 @@ void Server::removeClient(int fd, std::string reason){
             it->second->removeClient(fd);
             it->second->removeInvited(fd);
         }
-        if (!reason.empty())
+        if (!reason.empty() && reason != "Recv fail"){
             Message::sendMessage(fd, ERROR(reason), *this);
+        }
         close(fd);
         delete this->_Clients[fd];
         this->_Clients.erase(fd);

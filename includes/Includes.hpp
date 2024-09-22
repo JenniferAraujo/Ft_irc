@@ -25,7 +25,8 @@
 
 //RPL_ISUPPORT
 # define PREFIX             "(o)@"
-# define CHANTYPES          "i,t,k,l,o"
+# define CHANMODES          ",k,l,it"
+# define CHANTYPES          "#"
 # define STATUSMSG          "@"
 # define USERLEN            12
 
