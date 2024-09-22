@@ -5,14 +5,12 @@ Quit::Quit(Server& server, Client& client): ACommand("QUIT", server, client){};
 void Quit::parsing(std::istringstream &input){
     std::string str;
     std::getline(input, str, ':');
-    std::cout << "vim aqui bro" << std::endl;
     if(std::cin.eof()){
         _error = NEEDMOREPARAMS; //nao tem a formataçao ":reason"
         return ;
     }
     std::getline(input, this->_reason);
     trimChar(this->_reason, '\r');
-    std::cout << "vim aqui bro 2" << std::endl;
 }
 
 void Quit::execute() {
