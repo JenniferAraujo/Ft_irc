@@ -35,6 +35,7 @@ void Kick::parsing(std::istringstream &input) {
                     return;
                 }
                 //NOTE - Verificar a condição de não deixar kickar operadores
+                //FIXME - Condição não está a funcionar, deixa kickar os operatores, confirmar se o UNKNOWNERROR está a ser ativado aqui ou se pode-se retirar esta confirmação e deixar dar kick a operadores
                 if (!this->existentClientOnChannel(token, this->_channel)) {
                     Channel*    ch = this->_server.getChannels()[this->_channel];
                     Client*     c = this->_server.findClient(this->_cliente, 0);

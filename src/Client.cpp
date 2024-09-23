@@ -1,6 +1,6 @@
 #include "Includes.hpp"
 
-/*Client::Client(): _socketFD(0),
+Client::Client(): _socketFD(0),
                     _regError(0),
                     _registration(0),
                     _ipAddr(""),
@@ -9,12 +9,10 @@
                     _nick(""),
                     _username(""),
                     _realname(""),
+                    _server(*Server::_instance),
                     _lastActivityTime(0),
                     _connectTime(0),
-                    _justJoined(false) {
-                        Server a;
-                        _server = a;
-                    }*/
+                    _justJoined() { }
 
 Client::Client(Server &server, time_t time)
     :   _regError(0),

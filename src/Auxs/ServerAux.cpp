@@ -24,6 +24,13 @@ void Server::removeClient(int fd, std::string reason){
     }
 }
 
+void Server::removeChannel(std::string chName) {
+    if(this->_Channels.find(chName) != this->_Channels.end()) {
+        delete this->_Channels[chName];
+        this->_Channels.erase(chName);
+    }
+}
+
 void Server::getServerInfo() {
     char hostbuffer[256];
     struct hostent *host_entry;
@@ -55,6 +62,16 @@ int Server::addInChannel(std::string channelName, std::string password, Client &
         if ((aux = this->_Channels[channelName]->canJoin(client, password)) != 0)
 			return aux;
 		this->_Channels[channelName]->addClient(client);
+        std::vector<int> vec = this->_Channels[channelName]->getInvited();
+        for (std::vector<int>::iterator it = vec.begin(); it != vec.end(); ) {
+            std::cout << "it: " << *it << std::endl;
+            if (*it == client.getSocketFD()) {
+                this->_Channels[channelName]->removeInvited(client.getSocketFD());
+                break;
+            }
+            else
+                ++it;
+        }
         std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0, "") << GREEN << "[" << client.getNick() << "]" << RESET << " entered Channel " << BOLD_YELLOW << channelName << RESET << std::endl;
         this->printChannelInfo(channelName);
     }
