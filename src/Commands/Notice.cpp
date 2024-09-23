@@ -57,7 +57,7 @@ void Notice::sendToChannels(){
         if(existentChannel(channelName)){
             Channel *channel = this->_server.getChannels()[channelName];
             if(channel->isClient(this->_client.getSocketFD()) || channel->isOperator(this->_client.getSocketFD()))
-                channel->sendMessage(PRIV_MESSAGE(this->_client.getNick(), this->_client.getUsername(), 
+                channel->sendMessage(NOTICE(this->_client.getNick(), this->_client.getUsername(), 
                     this->_client.getIpaddr(), channelName, this->_message), this->_client.getSocketFD());
         }
         this->_channels.pop();
@@ -70,7 +70,7 @@ void Notice::sendToOpChannels(){
         if(existentChannel(channelName)){
             Channel *channel = this->_server.getChannels()[channelName];
             if(channel->isClient(this->_client.getSocketFD()) || channel->isOperator(this->_client.getSocketFD()))
-                channel->sendMessageToOperators( PRIV_MESSAGE(this->_client.getNick(), this->_client.getUsername(), 
+                channel->sendMessageToOperators(NOTICE(this->_client.getNick(), this->_client.getUsername(), 
                     this->_client.getIpaddr(), channelName, this->_message), this->_client.getSocketFD());
         }
         _opChannels.pop();
@@ -81,7 +81,7 @@ void Notice::sendToClients(){
     while (!this->_clients.empty()) {
         std::string nick = this->_clients.front();
         if(existentClient(nick)){
-            Message::sendMessage(this->_server.getClientByNick(nick), PRIV_MESSAGE(this->_client.getNick(), this->_client.getUsername(), 
+            Message::sendMessage(this->_server.getClientByNick(nick), NOTICE(this->_client.getNick(), this->_client.getUsername(), 
                     this->_client.getIpaddr(), nick, this->_message), this->_server);
         }
         this->_clients.pop();
