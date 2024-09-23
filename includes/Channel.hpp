@@ -63,29 +63,9 @@ public:
 	void	sendMessage(std::string msg, int skipFD);
 	void	sendMessageToOperators(std::string msg, int skipFD);
 	void	sendMessageToClients(std::string msg, int skipFD);
-	Client* getClientByNick(const std::string& nick) const {
-		for (std::map<int, Client*>::const_iterator it = _Clients.begin(); it != _Clients.end(); ++it) {
-			Client* client = it->second;
-			if (client->getNick() == nick) {
-				return client;
-			}
-		}
-		return NULL;  };
-	Client* getOperatorByNick(const std::string& nick) const {
-		for (std::map<int, Client*>::const_iterator it = _operators.begin(); it != _operators.end(); ++it) {
-			Client* client = it->second;
-			if (client->getNick() == nick) {
-				return client;
-			}
-		}
-		return NULL;  };
-	void	printOperators() const { //NOTE - Apagar depois
-		std::cout << "Operators in the channel:" << std::endl;
-		for (std::map<int, Client*>::const_iterator it = _operators.begin(); it != _operators.end(); ++it) {
-			int clientFd = it->first;
-			Client* clientPtr = it->second;
-			if (clientPtr)
-				std::cout << "Operator FD: " << clientFd << ", Nick: " << clientPtr->getNick() << std::endl; } };
+	Client* getClientByNick(const std::string& nick);
+	Client* getOperatorByNick(const std::string& nick);
+	void	printOperators() const;
 
 private:
 	Channel();

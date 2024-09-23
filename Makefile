@@ -27,7 +27,7 @@ _SUBFOLDERS		= Auxs Commands
 VPATH			= $(SRCS) $(addprefix $(SRCS)/, $(_SUBFOLDERS))
 
 _FILES 			= Client ClientAux Server ServerAux IRCException Aux Channel Message\
-					Join Nick Pass User Mode Who Cap Ping Kick Part Invite Topic Privmsg Notice Quit
+					ACommand Join Nick Pass User Mode Who Cap Ping Kick Part Invite Topic Privmsg Notice Quit
 
 OBJ				= $(_FILES:%=%.o)
 TARGET			= $(addprefix $(OBJDIR)/, $(OBJ))

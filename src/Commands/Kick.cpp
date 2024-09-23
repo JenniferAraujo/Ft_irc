@@ -22,7 +22,7 @@ void Kick::parsing(std::istringstream &input) {
                 break;
             case 1: //KICK #a Diogo
                 this->_cliente = token;
-                if (this->_client.getNick() == token) {
+                if (toLowerCase(this->_client.getNick()) == toLowerCase(token)) {
                     this->_error = UNKNOWNERROR;        //AUTO-KICK
                     return ;
                 }

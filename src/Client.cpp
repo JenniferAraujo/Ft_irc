@@ -132,7 +132,7 @@ std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
     std::cout << "Create cmd\n";
     std::string str(buf.begin(), buf.end());;
     std::istringstream input(str);
-    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING", "KICK", "PART", "INVITE", "TOPIC", "PRIVMSG", "NOTICE", "QUIT"};
+    std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING", "KICK", "PART", "INVITE", "TOPIC", "PRIVMSG", "NOTICE" "QUIT"};
     int N = static_cast<int>(ARRAY_SIZE(commands));
     ACommand* (Client::*p[])(std::istringstream&) = {&Client::createCap, &Client::createPass, &Client::createNick, &Client::createUser, &Client::createJoin, 
         &Client::createMode, &Client::createWho, &Client::createPing, &Client::createKick, &Client::createPart, &Client::createInvite, &Client::createTopic, 
