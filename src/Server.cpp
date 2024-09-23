@@ -239,6 +239,7 @@ void Server::run()
 }
 
 Server::~Server() {
+    std::cout << "Server Destructor" << std::endl;
 	for (std::map<int, Client*>::iterator it = _Clients.begin(); it != _Clients.end(); ++it) {
 		close(it->first);
 		delete it->second;

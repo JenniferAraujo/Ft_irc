@@ -50,9 +50,7 @@ void Server::getServerInfo() {
     if (IPbuffer == NULL) {
         throw IRCException("[ERROR] inet_ntoa went wrong");
     }
-    char *temp = strdup(host_entry->h_name);
-    this->_hostName = temp;
-    free(temp);
+    this->_hostName = host_entry->h_name;
     this->_hostIP = IPbuffer;
 }
 
@@ -148,14 +146,17 @@ void    Server::display() const {
 void Server::stopCompilation(int signal) {
     std::cout << "Compilation stopped due to signal: " << signal << std::endl;
     for(std::map<std::string, Channel*>::iterator it = this->_Channels.begin(); it != this->_Channels.end(); ++it){
-            delete it->second;
+        delete it->second;
     }
     this->_Channels.clear();
     for(std::map<int, Client*>::iterator it = this->_Clients.begin(); it != this->_Clients.end(); ++it){
-            delete it->second;
+        delete it->second;
     }
     this->_Clients.clear();
-    std::exit(0);
+    std::vector<pollfd>().swap(this->_NFDs);
+    std::string().swap(this->_hostName);
+    std::string().swap(this->_creationTime);
+    std::exit(EXIT_SUCCESS);
 }
 
 void Server::signals() {

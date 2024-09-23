@@ -41,8 +41,6 @@ void Join::parsing(std::istringstream &input){
 		this->_error = NEEDMOREPARAMS;
 }
 
-//TODO - Tratamento de Erros
-//TODO - Lógica de remover do invited caso tenha entrado (ou confirmar se o invite é efetivamente removido ou permanente)
 void Join::execute() {
 	std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
 	this->print();

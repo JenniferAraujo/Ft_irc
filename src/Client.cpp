@@ -221,9 +221,7 @@ void Client::verifyConnection(Server &server, const pollfd &pfd) {
         } catch(const std::exception &e) {
             std::cerr << RED << e.what() << RESET << std::endl;
         }
-
         std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", client->_socketFD, GREEN) << "Connected from " << BOLD_GREEN << client->getIpaddr() << RESET << std::endl;
-
         server.updateNFDs(client->_socketFD);
         server.updateClients(client, client->_socketFD);
     }
