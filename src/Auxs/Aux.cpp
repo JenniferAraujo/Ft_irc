@@ -137,3 +137,10 @@ void trimChar(std::string& str, char ch) {
     else
         str = str.substr(first, last - first + 1);
 }
+
+// Function to convert a string to lowercase
+std::string toLowerCase(const std::string& str) {
+    std::string result = str;
+    std::transform(result.begin(), result.end(), result.begin(), ::tolower);
+    return result;
+}

@@ -10,8 +10,9 @@ void Server::removeClient(int fd, std::string reason){
             it->second->removeClient(fd);
             it->second->removeInvited(fd);
         }
-        if (!reason.empty())
+        if (reason != "Send fail" && reason != "Recv fail"){
             Message::sendMessage(fd, ERROR(reason), *this);
+        }
         close(fd);
         delete this->_Clients[fd];
         this->_Clients.erase(fd);
@@ -95,7 +96,7 @@ void    Server::printChannelInfo(std::string channelName) {
 
 Client    *Server::findClient(std::string nick, int skipFd){
     for (std::map <int, Client *>::iterator it = this->_Clients.begin(); it != _Clients.end(); ++it) {
-        if(it->second->getSocketFD() != skipFd && it->second->getNick() == nick)
+        if(it->second->getSocketFD() != skipFd && toLowerCase(it->second->getNick()) == toLowerCase(nick)) 
             return it->second;
     }
     return NULL;
@@ -103,7 +104,7 @@ Client    *Server::findClient(std::string nick, int skipFd){
 
 int     Server::getClientByNick(std::string nick) {
     for (std::map <int, Client *>::iterator it = this->_Clients.begin(); it != _Clients.end(); ++it) {
-        if(it->second->getNick() == nick)
+        if(toLowerCase(it->second->getNick()) == toLowerCase(nick))
             return it->second->getSocketFD();
     }
     return -1;

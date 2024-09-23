@@ -117,4 +117,34 @@ void	Channel::sendMessage(std::string msg, int skipFD) {
 	this->sendMessageToClients(msg, skipFD);
 }
 
+Client* Channel::getClientByNick(const std::string& nick) {
+		for (std::map<int, Client*>::const_iterator it = _Clients.begin(); it != _Clients.end(); ++it) {
+			Client* client = it->second;
+			if (toLowerCase(client->getNick()) == toLowerCase(nick)) {
+				return client;
+			}
+		}
+		return NULL;  
+}
+
+Client* Channel::getOperatorByNick(const std::string& nick) {
+	for (std::map<int, Client*>::const_iterator it = _operators.begin(); it != _operators.end(); ++it) {
+		Client* client = it->second;
+		if (toLowerCase(client->getNick()) == toLowerCase(nick)) {
+			return client;
+		}
+	}
+	return NULL;  
+}
+
+void	Channel::printOperators() const { //NOTE - Apagar depois
+		std::cout << "Operators in the channel:" << std::endl;
+		for (std::map<int, Client*>::const_iterator it = _operators.begin(); it != _operators.end(); ++it) {
+			int clientFd = it->first;
+			Client* clientPtr = it->second;
+			if (clientPtr)
+				std::cout << "Operator FD: " << clientFd << ", Nick: " << clientPtr->getNick() << std::endl; 
+		} 
+};
+
 Channel::~Channel() {}

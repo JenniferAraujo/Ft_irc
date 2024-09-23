@@ -149,6 +149,7 @@ void Mode::extractParameters() {
 			case 'o':
 				spacePos = aux.find(' ');
 				if (spacePos != std::string::npos) {
+					//REVIEW - pode ser preciso mudar a coparaçao para case-insensitive
 					this->_clientNick = aux.substr(0, spacePos);
 					aux.erase(0, spacePos + 1);
 				} else
