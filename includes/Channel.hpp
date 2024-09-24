@@ -20,6 +20,8 @@ public:
 	const std::string&		getPassword() const { return _password; }
 	std::string				getTopic() const { return _topic; } ;
 	std::string				getName() const { return _name; } ;
+	bool					getInviteOnly() const { return _inviteOnly; } ;
+	bool					getTopicProtected() const { return _topicProtected; } ;
 
 	//!SECTION - Setters
 	void	setPassword(const std::string& password) { _password = password; }
