@@ -23,6 +23,10 @@ void Mode::parsing(std::istringstream &input) {
 					this->_error = NOSUCHCHANNEL;
 					return ;
 				}
+				if (!this->existentClientOnChannel(this->_client.getNick(), this->_channel)) {
+					this->_error = NOTONCHANNEL;        //cliente nao esta no canal
+					return;
+				}
 				break ;
 			case 1: // MODE #a +i || MODE #a i || MODE #a -i
 			if (isValidMode(token[0]) || token[0] == '+' || token[0] == '-') {
@@ -46,7 +50,7 @@ void Mode::parsing(std::istringstream &input) {
 			default:
 				if (modeFlag) {
 					if (token[0] == '+' || token[0] == '-') {
-                    	token.erase(token.begin());
+						token.erase(token.begin());
 						this->_mode += token;
 					}
 					else

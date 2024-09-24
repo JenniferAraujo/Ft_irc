@@ -7,7 +7,8 @@ Channel::Channel(std::string name) : _name(name), _password(""), _inviteOnly(fal
 // TODO copy
 
 void Channel::addClient(Client &client) {
-	this->_Clients[client.getSocketFD()] = &client; }
+	this->_Clients[client.getSocketFD()] = &client;
+}
 
 void Channel::applyMode(const Mode& modeObj) {
 	std::string modeStr = modeObj.getMode();
@@ -48,10 +49,10 @@ void Channel::applyMode(const Mode& modeObj) {
 						removeClient(clientPtr->getSocketFD());
 					}
 				} else {
-					Client* clientPtr = getClientByNick(modeObj.getClientNick());
+					Client* clientPtr = getOperatorByNick(modeObj.getClientNick());
 					if (clientPtr) {
-						int clientFd = clientPtr->getSocketFD();
-						removeOperator(clientFd);
+						removeOperator(clientPtr->getSocketFD());
+						addClient(*clientPtr); 
 					}
 				break;
 				}

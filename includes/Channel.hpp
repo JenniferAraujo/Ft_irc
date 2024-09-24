@@ -44,7 +44,7 @@ public:
 	int		canJoin(const Client& client, std::string password) const;
 	void	addOperator(int clientId, Client* client);
 	void	removeOperator(int clientId);
-	void	addClient(int clientId, Client* client) { _Clients[clientId] = client; }
+	//void	addClient(int clientId, Client* client) { _Clients[clientId] = client; }
 	void	removeClient(int clientId);
 	void	removeInvited(int clientId);
 	void	addClient(Client &client);
