@@ -76,9 +76,11 @@ void Mode::parsing(std::istringstream &input) {
 				adding = false;
 			Channel* channelObj = this->_server.getChannels()[this->_channel];
 			if (adding) {
-				if (modeChar == 'o' && (channelObj->getClientByNick(_clientNick) == NULL)) {
-					this->_error = INVALIDMODEPARAM;
-					return ;
+				if (modeChar == 'o'){
+					if(channelObj->getClientByNick(_clientNick) == NULL && channelObj->getOperatorByNick(_clientNick) == NULL) {
+						this->_error = INVALIDMODEPARAM;
+						return ;
+					}
 				}
 				if (modeChar == 'l' && _userLimit < 0) {
 					this->_error = INVALIDMODEPARAM;
