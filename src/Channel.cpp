@@ -11,7 +11,7 @@ void Channel::addClient(Client &client) {
 }
 
 void Channel::applyMode(const Mode& modeObj) {
-	std::string modeStr = modeObj.getMode();
+	std::string modeStr = modeObj.getExcMode();
 	bool adding = true;
 
 	for (size_t i = 0; i < modeStr.length(); ++i) {
@@ -51,7 +51,6 @@ void Channel::applyMode(const Mode& modeObj) {
 				} else {
 					Client* clientPtr = getOperatorByNick(modeObj.getClientNick());
 					if (clientPtr) {
-						std::cout << "entra aqui????" << std::endl;
 						removeOperator(clientPtr->getSocketFD());
 						addClient(*clientPtr); 
 					}

@@ -35,7 +35,6 @@ void Mode::parsing(std::istringstream &input) {
 					for (size_t i = 0; i < token.size(); ++i) {
 						char modeChar = token[i];
 						if (isValidMode(modeChar) || modeChar == '+' || modeChar == '-') {
-						std::cout << "ENTRA AQUI?" << modeChar << std::endl;
 							this->_mode += modeChar;
 						} else {
 							this->_error = UNKNOWNMODE;
@@ -50,10 +49,8 @@ void Mode::parsing(std::istringstream &input) {
 				break ;
 			default:
 				if (modeFlag) {
-					if (token[0] == '+' || token[0] == '-') {
-						//token.erase(token.begin());
+					if (token[0] == '+' || token[0] == '-')
 						this->_mode += token;
-					}
 					else
 						collectedParameters.push_back(token);
 				}
@@ -68,44 +65,13 @@ void Mode::parsing(std::istringstream &input) {
 		this->_parameters += collectedParameters[i];
 	}
 	extractParameters();
-	if (this->_error == 0) {
-		bool adding = true;
-		for (size_t i = 0; i < _mode.length(); ++i) {
-			char modeChar = _mode[i];
-			this->_modeChar = modeChar;
-			if (modeChar == '-')
-				adding = false;
-			Channel* channelObj = this->_server.getChannels()[this->_channel];
-			if (adding) {
-				if (modeChar == 'o'){
-					if(channelObj->getClientByNick(_clientNick) == NULL && channelObj->getOperatorByNick(_clientNick) == NULL) {
-						this->_error = INVALIDMODEPARAM;
-						return ;
-					}
-				}
-				if (modeChar == 'l' && _userLimit < 0) {
-					this->_error = INVALIDMODEPARAM;
-					return ;
-				}
-				if (modeChar == 'k' && _password.empty()) {
-					this->_error = INVALIDMODEPARAM;
-					return ;
-				}
-			} else {
-				if (modeChar == 'o' && (channelObj->getOperatorByNick(_clientNick) == NULL)) {
-					this->_error = INVALIDMODEPARAM;
-					return ;
-				}
-			}
-		}
-		if (this->_channel.empty())
-			this->_error = NEEDMOREPARAMS;
-		else {
-			Channel* ch = this->_server.getChannels()[this->_channel];
-			if (!ch->isOperator(this->_client.getSocketFD()))
-				this->_error = CHANOPRIVSNEEDED;
-		}
-	}
+	if (this->_channel.empty())
+		this->_error = NEEDMOREPARAMS;
+	else {
+		Channel* ch = this->_server.getChannels()[this->_channel];
+		if (!ch->isOperator(this->_client.getSocketFD()))
+			this->_error = CHANOPRIVSNEEDED;
+	}	
 }
 
 void Mode::extractParameters() {
@@ -181,15 +147,13 @@ bool Mode::isValidMode(char mode) {
 void Mode::execute() {
 	std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
 	this->print();
+	
 	switch (this->_error) {
 		case NOSUCHCHANNEL:
 			Message::sendMessage(this->_client.getSocketFD(), ERR_NOSUCHCHANNEL(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
 			break ;
 		case UNKNOWNMODE:
 			Message::sendMessage(this->_client.getSocketFD(), ERR_UNKNOWNMODE(this->_server.getHostname(), this->_client.getNick(), this->_modeChar), this->_server);
-			break ;
-		case INVALIDMODEPARAM:
-			Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, this->_modeChar), this->_server);
 			break ;
 		case NEEDMOREPARAMS:
 			Message::sendMessage(this->_client.getSocketFD(), ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name), this->_server);
@@ -199,20 +163,91 @@ void Mode::execute() {
 			break ;
 		default:
 			Channel* channelObj = this->_server.getChannels()[this->_channel];
-			this->_server.printChannelInfo(this->_channel);
-			if (!this->_mode.empty()){
-				std::string msg = RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_mode, intToString(this->_userLimit), this->_password, this->_clientNick, *channelObj);
+			_excMode = validParameter(*channelObj);
+			if (!this->_excMode.empty()){
+				std::string msg = RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_excMode, intToString(this->_userLimit), this->_password, this->_clientNick, *channelObj);
 				if(!msg.empty())
 					channelObj->sendMessage(msg, 0);
 			}
 			else
 				channelObj->sendMessage(RPL_ONLYMODE(this->_client.getNick(), this->_server.getHostname(),this->_channel, channelObj->getMode(), intToString(channelObj->getUserLimit()), channelObj->getPassword()), 0);
 			channelObj->applyMode(*this);
+			this->_server.printChannelInfo(this->_channel);
+			this->print();
 	}
 }
 
-void Mode::print() const{
+void Mode::print() const{	
 	if (this->_error != 0)
 		std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
-	std::cout << "\nUser limit: " << this->_userLimit <<  " | Nick: " << this->_clientNick << " | Password: " << this->_password << " | Parameters: " << this->_parameters << " | Mode: " << this->_mode << std::endl;
+	std::cout << "\nUser limit: " << this->_userLimit <<  " | Nick: " << this->_clientNick << " | Password: " << this->_password << " | Parameters: " << this->_parameters << " | Mode: " << this->_mode <<  " | Exec.mode: " << _excMode << std::endl;
 }
+
+std::string Mode::validParameter(Channel& channel){
+	std::string plus = "";
+	std::string minus = "";
+	for (int i = 0; i < (int)this->_mode.length(); ++i){
+		if (this->_mode[i] == '+' || this->_mode[i] == 'i' || this->_mode[i] == 'o' || this->_mode[i] == 't' || this->_mode[i] == 'l' || this->_mode[i] == 'k'){
+			if (this->_mode[i] == '+')
+				i++;
+			while(this->_mode[i] != '+' && this->_mode[i] != '-' && this->_mode[i] != '\0'){
+				if (this->_mode[i] == 'l') {
+					if (this->_userLimit != channel.getUserLimit() && this->_userLimit > 0)
+						plus += this->_mode[i];
+					if (this->_userLimit < 0){
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, this->_mode), this->_server);
+					}
+				}
+				else if (this->_mode[i] == 'o') {
+					if (channel.getOperatorByNick(_clientNick) == NULL && channel.getClientByNick(_clientNick) != NULL) // 
+						plus += this->_mode[i];
+					if (channel.getClientByNick(_clientNick) == NULL)
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, this->_mode), this->_server);
+				}
+				else if (this->_mode[i] == 'k'){
+					if (!_password.empty() || this->_password != channel.getPassword())
+						plus += this->_mode[i];
+					else
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, this->_mode), this->_server);
+				}
+				else if (this->_mode[i] == 'i') {
+					if (!channel.getInviteOnly())
+						plus += this->_mode[i];
+				}
+				else if (this->_mode[i] == 't') {
+					if (!channel.getTopicProtected())
+					plus += this->_mode[i];
+				}
+				i++;
+			}
+		}
+		else if (this->_mode[i] == '-'){
+			i++;
+			while (this->_mode[i] != '+' && this->_mode[i] != '-' && this->_mode[i] != '\0'){
+				if (this->_mode[i] == 'l' && channel.getUserLimit() > 0)
+					minus += this->_mode[i];
+				else if (this->_mode[i] == 'o')
+				{
+					if (!channel.getOperatorByNick(_clientNick))
+						minus += this->_mode[i];
+					else
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, this->_mode), this->_server);
+				}
+				else if (this->_mode[i] == 'k' && !channel.getPassword().empty())
+					minus += this->_mode[i];
+				else if (this->_mode[i] == 'i' && channel.getInviteOnly())
+					minus += this->_mode[i];
+				else if (this->_mode[i] == 't' && channel.getTopicProtected())
+					minus += this->_mode[i];
+				i++;
+			}
+		}
+	}
+	std::string empty;
+	if (plus.length() == 1 && minus.length() == 1)
+		return (empty);
+	return plus.append(minus);
+}
+
+
+
