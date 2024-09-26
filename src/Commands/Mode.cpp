@@ -1,6 +1,6 @@
 #include "Includes.hpp"
 
-Mode::Mode(Server& server, Client& client): ACommand("MODE", server, client) { this->_userLimit = -1;};
+Mode::Mode(Server& server, Client& client) : ACommand("MODE", server, client){}
 
 //TODO - COPY
 
@@ -77,7 +77,6 @@ void Mode::parsing(std::istringstream &input) {
 void Mode::extractParameters() {
 	std::string aux = _parameters;
 	std::string::size_type spacePos;
-	this->print();
 	for (std::string::size_type i = 0; i < _mode.length(); ++i) {
 		char modeChar = _mode[i];
 		if (modeChar == '+' || modeChar == '-')
@@ -86,10 +85,10 @@ void Mode::extractParameters() {
 			case 'k':
 				spacePos = aux.find(' ');
 				if (spacePos != std::string::npos) {
-					this->_password = aux.substr(0, spacePos);
+					this->_password.push(aux.substr(0, spacePos));
 					aux.erase(0, spacePos + 1);
 				} else
-					this->_password = aux;
+					this->_password.push(aux);
 				break ;
 			case 'l':
 				spacePos = aux.find(' ');
@@ -103,8 +102,10 @@ void Mode::extractParameters() {
 						}
 					}
 					if (isValid) {
-						std::stringstream ss(limitStr);
-						ss >> this->_userLimit;
+						std::stringstream ss(limitStr);						
+						int limit;
+						ss >> limit;
+						this->_userLimit.push(limit);
 					}
 					aux.erase(0, spacePos + 1);
 				} else {
@@ -117,18 +118,20 @@ void Mode::extractParameters() {
 						}
 					}
 					if (isValid) {
-						std::stringstream ss(limitStr);
-						ss >> this->_userLimit;
+						std::stringstream ss(limitStr);						
+						int limit;
+						ss >> limit;
+						this->_userLimit.push(limit);
 					}
 				}
 				break ;
 			case 'o':
 				spacePos = aux.find(' ');
 				if (spacePos != std::string::npos) {
-					this->_clientNick = aux.substr(0, spacePos);
+					this->_clientNick.push(aux.substr(0, spacePos));
 					aux.erase(0, spacePos + 1);
 				} else
-					this->_clientNick = aux;
+					this->_clientNick.push(aux);
 				break ;
 		}
 	}
@@ -145,9 +148,7 @@ bool Mode::isValidMode(char mode) {
 }
 
 void Mode::execute() {
-	std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
-	this->print();
-	
+	std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name << std::endl;
 	switch (this->_error) {
 		case NOSUCHCHANNEL:
 			Message::sendMessage(this->_client.getSocketFD(), ERR_NOSUCHCHANNEL(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
@@ -161,64 +162,108 @@ void Mode::execute() {
 		case CHANOPRIVSNEEDED:
 			Message::sendMessage(this->_client.getSocketFD(), ERR_CHANOPRIVSNEEDED(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
 			break ;
-		default:
-			Channel* channelObj = this->_server.getChannels()[this->_channel];
-			_excMode = validParameter(*channelObj);
-			if (!this->_excMode.empty()){
-				std::string msg = RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_excMode, intToString(this->_userLimit), this->_password, this->_clientNick, *channelObj);
-				if(!msg.empty())
-					channelObj->sendMessage(msg, 0);
+		 default:
+			 Channel* channelObj = this->_server.getChannels()[this->_channel];
+			if (!this->_mode.empty()){
+				std::cout << std::endl << "Before MSG: " << this->_mode << std::endl << std::endl;
+			 	std::string msg = validParameter(channelObj);
+			 	std::cout << "After MSG: " << msg << std::endl << std::endl;
+				if(!msg.empty()){
+					//channelObj->sendMessage(RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, msg, intToString(this->_userLimit.front()), this->_password.front(), this->_clientNick.front(), *channelObj), 0);
+				}
 			}
-			else
-				channelObj->sendMessage(RPL_ONLYMODE(this->_client.getNick(), this->_server.getHostname(),this->_channel, channelObj->getMode(), intToString(channelObj->getUserLimit()), channelObj->getPassword()), 0);
-			channelObj->applyMode(*this);
+			else{
+				std::string msg;
+				if (!channelObj->getPassword().empty())
+					msg.append("k");
+				if (channelObj->isTopicLocked())
+					msg.append("t");
+				if (channelObj->getInviteOnly())
+					msg.append("i");
+				if (channelObj->getUserLimit() == -1)
+					msg.append("l");
+				//channelObj->sendMessage(RPL_ONLYMODE(this->_client.getNick(), this->_server.getHostname(),this->_channel, msg, intToString(channelObj->getUserLimit()), channelObj->getPassword()), 0);
+			}
 			this->_server.printChannelInfo(this->_channel);
+			std::cout << std::endl << "FINAL EXEC:" << std::endl;
 			this->print();
+	}
+}
+
+template <typename T>
+void	showQueue(const std::queue<T>& q) {
+	std::queue<T> tempQueue = q;
+	if (tempQueue.empty()) {
+		std::cout << "";
+	} else {
+		while (!tempQueue.empty()) {
+			std::cout << tempQueue.front() << " ";
+			tempQueue.pop();
+		}
 	}
 }
 
 void Mode::print() const{	
 	if (this->_error != 0)
 		std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
-	std::cout << "\nUser limit: " << this->_userLimit <<  " | Nick: " << this->_clientNick << " | Password: " << this->_password << " | Parameters: " << this->_parameters << " | Mode: " << this->_mode <<  " | Exec.mode: " << _excMode << std::endl;
+	std::cout << "\nUser limit: ";
+	showQueue(this->_userLimit);
+	std::cout << " | Nick: "; 
+	showQueue(this->_clientNick);
+	std::cout << " | Password: ";
+	showQueue(this->_password);
+	std::cout << " | Parameters: " << this->_parameters << " | Mode: " << this->_mode << std::endl;
 }
 
-std::string Mode::validParameter(Channel& channel){
-	std::string plus = "";
-	std::string minus = "";
+std::string Mode::validParameter(Channel *channel){
+	std::string plus = "+";
+	std::string minus = "-";
 	for (int i = 0; i < (int)this->_mode.length(); ++i){
 		if (this->_mode[i] == '+' || this->_mode[i] == 'i' || this->_mode[i] == 'o' || this->_mode[i] == 't' || this->_mode[i] == 'l' || this->_mode[i] == 'k'){
 			if (this->_mode[i] == '+')
 				i++;
 			while(this->_mode[i] != '+' && this->_mode[i] != '-' && this->_mode[i] != '\0'){
 				if (this->_mode[i] == 'l') {
-					if (this->_userLimit != channel.getUserLimit() && this->_userLimit > 0)
+					if (this->_userLimit.front() != channel->getUserLimit() && this->_userLimit.front() > 0) {
 						plus += this->_mode[i];
-					if (this->_userLimit < 0){
+						channel->applyMode(*this, _mode[i], true);
+						this->_userLimit.pop();
+					}
+					if (this->_userLimit.front() < 0){
 						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, this->_mode), this->_server);
 					}
 				}
 				else if (this->_mode[i] == 'o') {
-					if (channel.getOperatorByNick(_clientNick) == NULL && channel.getClientByNick(_clientNick) != NULL) // 
+					if (channel->getOperatorByNick(_clientNick.front()) == NULL && channel->getClientByNick(_clientNick.front()) != NULL) {
 						plus += this->_mode[i];
-					if (channel.getClientByNick(_clientNick) == NULL) {
+						channel->applyMode(*this, _mode[i], true);
+						this->_clientNick.pop();
+					} 
+					if (channel->getClientByNick(_clientNick.front()) == NULL) {
 						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, this->_mode), this->_server);
 					}
 				}
 				else if (this->_mode[i] == 'k'){
-					if (!_password.empty() || this->_password != channel.getPassword())
+					if (!_password.empty() || this->_password.front() != channel->getPassword()) {
 						plus += this->_mode[i];
+						channel->applyMode(*this, _mode[i], true);
+						this->_password.pop();
+					}
 					else {
 						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, this->_mode), this->_server);
 					}
 				}
 				else if (this->_mode[i] == 'i') {
-					if (!channel.getInviteOnly())
+					if (!channel->getInviteOnly()) {
 						plus += this->_mode[i];
+						channel->applyMode(*this, _mode[i], true);
+					}
 				}
 				else if (this->_mode[i] == 't') {
-					if (!channel.getTopicProtected())
-					plus += this->_mode[i];
+					if (!channel->getTopicProtected()) {
+						plus += this->_mode[i];
+						channel->applyMode(*this, _mode[i], true);
+					}
 				}
 				i++;
 			}
@@ -226,30 +271,41 @@ std::string Mode::validParameter(Channel& channel){
 		else if (this->_mode[i] == '-'){
 			i++;
 			while (this->_mode[i] != '+' && this->_mode[i] != '-' && this->_mode[i] != '\0'){
-				if (this->_mode[i] == 'l' && channel.getUserLimit() > 0)
+				if (this->_mode[i] == 'l' && channel->getUserLimit() > 0){
 					minus += this->_mode[i];
+					channel->applyMode(*this, _mode[i], true);
+				}
 				else if (this->_mode[i] == 'o')
 				{
-					if (!channel.getOperatorByNick(_clientNick))
+					if (!channel->getOperatorByNick(_clientNick.front())) {
 						minus += this->_mode[i];
+						channel->applyMode(*this, _mode[i], false);
+						this->_clientNick.pop();
+					}
 					else
-						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, this->_mode), this->_server);
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-o"), this->_server);
 				}
-				else if (this->_mode[i] == 'k' && !channel.getPassword().empty())
+				else if (this->_mode[i] == 'k' && !channel->getPassword().empty()) {
 					minus += this->_mode[i];
-				else if (this->_mode[i] == 'i' && channel.getInviteOnly())
+					channel->applyMode(*this, _mode[i], false);
+				}
+				else if (this->_mode[i] == 'i' && channel->getInviteOnly()) {
 					minus += this->_mode[i];
-				else if (this->_mode[i] == 't' && channel.getTopicProtected())
+					channel->applyMode(*this, _mode[i], false);
+				}
+				else if (this->_mode[i] == 't' && channel->getTopicProtected()) {
 					minus += this->_mode[i];
+					channel->applyMode(*this, _mode[i], false);
+				}
 				i++;
 			}
 		}
 	}
-	std::string empty;
 	if (plus.length() == 1 && minus.length() == 1)
-		return (empty);
+		return ("");
+	if(plus.length() == 1)
+		return(minus);
+	if(minus.length() == 1)
+		return(plus);
 	return plus.append(minus);
 }
-
-
-

@@ -1,26 +1,22 @@
 #include "Includes.hpp"
 
-Channel::Channel() : _inviteOnly(false), _topicProtected(false), _userLimit(-1) {}
+Channel::Channel() : _inviteOnly(false), _topicProtected(false), _userLimit() {}
 
 Channel::Channel(std::string name) : _name(name), _password(""), _inviteOnly(false), _topicProtected(false), _userLimit(-1) {}
-
 // TODO copy
 
 void Channel::addClient(Client &client) {
 	this->_Clients[client.getSocketFD()] = &client;
 }
 
-void Channel::applyMode(const Mode& modeObj) {
-	std::string modeStr = modeObj.getExcMode();
-	bool adding = true;
-
-	for (size_t i = 0; i < modeStr.length(); ++i) {
+void Channel::applyMode(const Mode& modeObj, char modeChar, bool adding) {
+	/* for (size_t i = 0; i < modeStr.length(); ++i) {
 		char modeChar = modeStr[i];
 
 		if (modeChar == '+' || modeChar == '-') {
 			adding = (modeChar == '+');
 			continue;
-		}
+		} */
 		switch (modeChar) {
 			case 'i':
 				_inviteOnly = adding;
@@ -29,44 +25,43 @@ void Channel::applyMode(const Mode& modeObj) {
 				_topicProtected = adding;
 				break;
 			case 'k':
-				if (adding)
-					setPassword(modeObj.getPassword());
+				if (adding) {
+					setPassword(modeObj.getPassword().front());
+					modeObj.getPassword().pop();
+				}
 				else
 					setPassword("");
 				break;
 			case 'l':
-				if (adding)
-					setUserLimit(modeObj.getLimit());
-				else
+				if (adding) {
+					setUserLimit(modeObj.getLimit().front());
+					std::cout << "Setting l to: " << modeObj.getLimit().front() << std::endl;
+					std::cout << "New mode l: " << getUserLimit() << std::endl;
+				}
+				else{
+					std::cout << "Remove l" << std::endl;
 					setUserLimit(-1);
+				}
 				break;
 			case 'o':
 				if (adding) {
-					Client* clientPtr = getClientByNick(modeObj.getClientNick());
+					Client* clientPtr = getClientByNick(modeObj.getClientNick().front());
 					if (clientPtr) {
 						int clientFd = clientPtr->getSocketFD();
 						addOperator(clientFd, clientPtr);
 						removeClient(clientPtr->getSocketFD());
+						modeObj.getClientNick().pop();
 					}
 				} else {
-					Client* clientPtr = getOperatorByNick(modeObj.getClientNick());
+					Client* clientPtr = getOperatorByNick(modeObj.getClientNick().front());
 					if (clientPtr) {
 						removeOperator(clientPtr->getSocketFD());
-						addClient(*clientPtr); 
+						addClient(*clientPtr);
+						modeObj.getClientNick().pop();
 					}
 				break;
 				}
-		}
-	}
-	_mode.clear();
-	if (!_password.empty())
-		_mode.append("k");
-	if (isTopicLocked())
-		_mode.append("t");
-	if (_inviteOnly)
-		_mode.append("i");
-	if (_userLimit != -1)
-		_mode.append("l");
+	 	}
 }
 
 void Channel::addOperator(int clientId, Client* client) {
@@ -97,7 +92,7 @@ int	Channel::canJoin(const Client& client, std::string password) const {
 		if (!hasPassword(password))
 			return BADCHANNELKEY;
 	}
-	if (_userLimit > 0 && (_Clients.size() + _operators.size()) >= (unsigned long)_userLimit) {
+	if ((_userLimit < 0) && (_Clients.size() + _operators.size()) >= (unsigned long)_userLimit) {
 		return CHANNELISFULL;
 	}
 	return 0;

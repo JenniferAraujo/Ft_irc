@@ -23,7 +23,7 @@ inline std::string RPL_ONLYMODE(const std::string& nick, const std::string& sour
 	return msg;
 }
 
-inline std::string RPL_MODE(const std::string& nick, const std::string& user, const std::string& host, const std::string& channelName, const std::string& mode, const std::string& userLimit, const std::string& password, const std::string& op, Channel& channel) {
+inline std::string RPL_MODE(const std::string& nick, const std::string& user, const std::string& host, const std::string& channelName, std::string mode, const std::string& userLimit, const std::string& password, const std::string& op, Channel& channel) {
 	std::string	msg = ":" + nick + "!" + user + "@" + host + " MODE " + channelName;
 
 	std::cout << "MODE NA MSG:: " << mode << std::endl;
@@ -67,20 +67,20 @@ public:
 
 	std::string	getChannel() { return _channel; };
 	std::string getMode() const { return _mode; };
-	std::string getExcMode() const { return _mode; };
-	std::string getPassword() const { return _password; }
-	int			getLimit() const { return _userLimit; }
-	std::string	getClientNick() const { return _clientNick; }
-	std::string	validParameter(Channel& channel);
+	std::string getExcMode() const { return _modeChar; };
+	std::string	validParameter(Channel *channel);
+	std::queue<std::string> getPassword() const { return _password; }
+	std::queue<int>		getLimit() const { return _userLimit; }
+	std::queue<std::string>	getClientNick() const { return _clientNick; }
+
 private:
 	std::string _channel;
 	std::string _mode;
-	std::string _password;
 	std::string	_parameters;
 	std::string	_modeChar;
-	int			_userLimit;
-	std::string	_clientNick;
-	std::string	_excMode;
+	std::queue<int>			_userLimit;
+	std::queue<std::string> _password;
+	std::queue<std::string>	_clientNick;
 	
 	Mode();
 	bool	isValidMode(char mode);
