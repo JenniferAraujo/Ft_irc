@@ -98,13 +98,15 @@ inline std::string ERR_CHANOPRIVSNEEDED(const std::string& source, const std::st
 }
 
 inline std::string ERR_INVALIDMODEPARAM(const std::string& source, const std::string& target, const std::string& channel, const std::string& mode) {
+    //tirar depois os sinais pq tem que mandar so o char
     if (mode == "k" || mode == "+k") {
         return ":" + source + " 696 " + target + " " + channel + " :You must specify a parameter for the key mode\r\n";
     }
     else if (mode == "l" || mode == "+l")
         return ":" + source + " 696 " + target + " " + channel + " :You must specify a parameter for the limit mode\r\n";
-    else if (mode == "o" || mode == "+o")
+    else if (mode == "o" || mode == "+o" || mode == "-o") {
         return ":" + source + " 696 " + target + " " + channel + " :You must specify a parameter for the op mode\r\n";
+    }
     return ":" + source + " 696 " + target + " " + channel + "\r\n";
 }
 

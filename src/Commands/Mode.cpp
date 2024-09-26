@@ -201,14 +201,16 @@ std::string Mode::validParameter(Channel& channel){
 				else if (this->_mode[i] == 'o') {
 					if (channel.getOperatorByNick(_clientNick) == NULL && channel.getClientByNick(_clientNick) != NULL) // 
 						plus += this->_mode[i];
-					if (channel.getClientByNick(_clientNick) == NULL)
+					if (channel.getClientByNick(_clientNick) == NULL) {
 						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, this->_mode), this->_server);
+					}
 				}
 				else if (this->_mode[i] == 'k'){
 					if (!_password.empty() || this->_password != channel.getPassword())
 						plus += this->_mode[i];
-					else
+					else {
 						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, this->_mode), this->_server);
+					}
 				}
 				else if (this->_mode[i] == 'i') {
 					if (!channel.getInviteOnly())
