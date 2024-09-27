@@ -276,7 +276,7 @@ void Mode::execute() {
 					msg.append("t");
 				if (channelObj->getInviteOnly())
 					msg.append("i");
-				if (channelObj->getUserLimit() == -1)
+				if (channelObj->getUserLimit() != -1)
 					msg.append("l");
 				channelObj->sendMessage(RPL_ONLYMODE(this->_client.getNick(), this->_server.getHostname(),this->_channel, msg, userLimitStr, passwordStr), 0);
 			}
