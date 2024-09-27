@@ -26,7 +26,6 @@ inline std::string RPL_ONLYMODE(const std::string& nick, const std::string& sour
 inline std::string RPL_MODE(const std::string& nick, const std::string& user, const std::string& host, const std::string& channelName, std::string mode, const std::string& userLimit, const std::string& password, const std::string& op, Channel& channel) {
 	std::string	msg = ":" + nick + "!" + user + "@" + host + " MODE " + channelName;
 
-	std::cout << "MODE NA MSG:: " << mode << std::endl;
 	if (userLimit == "-1" && password.empty() && op.empty()) {
 		msg.append(" :");
  		if (mode[0] == '+' || mode[0] == '-')

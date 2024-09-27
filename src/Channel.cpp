@@ -9,61 +9,6 @@ void Channel::addClient(Client &client) {
 	this->_Clients[client.getSocketFD()] = &client;
 }
 
-void Channel::applyMode(const Mode& modeObj, char modeChar, bool adding) {
-	/* for (size_t i = 0; i < modeStr.length(); ++i) {
-		char modeChar = modeStr[i];
-
-		if (modeChar == '+' || modeChar == '-') {
-			adding = (modeChar == '+');
-			continue;
-		} */
-		switch (modeChar) {
-			case 'i':
-				_inviteOnly = adding;
-				break;
-			case 't':
-				_topicProtected = adding;
-				break;
-			case 'k':
-				if (adding) {
-					setPassword(modeObj.getPassword().front());
-					modeObj.getPassword().pop();
-				}
-				else
-					setPassword("");
-				break;
-			case 'l':
-				if (adding) {
-					setUserLimit(modeObj.getLimit().front());
-					std::cout << "Setting l to: " << modeObj.getLimit().front() << std::endl;
-					std::cout << "New mode l: " << getUserLimit() << std::endl;
-				}
-				else{
-					std::cout << "Remove l" << std::endl;
-					setUserLimit(-1);
-				}
-				break;
-			case 'o':
-				if (adding) {
-					Client* clientPtr = getClientByNick(modeObj.getClientNick().front());
-					if (clientPtr) {
-						int clientFd = clientPtr->getSocketFD();
-						addOperator(clientFd, clientPtr);
-						removeClient(clientPtr->getSocketFD());
-						modeObj.getClientNick().pop();
-					}
-				} else {
-					Client* clientPtr = getOperatorByNick(modeObj.getClientNick().front());
-					if (clientPtr) {
-						removeOperator(clientPtr->getSocketFD());
-						addClient(*clientPtr);
-						modeObj.getClientNick().pop();
-					}
-				break;
-				}
-	 	}
-}
-
 void Channel::addOperator(int clientId, Client* client) {
 	if (_operators.find(clientId) == _operators.end())
 		_operators[clientId] = client;
@@ -96,6 +41,45 @@ int	Channel::canJoin(const Client& client, std::string password) const {
 		return CHANNELISFULL;
 	}
 	return 0;
+}
+
+void Channel::applyMode(const Mode& modeObj, char modeChar, bool adding) {
+		switch (modeChar) {
+			case 'i':
+				_inviteOnly = adding;
+				break;
+			case 't':
+				_topicProtected = adding;
+				break;
+			case 'k':
+				if (adding)
+					setPassword(modeObj.getPassword().front());
+				else
+					setPassword("");
+				break;
+			case 'l':
+				if (adding)
+					setUserLimit(modeObj.getLimit().front());
+				else
+					setUserLimit(-1);
+				break;
+			case 'o':
+				if (adding) {
+					Client* clientPtr = getClientByNick(modeObj.getClientNick().front());
+					if (clientPtr) {
+						int clientFd = clientPtr->getSocketFD();
+						addOperator(clientFd, clientPtr);
+						removeClient(clientPtr->getSocketFD());
+					}
+				} else {
+					Client* clientPtr = getOperatorByNick(modeObj.getClientNick().front());
+					if (clientPtr) {
+						removeOperator(clientPtr->getSocketFD());
+						addClient(*clientPtr);
+					}
+				break;
+				}
+	 	}
 }
 
 void	Channel::sendMessageToOperators(std::string msg, int skipFD) {

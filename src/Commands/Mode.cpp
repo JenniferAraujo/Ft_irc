@@ -4,6 +4,79 @@ Mode::Mode(Server& server, Client& client) : ACommand("MODE", server, client){}
 
 //TODO - COPY
 
+bool Mode::isValidMode(char mode) {
+	const char validModes[] = {'i', 't', 'k', 'o', 'l'};
+	size_t numValidModes = sizeof(validModes) / sizeof(validModes[0]);
+	for (size_t i = 0; i < numValidModes; ++i) {
+		if (validModes[i] == mode)
+			return true;
+	}
+	return false;
+}
+
+void Mode::extractParameters() {
+	std::string aux = _parameters;
+	std::string::size_type spacePos;
+	for (std::string::size_type i = 0; i < _mode.length(); ++i) {
+		char modeChar = _mode[i];
+		if (modeChar == '+' || modeChar == '-')
+			continue ;
+		switch (modeChar) {
+			case 'k':
+				spacePos = aux.find(' ');
+				if (spacePos != std::string::npos) {
+					this->_password.push(aux.substr(0, spacePos));
+					aux.erase(0, spacePos + 1);
+				} else
+					this->_password.push(aux);
+				break ;
+			case 'l':
+				spacePos = aux.find(' ');
+				if (spacePos != std::string::npos) {
+					std::string limitStr = aux.substr(0, spacePos);
+					bool isValid = true;
+					for (std::string::size_type j = 0; j < limitStr.length(); ++j) {
+						if (!isdigit(limitStr[j])) {
+							isValid = false;
+							break ;
+						}
+					}
+					if (isValid) {
+						std::stringstream ss(limitStr);						
+						int limit;
+						ss >> limit;
+						this->_userLimit.push(limit);
+					}
+					aux.erase(0, spacePos + 1);
+				} else {
+					std::string limitStr = aux;
+					bool isValid = true;
+					for (std::string::size_type j = 0; j < limitStr.length(); ++j) {
+						if (!isdigit(limitStr[j])) {
+							isValid = false;
+							break ;
+						}
+					}
+					if (isValid) {
+						std::stringstream ss(limitStr);						
+						int limit;
+						ss >> limit;
+						this->_userLimit.push(limit);
+					}
+				}
+				break ;
+			case 'o':
+				spacePos = aux.find(' ');
+				if (spacePos != std::string::npos) {
+					this->_clientNick.push(aux.substr(0, spacePos));
+					aux.erase(0, spacePos + 1);
+				} else
+					this->_clientNick.push(aux);
+				break ;
+		}
+	}
+}
+
 void Mode::parsing(std::istringstream &input) {
 	std::string token;
 	int n = 0;
@@ -74,77 +147,99 @@ void Mode::parsing(std::istringstream &input) {
 	}	
 }
 
-void Mode::extractParameters() {
-	std::string aux = _parameters;
-	std::string::size_type spacePos;
-	for (std::string::size_type i = 0; i < _mode.length(); ++i) {
-		char modeChar = _mode[i];
-		if (modeChar == '+' || modeChar == '-')
-			continue ;
-		switch (modeChar) {
-			case 'k':
-				spacePos = aux.find(' ');
-				if (spacePos != std::string::npos) {
-					this->_password.push(aux.substr(0, spacePos));
-					aux.erase(0, spacePos + 1);
-				} else
-					this->_password.push(aux);
-				break ;
-			case 'l':
-				spacePos = aux.find(' ');
-				if (spacePos != std::string::npos) {
-					std::string limitStr = aux.substr(0, spacePos);
-					bool isValid = true;
-					for (std::string::size_type j = 0; j < limitStr.length(); ++j) {
-						if (!isdigit(limitStr[j])) {
-							isValid = false;
-							break ;
-						}
+std::string Mode::validParameter(Channel *channel){
+	std::string plus = "+";
+	std::string minus = "-";
+	for (int i = 0; i < (int)this->_mode.length(); ++i){
+		if (this->_mode[i] == '+' || this->_mode[i] == 'i' || this->_mode[i] == 'o' || this->_mode[i] == 't' || this->_mode[i] == 'l' || this->_mode[i] == 'k'){
+			if (this->_mode[i] == '+')
+				i++;
+			while(this->_mode[i] != '+' && this->_mode[i] != '-' && this->_mode[i] != '\0'){
+				if (this->_mode[i] == 'l') {
+					int	tmpLimit = this->_userLimit.front();
+					if (tmpLimit != channel->getUserLimit() && tmpLimit > 0) {
+						plus += this->_mode[i];
+						channel->applyMode(*this, _mode[i], true);
+						this->_userLimit.pop();
 					}
-					if (isValid) {
-						std::stringstream ss(limitStr);						
-						int limit;
-						ss >> limit;
-						this->_userLimit.push(limit);
-					}
-					aux.erase(0, spacePos + 1);
-				} else {
-					std::string limitStr = aux;
-					bool isValid = true;
-					for (std::string::size_type j = 0; j < limitStr.length(); ++j) {
-						if (!isdigit(limitStr[j])) {
-							isValid = false;
-							break ;
-						}
-					}
-					if (isValid) {
-						std::stringstream ss(limitStr);						
-						int limit;
-						ss >> limit;
-						this->_userLimit.push(limit);
+					if (tmpLimit < 0){
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-l"), this->_server);
 					}
 				}
-				break ;
-			case 'o':
-				spacePos = aux.find(' ');
-				if (spacePos != std::string::npos) {
-					this->_clientNick.push(aux.substr(0, spacePos));
-					aux.erase(0, spacePos + 1);
-				} else
-					this->_clientNick.push(aux);
-				break ;
+				else if (this->_mode[i] == 'o') {
+					std::string	tmpOperator = _clientNick.front();
+					if (channel->getOperatorByNick(tmpOperator) == NULL && channel->getClientByNick(tmpOperator) != NULL) {
+						plus += this->_mode[i];
+						channel->applyMode(*this, _mode[i], true);
+						this->_clientNick.pop();
+					} 
+					if (channel->getClientByNick(tmpOperator) == NULL) {
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-o"), this->_server);
+					}
+				}
+				else if (this->_mode[i] == 'k'){
+					std::string	auxPassword = this->_password.front();
+					if (!_password.empty() || auxPassword != channel->getPassword()) {
+						plus += this->_mode[i];
+						channel->applyMode(*this, _mode[i], true);
+						this->_password.pop();
+					}
+					else {
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-k"), this->_server);
+					}
+				}
+				else if (this->_mode[i] == 'i') {
+					if (!channel->getInviteOnly()) {
+						plus += this->_mode[i];
+						channel->applyMode(*this, _mode[i], true);
+					}
+				}
+				else if (this->_mode[i] == 't') {
+					if (!channel->getTopicProtected()) {
+						plus += this->_mode[i];
+						channel->applyMode(*this, _mode[i], true);
+					}
+				}
+				i++;
+			}
+		}
+		else if (this->_mode[i] == '-'){
+			i++;
+			while (this->_mode[i] != '+' && this->_mode[i] != '-' && this->_mode[i] != '\0'){
+				if (this->_mode[i] == 'l' && channel->getUserLimit() > 0){
+					minus += this->_mode[i];
+					channel->applyMode(*this, _mode[i], true);
+				}
+				else if (this->_mode[i] == 'o') {
+					std::string	auxOperator = _clientNick.front();
+					if (!channel->getOperatorByNick(auxOperator)) {
+						minus += this->_mode[i];
+						channel->applyMode(*this, _mode[i], false);
+						this->_clientNick.pop();
+					}
+					else
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-o"), this->_server);
+				} else if (this->_mode[i] == 'k' && !channel->getPassword().empty()) {
+					minus += this->_mode[i];
+					channel->applyMode(*this, _mode[i], false);
+				} else if (this->_mode[i] == 'i' && channel->getInviteOnly()) {
+					minus += this->_mode[i];
+					channel->applyMode(*this, _mode[i], false);
+				} else if (this->_mode[i] == 't' && channel->getTopicProtected()) {
+					minus += this->_mode[i];
+					channel->applyMode(*this, _mode[i], false);
+				}
+				i++;
+			}
 		}
 	}
-}
-
-bool Mode::isValidMode(char mode) {
-	const char validModes[] = {'i', 't', 'k', 'o', 'l'};
-	size_t numValidModes = sizeof(validModes) / sizeof(validModes[0]);
-	for (size_t i = 0; i < numValidModes; ++i) {
-		if (validModes[i] == mode)
-			return true;
-	}
-	return false;
+	if (plus.length() == 1 && minus.length() == 1)
+		return ("");
+	if(plus.length() == 1)
+		return(minus);
+	if(minus.length() == 1)
+		return(plus);
+	return plus.append(minus);
 }
 
 void Mode::execute() {
@@ -164,12 +259,13 @@ void Mode::execute() {
 			break ;
 		 default:
 			 Channel* channelObj = this->_server.getChannels()[this->_channel];
+			std::string userLimitStr = !this->_userLimit.empty() ? intToString(this->_userLimit.front()) : "";
+			std::string passwordStr = !this->_password.empty() ? this->_password.front() : "";
+			std::string clientNickStr = !this->_clientNick.empty() ? this->_clientNick.front() : "";
 			if (!this->_mode.empty()){
-				std::cout << std::endl << "Before MSG: " << this->_mode << std::endl << std::endl;
 			 	std::string msg = validParameter(channelObj);
-			 	std::cout << "After MSG: " << msg << std::endl << std::endl;
 				if(!msg.empty()){
-					//channelObj->sendMessage(RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, msg, intToString(this->_userLimit.front()), this->_password.front(), this->_clientNick.front(), *channelObj), 0);
+					channelObj->sendMessage(RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, msg, userLimitStr, passwordStr, clientNickStr, *channelObj), 0);
 				}
 			}
 			else{
@@ -182,10 +278,9 @@ void Mode::execute() {
 					msg.append("i");
 				if (channelObj->getUserLimit() == -1)
 					msg.append("l");
-				//channelObj->sendMessage(RPL_ONLYMODE(this->_client.getNick(), this->_server.getHostname(),this->_channel, msg, intToString(channelObj->getUserLimit()), channelObj->getPassword()), 0);
+				channelObj->sendMessage(RPL_ONLYMODE(this->_client.getNick(), this->_server.getHostname(),this->_channel, msg, userLimitStr, passwordStr), 0);
 			}
 			this->_server.printChannelInfo(this->_channel);
-			std::cout << std::endl << "FINAL EXEC:" << std::endl;
 			this->print();
 	}
 }
@@ -215,97 +310,3 @@ void Mode::print() const{
 	std::cout << " | Parameters: " << this->_parameters << " | Mode: " << this->_mode << std::endl;
 }
 
-std::string Mode::validParameter(Channel *channel){
-	std::string plus = "+";
-	std::string minus = "-";
-	for (int i = 0; i < (int)this->_mode.length(); ++i){
-		if (this->_mode[i] == '+' || this->_mode[i] == 'i' || this->_mode[i] == 'o' || this->_mode[i] == 't' || this->_mode[i] == 'l' || this->_mode[i] == 'k'){
-			if (this->_mode[i] == '+')
-				i++;
-			while(this->_mode[i] != '+' && this->_mode[i] != '-' && this->_mode[i] != '\0'){
-				if (this->_mode[i] == 'l') {
-					if (this->_userLimit.front() != channel->getUserLimit() && this->_userLimit.front() > 0) {
-						plus += this->_mode[i];
-						channel->applyMode(*this, _mode[i], true);
-						this->_userLimit.pop();
-					}
-					if (this->_userLimit.front() < 0){
-						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, this->_mode), this->_server);
-					}
-				}
-				else if (this->_mode[i] == 'o') {
-					if (channel->getOperatorByNick(_clientNick.front()) == NULL && channel->getClientByNick(_clientNick.front()) != NULL) {
-						plus += this->_mode[i];
-						channel->applyMode(*this, _mode[i], true);
-						this->_clientNick.pop();
-					} 
-					if (channel->getClientByNick(_clientNick.front()) == NULL) {
-						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, this->_mode), this->_server);
-					}
-				}
-				else if (this->_mode[i] == 'k'){
-					if (!_password.empty() || this->_password.front() != channel->getPassword()) {
-						plus += this->_mode[i];
-						channel->applyMode(*this, _mode[i], true);
-						this->_password.pop();
-					}
-					else {
-						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, this->_mode), this->_server);
-					}
-				}
-				else if (this->_mode[i] == 'i') {
-					if (!channel->getInviteOnly()) {
-						plus += this->_mode[i];
-						channel->applyMode(*this, _mode[i], true);
-					}
-				}
-				else if (this->_mode[i] == 't') {
-					if (!channel->getTopicProtected()) {
-						plus += this->_mode[i];
-						channel->applyMode(*this, _mode[i], true);
-					}
-				}
-				i++;
-			}
-		}
-		else if (this->_mode[i] == '-'){
-			i++;
-			while (this->_mode[i] != '+' && this->_mode[i] != '-' && this->_mode[i] != '\0'){
-				if (this->_mode[i] == 'l' && channel->getUserLimit() > 0){
-					minus += this->_mode[i];
-					channel->applyMode(*this, _mode[i], true);
-				}
-				else if (this->_mode[i] == 'o')
-				{
-					if (!channel->getOperatorByNick(_clientNick.front())) {
-						minus += this->_mode[i];
-						channel->applyMode(*this, _mode[i], false);
-						this->_clientNick.pop();
-					}
-					else
-						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-o"), this->_server);
-				}
-				else if (this->_mode[i] == 'k' && !channel->getPassword().empty()) {
-					minus += this->_mode[i];
-					channel->applyMode(*this, _mode[i], false);
-				}
-				else if (this->_mode[i] == 'i' && channel->getInviteOnly()) {
-					minus += this->_mode[i];
-					channel->applyMode(*this, _mode[i], false);
-				}
-				else if (this->_mode[i] == 't' && channel->getTopicProtected()) {
-					minus += this->_mode[i];
-					channel->applyMode(*this, _mode[i], false);
-				}
-				i++;
-			}
-		}
-	}
-	if (plus.length() == 1 && minus.length() == 1)
-		return ("");
-	if(plus.length() == 1)
-		return(minus);
-	if(minus.length() == 1)
-		return(plus);
-	return plus.append(minus);
-}
