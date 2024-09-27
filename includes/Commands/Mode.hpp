@@ -23,10 +23,13 @@ inline std::string RPL_ONLYMODE(const std::string& nick, const std::string& sour
 	return msg;
 }
 
-inline std::string RPL_MODE(const std::string& nick, const std::string& user, const std::string& host, const std::string& channelName, std::string mode, const std::string& userLimit, const std::string& password, const std::string& op, Channel& channel) {
+inline std::string RPL_MODE(const std::string& nick, const std::string& user, const std::string& host, const std::string& channelName, std::string mode, std::queue<std::string> userLimit, std::queue<std::string> password, std::queue<std::string> op, Channel& channel) {
 	std::string	msg = ":" + nick + "!" + user + "@" + host + " MODE " + channelName;
-
-	if (userLimit == "-1" && password.empty() && op.empty()) {
+	std::string auxUserLimit = userLimit.empty() ? "-1" : userLimit.front();
+	std::string auxOperator = op.empty() ? "" : op.front();
+	std::string auxPassword = password.empty() ? "" : password.front();
+	
+	if (auxUserLimit == "-1" && password.empty() && op.empty()) {
 		msg.append(" :");
  		if (mode[0] == '+' || mode[0] == '-')
 			msg.append("");
@@ -43,12 +46,21 @@ inline std::string RPL_MODE(const std::string& nick, const std::string& user, co
 		for (size_t i = 1; i < mode.length(); i++) {
 			if (i + 1 >= mode.length())
 				msg.append(":");
-			if (mode[i] == 'l' && atoi(userLimit.c_str()) != channel.getUserLimit())
-				msg.append(userLimit).append(" ");
-			else if (mode[i] == 'o' && channel.getOperatorByNick(op) == NULL)
-				msg.append(op).append(" ");
-			else if (mode[i] == 'k' && password != channel.getPassword())
-				msg.append(password).append(" ");
+			if (mode[i] == 'l' && atoi(auxUserLimit.c_str()) != channel.getUserLimit()) {
+				msg.append(auxUserLimit).append(" ");
+				userLimit.pop();
+				auxUserLimit = userLimit.empty() ? "-1" : userLimit.front();
+			}
+			else if (mode[i] == 'o' && channel.getOperatorByNick(auxOperator) == NULL) {
+				msg.append(auxOperator).append(" ");
+				op.pop();
+				op.empty() ? "" : op.front();
+			}
+			else if (mode[i] == 'k' && auxOperator != channel.getPassword()) {
+				msg.append(auxOperator).append(" ");
+				password.pop();
+				password.empty() ? "" : password.front();
+			}
 		}
 		msg.append("\r\n");
 	}
@@ -78,8 +90,11 @@ private:
 	std::string	_parameters;
 	std::string	_modeChar;
 	std::queue<int>			_userLimit;
+	std::queue<int>			_msgUserLimit;
+	std::queue<std::string> _msgPassword;
 	std::queue<std::string> _password;
 	std::queue<std::string>	_clientNick;
+	std::queue<std::string>	_msgclientNick;
 	
 	Mode();
 	bool	isValidMode(char mode);

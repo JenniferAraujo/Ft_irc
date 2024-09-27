@@ -156,32 +156,32 @@ std::string Mode::validParameter(Channel *channel){
 				i++;
 			while(this->_mode[i] != '+' && this->_mode[i] != '-' && this->_mode[i] != '\0'){
 				if (this->_mode[i] == 'l') {
-					int	tmpLimit = this->_userLimit.front();
-					if (tmpLimit != channel->getUserLimit() && tmpLimit > 0) {
+					if (this->_userLimit.front() != channel->getUserLimit() && this->_userLimit.front() > 0) {
 						plus += this->_mode[i];
 						channel->applyMode(*this, _mode[i], true);
+						this->_msgUserLimit.push(this->_userLimit.front());
 						this->_userLimit.pop();
 					}
-					if (tmpLimit < 0){
+					if (this->_userLimit.front() < 0){
 						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-l"), this->_server);
 					}
 				}
 				else if (this->_mode[i] == 'o') {
-					std::string	tmpOperator = _clientNick.front();
-					if (channel->getOperatorByNick(tmpOperator) == NULL && channel->getClientByNick(tmpOperator) != NULL) {
+					if (channel->getOperatorByNick(_clientNick.front()) == NULL && channel->getClientByNick(_clientNick.front()) != NULL) {
 						plus += this->_mode[i];
 						channel->applyMode(*this, _mode[i], true);
+						this->_msgclientNick.push(this->_clientNick.front());
 						this->_clientNick.pop();
 					} 
-					if (channel->getClientByNick(tmpOperator) == NULL) {
+					if (channel->getClientByNick(_clientNick.front()) == NULL) {
 						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-o"), this->_server);
 					}
 				}
 				else if (this->_mode[i] == 'k'){
-					std::string	auxPassword = this->_password.front();
-					if (!_password.empty() || auxPassword != channel->getPassword()) {
+					if (!_password.empty() || this->_password.front() != channel->getPassword()) {
 						plus += this->_mode[i];
 						channel->applyMode(*this, _mode[i], true);
+						this->_msgPassword.push(this->_password.front());
 						this->_password.pop();
 					}
 					else {
@@ -211,10 +211,10 @@ std::string Mode::validParameter(Channel *channel){
 					channel->applyMode(*this, _mode[i], true);
 				}
 				else if (this->_mode[i] == 'o') {
-					std::string	auxOperator = _clientNick.front();
-					if (!channel->getOperatorByNick(auxOperator)) {
+					if (!channel->getOperatorByNick(_clientNick.front())) {
 						minus += this->_mode[i];
 						channel->applyMode(*this, _mode[i], false);
+						this->_msgclientNick.push(this->_clientNick.front());
 						this->_clientNick.pop();
 					}
 					else
@@ -258,14 +258,11 @@ void Mode::execute() {
 			Message::sendMessage(this->_client.getSocketFD(), ERR_CHANOPRIVSNEEDED(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
 			break ;
 		 default:
-			 Channel* channelObj = this->_server.getChannels()[this->_channel];
-			std::string userLimitStr = !this->_userLimit.empty() ? intToString(this->_userLimit.front()) : "";
-			std::string passwordStr = !this->_password.empty() ? this->_password.front() : "";
-			std::string clientNickStr = !this->_clientNick.empty() ? this->_clientNick.front() : "";
+			Channel* channelObj = this->_server.getChannels()[this->_channel];
 			if (!this->_mode.empty()){
 			 	std::string msg = validParameter(channelObj);
 				if(!msg.empty()){
-					channelObj->sendMessage(RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, msg, userLimitStr, passwordStr, clientNickStr, *channelObj), 0);
+					channelObj->sendMessage(RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, msg, std::to_int(_msgUserLimit), _msgPassword, _msgclientNick, *channelObj), 0);
 				}
 			}
 			else{
@@ -278,7 +275,7 @@ void Mode::execute() {
 					msg.append("i");
 				if (channelObj->getUserLimit() != -1)
 					msg.append("l");
-				channelObj->sendMessage(RPL_ONLYMODE(this->_client.getNick(), this->_server.getHostname(),this->_channel, msg, userLimitStr, passwordStr), 0);
+				//channelObj->sendMessage(RPL_ONLYMODE(this->_client.getNick(), this->_server.getHostname(),this->_channel, msg, userLimitStr, passwordStr), 0);
 			}
 			this->_server.printChannelInfo(this->_channel);
 			this->print();
