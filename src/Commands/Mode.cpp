@@ -8,7 +8,7 @@ template <typename T>
 void	showQueue(const std::queue<T>& q) {
 	std::queue<T> tempQueue = q;
 	if (tempQueue.empty()) {
-		std::cout << "";
+		std::cout << "UPS IM EMPTY\n";
 	} else {
 		while (!tempQueue.empty()) {
 			std::cout << tempQueue.front() << " ";
@@ -40,8 +40,12 @@ void Mode::extractParameters() {
 				if (spacePos != std::string::npos) {
 					this->_password.push(aux.substr(0, spacePos));
 					aux.erase(0, spacePos + 1);
-				} else
-					this->_password.push(aux);
+				} else{
+					//if(!aux.empty())
+						this->_password.push(aux);
+/* 					std::cout << "SETTING PASS: " << aux << "."<< std::endl;
+					showQueue(this->_password); */
+				}
 				break ;
 			case 'l':
 				spacePos = aux.find(' ');
@@ -184,10 +188,10 @@ std::string Mode::validParameter(Channel *channel){
 						channel->applyMode(*this, _mode[i], true);
 						this->_msgUserLimit.push(this->_userLimit.front());
 					}
-					this->_userLimit.pop();
 					if (this->_userLimit.front() < 0){
 						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-l"), this->_server);
 					}
+					this->_userLimit.pop();
 				}
 				else if (this->_mode[i] == 'o') {
 					if (channel->getOperatorByNick(_clientNick.front()) == NULL && channel->getClientByNick(_clientNick.front()) != NULL) {
@@ -195,21 +199,22 @@ std::string Mode::validParameter(Channel *channel){
 						channel->applyMode(*this, _mode[i], true);
 						this->_msgclientNick.push(this->_clientNick.front());
 					} 
-					this->_clientNick.pop();
 					if (channel->getClientByNick(_clientNick.front()) == NULL) {
 						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-o"), this->_server);
 					}
+					this->_clientNick.pop();
 				}
 				else if (this->_mode[i] == 'k'){
-					if (!_password.empty() || this->_password.front() != channel->getPassword()) {
+					if(_password.empty())
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-k"), this->_server);
+					else if (this->_password.front() != channel->getPassword()) {
+						std::cout << "KKKK:::\n";
+						showQueue(_password);
 						plus += this->_mode[i];
 						channel->applyMode(*this, _mode[i], true);
 						this->_msgPassword.push(this->_password.front());
+						this->_password.pop();
 					}
-					else {
-						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-k"), this->_server);
-					}
-					this->_password.pop();
 				}
 				else if (this->_mode[i] == 'i') {
 					if (!channel->getInviteOnly()) {
@@ -234,7 +239,7 @@ std::string Mode::validParameter(Channel *channel){
 					channel->applyMode(*this, _mode[i], true);
 				}
 				else if (this->_mode[i] == 'o') {
-					if (!channel->getOperatorByNick(_clientNick.front())) {
+					if (channel->getOperatorByNick(_clientNick.front())) {
 						minus += this->_mode[i];
 						channel->applyMode(*this, _mode[i], false);
 						this->_msgclientNick.push(this->_clientNick.front());
@@ -297,7 +302,7 @@ void Mode::execute() {
 					msg.append("i");
 				if (channelObj->getUserLimit() != -1)
 					msg.append("l");
-				// channelObj->sendMessage(RPL_ONLYMODE(this->_client.getNick(), this->_server.getHostname(), this->_channel, msg, userLimitStr, passwordStr), 0);
+				channelObj->sendMessage(RPL_ONLYMODE(this->_client.getNick(), this->_server.getHostname(), this->_channel, msg, intToString(channelObj->getUserLimit()), channelObj->getPassword()), 0);
 			}
 			this->_server.printChannelInfo(this->_channel);
 			this->print();
