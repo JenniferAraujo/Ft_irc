@@ -174,7 +174,7 @@ std::string Mode::validParameter(Channel *channel){
 	std::string plus = "+";
 	std::string minus = "-";
 	for (int i = 0; i < (int)this->_mode.length(); ++i){
-		if (this->_mode[i] == '+' || this->_mode[i] == 'i' || this->_mode[i] == 'o' || this->_mode[i] == 't' || this->_mode[i] == 'l' || this->_mode[i] == 'k'){
+		if (this->_mode[i] == '+' || isValidMode(this->_mode[i])){
 			if (this->_mode[i] == '+')
 				i++;
 			while(this->_mode[i] != '+' && this->_mode[i] != '-' && this->_mode[i] != '\0'){
@@ -284,9 +284,8 @@ void Mode::execute() {
 			Channel* channelObj = this->_server.getChannels()[this->_channel];
 			if (!this->_mode.empty()) {
 				std::string msg = validParameter(channelObj);
-				
 				if (!msg.empty()) {
-					channelObj->sendMessage(RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, msg, queueIntToString(_msgUserLimit), queueStrToString(_msgPassword), queueStrToString(_msgclientNick), *channelObj), 0);
+					channelObj->sendMessage(RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, msg, queueIntToString(_msgUserLimit), queueStrToString(_msgPassword), queueStrToString(_msgclientNick)), 0);
 				}
 			} else {
 				std::string msg;
