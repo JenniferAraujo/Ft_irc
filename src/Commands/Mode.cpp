@@ -257,15 +257,14 @@ void Mode::execute() {
 		case CHANOPRIVSNEEDED:
 			Message::sendMessage(this->_client.getSocketFD(), ERR_CHANOPRIVSNEEDED(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
 			break ;
-		 default:
+		 default: {
 			Channel* channelObj = this->_server.getChannels()[this->_channel];
-			if (!this->_mode.empty()){
-			 	std::string msg = validParameter(channelObj);
-				if(!msg.empty()){
-					channelObj->sendMessage(RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, msg, std::to_int(_msgUserLimit), _msgPassword, _msgclientNick, *channelObj), 0);
+			if (!this->_mode.empty()) {
+				std::string msg = validParameter(channelObj);
+				if (!msg.empty()) {
+					channelObj->sendMessage(RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, msg, queueIntToString(_msgUserLimit), queueStrToString(_msgPassword), queueStrToString(_msgclientNick), *channelObj), 0);
 				}
-			}
-			else{
+			} else {
 				std::string msg;
 				if (!channelObj->getPassword().empty())
 					msg.append("k");
@@ -275,11 +274,36 @@ void Mode::execute() {
 					msg.append("i");
 				if (channelObj->getUserLimit() != -1)
 					msg.append("l");
-				//channelObj->sendMessage(RPL_ONLYMODE(this->_client.getNick(), this->_server.getHostname(),this->_channel, msg, userLimitStr, passwordStr), 0);
+				// channelObj->sendMessage(RPL_ONLYMODE(this->_client.getNick(), this->_server.getHostname(), this->_channel, msg, userLimitStr, passwordStr), 0);
 			}
 			this->_server.printChannelInfo(this->_channel);
 			this->print();
+		}
 	}
+}
+
+std::string Mode::queueIntToString(std::queue<int> q) {
+	std::ostringstream oss;
+	while (!q.empty()) {
+		oss << q.front();
+		q.pop();
+		if (!q.empty()) {
+			oss << " ";
+		}
+	}
+	return oss.str();
+}
+
+std::string	Mode::queueStrToString(std::queue<std::string> q) {
+	std::ostringstream oss;
+	while (!q.empty()) {
+		oss << q.front();
+		q.pop();
+		if (!q.empty()) {
+			oss << " ";
+		}
+	}
+	return oss.str();
 }
 
 template <typename T>
