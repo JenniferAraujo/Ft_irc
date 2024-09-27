@@ -137,3 +137,21 @@ void trimChar(std::string& str, char ch) {
     else
         str = str.substr(first, last - first + 1);
 }
+
+bool  hasNonNumericChar(std::string str)
+{
+  for (std::string::const_iterator i = str.begin(); i != str.end(); ++i) {
+        if (!std::isdigit(*i))
+            return true;
+  }
+  return false;
+}
+
+bool isInt(std::string str){
+    if(hasNonNumericChar(str))
+        return false;
+    long long int lnum = std::atoll(str.c_str());
+    if(lnum < INT_MIN || lnum > INT_MAX)
+        return false;
+    return true;
+}

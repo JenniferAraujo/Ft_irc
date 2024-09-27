@@ -23,10 +23,12 @@ inline std::string RPL_ONLYMODE(const std::string& nick, const std::string& sour
 	return msg;
 }
 
-inline std::string RPL_MODE(const std::string& nick, const std::string& user, const std::string& host, const std::string& channelName, const std::string& mode, std::string userLimit, std::string password, std::string op, Channel& channel) {
+
+inline std::string RPL_MODE(const std::string& nick, const std::string& user, const std::string& host, const std::string& channelName, std::string mode, const std::string& userLimit, const std::string& password, const std::string& op, Channel& channel) {
 	std::string	msg = ":" + nick + "!" + user + "@" + host + " MODE " + channelName;
 
 	if (userLimit == "-1" && password.empty() && op.empty()) {
+		std::cout << "Entra aqui no args to print\n";
 		msg.append(" :");
  		if (mode[0] == '+' || mode[0] == '-')
 			msg.append("");
@@ -40,15 +42,27 @@ inline std::string RPL_MODE(const std::string& nick, const std::string& user, co
 		else
 			msg.append(" +");
 		msg.append(mode).append(" ");
+		bool	flagUserLim = false;
+		bool	flagOp = false;
+		bool	flagPass = false;
 		for (size_t i = 1; i < mode.length(); i++) {
 			if (i + 1 >= mode.length())
 				msg.append(":");
-			if (mode[i] == 'l' && atoi(userLimit.c_str()) != channel.getUserLimit())
+			if (mode[i] == 'l' && atoi(userLimit.c_str()) != channel.getUserLimit() && !flagUserLim) {
 				msg.append(userLimit).append(" ");
-			else if (mode[i] == 'o' && channel.getOperatorByNick(op) == NULL)
+				std::cout << "Entra l da msg\n";
+				flagUserLim = true;
+			}
+			else if (mode[i] == 'o' && channel.getOperatorByNick(op) == NULL && !flagOp) {
 				msg.append(op).append(" ");
-			else if (mode[i] == 'k' && password != channel.getPassword())
+				std::cout << "Entra o da msg\n";
+				flagOp = true;
+			}
+			else if (mode[i] == 'k' && password != channel.getPassword() && !flagPass) {
 				msg.append(password).append(" ");
+				std::cout << "Entra k da msg\n";
+				flagPass = true;
+			}
 		}
 		msg.append("\r\n");
 	}

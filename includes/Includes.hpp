@@ -22,6 +22,7 @@
 # include <fstream>
 # include <sstream>
 # include <queue>
+# include <climits>
 
 //RPL_ISUPPORT
 # define PREFIX             "(o)@"
@@ -91,5 +92,6 @@ void showMap(std::map<int, Client*> m);
 void showdoublestringq(std::queue<std::string> gq, std::queue<std::string> gq2);
 std::string formatServerMessage(const std::string& color, const std::string& label, int clients, const std::string& fdColor);
 void trimChar(std::string& str, char ch);
+bool isInt(std::string str);
 
 #endif // INCLUDES_HPP
