@@ -149,3 +149,22 @@ std::string toLowerCase(const std::string& str) {
     std::transform(result.begin(), result.end(), result.begin(), ::tolower);
     return result;
 }
+
+bool  hasNonNumericChar(std::string str) {
+  for (std::string::const_iterator i = str.begin(); i != str.end(); ++i) {
+        if (!std::isdigit(*i))
+            return true;
+  }
+  return false;
+}
+
+bool isInt(std::string str){
+    if(str.empty())
+        return false;
+    if(hasNonNumericChar(str))
+        return false;
+    long long int lnum = std::atoll(str.c_str());
+    if(lnum < INT_MIN || lnum > INT_MAX)
+        return false;
+    return true;
+}
