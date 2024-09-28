@@ -28,7 +28,7 @@ void Who::parsing(std::istringstream &input){
                     this->_isNick = true;
                 }
             break;
-        }
+        }   
         n++;
     }
     if (this->_error == 0) {
