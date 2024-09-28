@@ -143,3 +143,9 @@ void signalHandler(int signal) {
         Server::_instance->stopCompilation(signal);
 }
 
+// Function to convert a string to lowercase
+std::string toLowerCase(const std::string& str) {
+    std::string result = str;
+    std::transform(result.begin(), result.end(), result.begin(), ::tolower);
+    return result;
+}

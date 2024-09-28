@@ -27,8 +27,6 @@ void Nick::parsing(std::istringstream &input){
         _error = NICKNAMEINUSE;
 }
 
-//TODO - Send message to clients - May
-//The NICK message may be sent from the server to clients to acknowledge their NICK command was successful, and to inform other clients about the change of nickname. In these cases, the <source> of the message will be the old nickname [ [ "!" user ] "@" host ] of the user who is changing their nickname.
 void Nick::execute() {
     std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
     this->print();
@@ -43,6 +41,12 @@ void Nick::execute() {
             Message::sendMessage(this->_client.getSocketFD(), ERR_NICKNAMEINUSE(this->_server.getHostname(), this->_client.getNick(), this->_nick), this->_server);
             break;
         default:
+/*             for(std::map<std::string, Channel*>::iterator it = this->_Channels.begin(); it != this->_Channels.end(); ++it){
+            if(it->second->isClient(fd) || it->second->isOperator(fd))
+                it->second->sendMessage(QUIT(this->_Clients[fd]->getNick(), this->_Clients[fd]->getUsername(), this->_Clients[fd]->getIpaddr(), reason), fd); */
+            if(!this->_client.getNick().empty())
+                Message::sendMessage(this->_client.getSocketFD(), NICK_MESSAGE(this->_client.getNick(), this->_client.getUsername(), 
+                    this->_client.getIpaddr(), this->_nick), this->_server);
             this->_client.setNick(this->_nick);
             break;
     }

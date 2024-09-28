@@ -48,9 +48,9 @@ void    Server::executeCommand(Client &client, ACommand *command){
 }
 
 void    Server::handleCommand(Client &client, std::vector<char> &buf){
-    //std::cout << "FINAL BUF: " << buf.data() << "." << std::endl;
     std::queue<ACommand *> commands = client.createCommand(buf);
     //Comando que n existe
+    showq(commands);
     if (commands.empty()){
         std::string str(buf.begin(), buf.end());
         std::istringstream input(str);
@@ -93,13 +93,16 @@ void Server::verifyEvent(const pollfd &pfd) {
         static std::vector<char> buf(MAX_MESSAGE_SIZE, '\0');
         static int	bufSize = 0;
 	    static bool	ignoreCommand = false;
-
+	
         int bytesReceived = recv(client->getSocketFD(), temp.data(), temp.size(), 0);
+        //std::cout << "bytesReceived: " << bytesReceived << std::endl;
+        //std::cout << "TEMP: " << temp.data() << "." << std::endl;
         if(bytesReceived == 0){
             this->updateToRemove(client->getSocketFD(), "Connection closed by client");
             return ;
         }
         if(bytesReceived < 0){
+            std::cout << "errno: " << errno << std::endl;
             if (errno != EWOULDBLOCK || errno != EAGAIN){
                 this->updateToRemove(client->getSocketFD(), "Recv fail");
             }

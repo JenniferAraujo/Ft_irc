@@ -25,6 +25,12 @@ inline std::string ERR_NICKNAMEINUSE(const std::string& source, const std::strin
     return ":" + source + " 433 " + target + " " + nick + " :Nickname is already in use\r\n";
 }
 
+//? :<OldNick>!<User>@<Host> NICK <NewNick> 
+//:dan-!d@localhost NICK Mamoped
+inline std::string NICK_MESSAGE(const std::string& old_nick, const std::string& user, const std::string& host, const std::string& new_nick) {
+    return ":" + old_nick + "!" + user + "@" + host + " NICK "  + new_nick + "\r\n";
+}
+
 class Nick: public ACommand {
 public:
     Nick(Server& server, Client& client);
