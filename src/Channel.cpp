@@ -37,9 +37,8 @@ int	Channel::canJoin(const Client& client, std::string password) const {
 		if (!hasPassword(password))
 			return BADCHANNELKEY;
 	}
-	if ((_userLimit < 0) && (_Clients.size() + _operators.size()) >= (unsigned long)_userLimit) {
+	if ((_userLimit < 0) || (_Clients.size() + _operators.size()) >= (unsigned long)_userLimit)
 		return CHANNELISFULL;
-	}
 	if (isClient(client.getSocketFD()) || isOperator(client.getSocketFD()))
 		return USERONCHANNEL;
 	return 0;
