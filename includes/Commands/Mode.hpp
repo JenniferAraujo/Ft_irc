@@ -3,20 +3,60 @@
 
 # include "Includes.hpp"
 
-inline std::string RPL_MODE(const std::string& nick, const std::string& user, const std::string& host, const std::string& channel, const std::string& mode, const std::string& userLimit, const std::string& password, const std::string& op) {
-	if (mode == "i" || mode == "+i" || mode == "-i")
-		return ":" + nick + "!" + user + "@" + host + " MODE " + channel + " :" + (mode == "i" ? "+" : "") + mode + "\r\n";
-	else if (mode == "t" || mode == "+t" || mode == "-t")
-		return ":" + nick + "!" + user + "@" + host + " MODE " + channel + " :" + (mode == "t" ? "+" : "") + mode + "\r\n";
-	else if (mode == "l" || mode == "+l")
-		return ":" + nick + "!" + user + "@" + host + " MODE " + channel + (mode == "l" ? " +" : " ") + mode + " :" + userLimit + "\r\n";
-	else if ( mode == "-l")
-		return ":" + nick + "!" + user + "@" + host + " MODE " + channel + " :" + mode + "\r\n";
-	else if (mode == "k" || mode == "+k" || mode == "-k")
-		return ":" + nick + "!" + user + "@" + host + " MODE " + channel + (mode == "k" ? " +" : " ") + mode + (mode == "+k" || mode == "k" ? " :" : " ") + password + "\r\n";
-	else if (mode == "o" || mode == "+o" || mode == "-o")
-		return ":" + nick + "!" + user + "@" + host + " MODE " + channel + (mode == "o" ? " +" : " ") + mode + " :" + op + "\r\n";
-	return ":" + nick + "!" + user + "@" + host + " MODE " + channel + " :" + (mode == "i" ? "+" : "") + mode + "\r\n";
+inline std::string RPL_ONLYMODE(const std::string& nick, const std::string& source, const std::string& channel, const std::string& mode, const std::string& userLimit, const std::string& password) {
+	std::string	msg = ":" + source + " 324 " + nick + " " + channel;
+
+	if (userLimit == "-1" && password.empty())
+		msg.append(" :+").append(mode).append("\r\n");
+	else {
+		msg.append(" +").append(mode).append(" ");
+		for (size_t i = 0; i < mode.length(); i++) {
+			if (i + 1 >= mode.length())
+				msg.append(":");
+			if (mode[i] == 'l')
+				msg.append(userLimit).append(" ");
+			else if (mode[i] == 'k')
+				msg.append(password).append(" ");
+		}
+		msg.append("\r\n");
+	}
+	return msg;
+}
+
+inline std::string RPL_MODE(const std::string& nick, const std::string& user, const std::string& host, const std::string& channel, std::string mode, const std::string& userLimit, const std::string& password, const std::string& op) {
+	std::string	msg = ":" + nick + "!" + user + "@" + host + " MODE " + channel;
+
+	if (userLimit.empty() && password.empty() && op.empty()) {
+		std::cout << "Entra aqui no args to print\n";
+		msg.append(" :");
+ 		if (mode[0] == '+' || mode[0] == '-')
+			msg.append("");
+		else
+			msg.append("+"); 
+		msg.append(mode).append("\r\n");
+	}
+	else {
+		msg.append(" ").append(mode).append(" ");
+		bool	flagUserLim = false;
+		bool	flagOp = false;
+		bool	flagPass = false;
+		for (size_t i = 1; i < mode.length(); i++) {
+			if (mode[i] == 'l' && !flagUserLim) {
+				msg.append(userLimit).append(" ");
+				flagUserLim = true;
+			}
+			else if (mode[i] == 'o' && !flagOp) {
+				msg.append(op).append(" ");
+				flagOp = true;
+			}
+			else if (mode[i] == 'k' && !flagPass) {
+				msg.append(password).append(" ");
+				flagPass = true;
+			}
+		}
+		msg.append("\r\n");
+	}
+	return msg;
 }
 
 class Mode: public ACommand {
@@ -30,17 +70,25 @@ public:
 
 	std::string	getChannel() { return _channel; };
 	std::string getMode() const { return _mode; };
-	std::string getPassword() const { return _password; }
-	int			getLimit() const { return _userLimit; }
-	std::string		getClientNick() const { return _clientNick; }
+	std::string getExcMode() const { return _modeChar; };
+	std::string	validParameter(Channel *channel);
+	std::queue<std::string> getPassword() const { return _password; }
+	std::queue<int>		getLimit() const { return _userLimit; }
+	std::queue<std::string>	getClientNick() const { return _clientNick; }
+	std::string			queueIntToString(std::queue<int> q);
+	std::string			queueStrToString(std::queue<std::string> q);
+
 private:
 	std::string _channel;
 	std::string _mode;
-	std::string _password;
 	std::string	_parameters;
 	std::string	_modeChar;
-	int			_userLimit;
-	std::string	_clientNick;
+	std::queue<int>			_userLimit;
+	std::queue<int>			_msgUserLimit;
+	std::queue<std::string> _msgPassword;
+	std::queue<std::string> _password;
+	std::queue<std::string>	_clientNick;
+	std::queue<std::string>	_msgclientNick;
 	
 	Mode();
 	bool	isValidMode(char mode);

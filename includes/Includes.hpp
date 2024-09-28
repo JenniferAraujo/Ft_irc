@@ -23,6 +23,7 @@
 # include <sstream>
 # include <queue>
 # include <csignal>
+# include <climits>
 
 //RPL_ISUPPORT
 # define PREFIX             "(o)@"
@@ -96,5 +97,6 @@ std::string formatServerMessage(const std::string& color, const std::string& lab
 void trimChar(std::string& str, char ch);
 void signalHandler(int signal);
 std::string toLowerCase(const std::string& str);
+bool isInt(std::string str);
 
 #endif // INCLUDES_HPP
