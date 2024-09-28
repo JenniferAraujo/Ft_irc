@@ -29,6 +29,7 @@ public:
 private:
     Who();
     std::string _channel;
+    bool        _isNick;
 
 };
 
