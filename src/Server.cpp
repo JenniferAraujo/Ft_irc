@@ -79,7 +79,6 @@ void    Server::handleCommand(Client &client, std::vector<char> &buf){
     }
 }
 
-//TODO PRIVMSG -> handle send errors
 void Server::verifyEvent(const pollfd &pfd) {
     //A condição é verdadeira se o bit POLLIN estiver definido em pfd.revents, permitindo que outros eventos também possam estar presentes.
     if (pfd.revents & POLLIN) {
