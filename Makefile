@@ -64,7 +64,7 @@ fclean: clean
 re: fclean all
 
 run: all
-	clear && ./ircserv 8080 123
+	clear && ./ircserv 9090 123
 
 val:
 	clear && valgrind ./ircserv 8080 123

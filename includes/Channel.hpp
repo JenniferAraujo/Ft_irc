@@ -16,19 +16,20 @@ public:
 	std::map<int, Client*>	getOperators() const { return _operators; } ;
 	std::vector<int>		getInvited() const { return _invitedClients; } ;
 	std::string				getMode() const { return _mode; }
-	int						getUserLimit() const { return _userLimit; }
-	const std::string&		getPassword() const { return _password; }
+	int						getUserLimit() const { return _userLimit; };
+	const std::string&		getPassword() const { return _password; };
 	std::string				getTopic() const { return _topic; } ;
 	std::string				getName() const { return _name; } ;
+	bool					getInviteOnly() const { return _inviteOnly; } ;
+	bool					getTopicProtected() const { return _topicProtected; } ;
 
 	//!SECTION - Setters
-	void	setMode(const std::string &mode) { _mode = mode; }
 	void	setPassword(const std::string& password) { _password = password; }
 	void	setUserLimit(int limit) { _userLimit = limit; }
 	void	setTopic(std::string topic) {	_topic = topic; };
 
 	//channel management
-	void	applyMode(const Mode& modeObj);
+	void	applyMode(const Mode& modeObj, char modeChar, bool adding);
 	bool	isInviteOnly() const { return _inviteOnly; }
 	bool	isTopicLocked() const { return _topicProtected; }
 	bool	isPasswordProtected() const { return !_password.empty(); }
@@ -36,7 +37,7 @@ public:
 	int		canJoin(const Client& client, std::string password) const;
 	void	addOperator(int clientId, Client* client);
 	void	removeOperator(int clientId);
-	void	addClient(int clientId, Client* client) { _Clients[clientId] = client; }
+	//void	addClient(int clientId, Client* client) { _Clients[clientId] = client; }
 	void	removeClient(int clientId);
 	void	removeInvited(int clientId);
 	void	addClient(Client &client);
@@ -47,7 +48,7 @@ public:
 		if (password.empty())
 			return false;
 		return _password == password; };
-	
+
 	void	addInviteFD(const int fd) { _invitedClients.push_back(fd); }
 	bool	isClient(int fd) { return this->_Clients.find(fd) != this->_Clients.end() ? true : false; };
 	bool	isOperator(int fd) { return this->_operators.find(fd) != this->_operators.end() ? true : false;	};

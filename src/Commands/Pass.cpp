@@ -20,17 +20,17 @@ void Pass::execute() {
         Message::sendMessage(this->_client.getSocketFD(), ERR_NEEDMOREPARAMS(this->_server.getHostname(), this->_client.getNick(), this->_name), this->_server);
         return ;
     }
+    if (this->_error == PASSWDMISMATCH){
+        Message::sendMessage(this->_client.getSocketFD(), ERR_PASSWDMISMATCH(this->_server.getHostname(), this->_client.getNick()), this->_server);
+        this->_client.setRegError(true);
+        return ;
+    }
     if(this->_client.getRegistration()){
         Message::sendMessage(this->_client.getSocketFD(), ERR_ALREADYREGISTERED(this->_server.getHostname(), this->_client.getNick()), this->_server);
         return ;
     }
-    if (this->_error) {
-        this->_client.setRegError(true);
-    }
-    else{
-        this->_client.setRegError(0);
-        this->_client.setPass(this->_pass);
-    }
+    this->_client.setRegError(0);
+    this->_client.setPass(this->_pass);
 }
 
 void Pass::print() const{
