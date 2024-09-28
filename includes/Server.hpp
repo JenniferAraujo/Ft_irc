@@ -62,6 +62,8 @@ public:
     void    printChannelInfo(std::string channelName);
     void	signals();
     void    stopCompilation(int signal);
+    std::map<int, Client*>  getClientsOnSameChannel(int fd);
+    void    sendMsg(std::map<int, Client*> clients, std::string ms);
 
     static Server*                      _instance;
 

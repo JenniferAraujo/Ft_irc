@@ -1,11 +1,48 @@
 #include "Includes.hpp"
 
+std::map<int, Client*> Server::getClientsOnSameChannel(int fd){
+    std::map<int, Client*> result;
+
+    for(std::map<std::string, Channel*>::iterator it = this->_Channels.begin(); it != this->_Channels.end(); ++it){
+        Channel *channel = it->second;
+        if(channel->isClient(fd) || channel->isOperator(fd)){
+            std::map<int, Client*> clients = channel->getClients();
+            for(std::map<int, Client*>::iterator clientIt = clients.begin(); clientIt != clients.end(); ++clientIt){
+                if(clientIt->first != fd){
+                    //std::cout << "Client " << clientIt->second->getNick() << " on channel " << channel->getName() << std::endl;
+                    result[clientIt->first] = clientIt->second;
+                }
+            }
+            std::map<int, Client*> operators = channel->getOperators();
+            for(std::map<int, Client*>::iterator opIt = operators.begin(); opIt != operators.end(); ++opIt){
+                if(opIt->first != fd){
+                    //std::cout << "Op " << opIt->second->getNick() << " on channel " << channel->getName() << std::endl;
+                    result[opIt->first] = opIt->second;
+                }
+            }
+        }
+    }
+    return(result);
+}
+
+void Server::sendMsg(std::map<int, Client*> clients, std::string msg){
+    //std::cout << "Entra no sendMsg" << std::endl;
+    for(std::map<int, Client*>::iterator clientIt = clients.begin(); clientIt != clients.end(); ++clientIt){
+        Message::sendMessage(clientIt->first, msg, *this);
+    }
+}
+
 void Server::removeClient(int fd, std::string reason){
+    std::map<int, Client*> clientsOnSameChannel;
     if(this->_Clients.find(fd) != this->_Clients.end()){
         std::cout << formatServerMessage(BOLD_RED, "CLIENT", fd, RED) << "Disconnecting " << RED << "[" << reason << "]" << RESET <<std::endl;
+        clientsOnSameChannel = this->getClientsOnSameChannel(fd);
+        //std::cout << "CLIENTS ON CHANNEL" << std::endl;
+        //printMap(clientsOnSameChannel);
+        //std::cout << std::endl;
+        this->sendMsg(clientsOnSameChannel, QUIT(this->_Clients[fd]->getNick(), this->_Clients[fd]->getUsername(), this->_Clients[fd]->getIpaddr(), reason));
+        clientsOnSameChannel.clear();
         for(std::map<std::string, Channel*>::iterator it = this->_Channels.begin(); it != this->_Channels.end(); ++it){
-            if(it->second->isClient(fd) || it->second->isOperator(fd))
-                it->second->sendMessage(QUIT(this->_Clients[fd]->getNick(), this->_Clients[fd]->getUsername(), this->_Clients[fd]->getIpaddr(), reason), fd);
             it->second->removeOperator(fd);
             it->second->removeClient(fd);
             it->second->removeInvited(fd);
