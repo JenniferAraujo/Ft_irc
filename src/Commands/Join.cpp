@@ -4,8 +4,10 @@ Join::Join(Server& server, Client& client): ACommand("JOIN", server, client) {};
 
 void Join::parsingToken(std::string token, int n) {
 	if (n == 0) {
-		if (token[0] == '#')
-			this->_channels.push(token);	 //JOIN #a //JOIN #a,#b
+		if (token[0] == '#' || token.length() <= MAXCHARS) {
+			if (!findInQueue(this->_channels, token))
+				this->_channels.push(token);	 //JOIN #a //JOIN #a,#b
+		}
 		else
 			this->_error = BADCHANNELKEY;	 //JOIN a //JOIN a,#b //JOIN #a,b
 	} else {
@@ -37,8 +39,12 @@ void Join::parsing(std::istringstream &input){
 		}
 		n++;
 	}
-	if (this->_channels.empty())
-		this->_error = NEEDMOREPARAMS;
+	if (this->_error == 0) {
+		if (this->_channels.empty())
+			this->_error = NEEDMOREPARAMS;
+		else if(this->_channels.size() > MAX_TARGETS)
+        	this->_error = TOOMANYTARGETS;
+	}
 }
 
 void Join::execute() {
@@ -69,6 +75,9 @@ void Join::execute() {
             			break;
         				case INVITEONLYCHAN:
 							Message::sendMessage(this->_client.getSocketFD(), ERR_INVITEONLYCHAN(this->_server.getHostname(), this->_client.getNick(), this->_channels.front()), this->_server);
+							break;
+						case USERONCHANNEL:
+							Message::sendMessage(this->_client.getSocketFD(), ERR_USERONCHANNEL(this->_server.getHostname(), this->_client.getNick(), this->_client.getNick(),this->_channels.front()), this->_server);
 							break;
 						case BADCHANNELKEY:
 							Message::sendMessage(this->_client.getSocketFD(), ERR_BADCHANNELKEY(this->_server.getHostname(), this->_client.getNick(), this->_channels.front()), this->_server);

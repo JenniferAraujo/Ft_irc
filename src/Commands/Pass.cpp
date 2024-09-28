@@ -34,7 +34,6 @@ void Pass::execute() {
 }
 
 void Pass::print() const{
-    //std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << " | Pass: " << this->_pass<< std::endl;
     if (this->_error != 0)
         std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
     else
