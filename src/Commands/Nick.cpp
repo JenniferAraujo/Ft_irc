@@ -41,12 +41,15 @@ void Nick::execute() {
             Message::sendMessage(this->_client.getSocketFD(), ERR_NICKNAMEINUSE(this->_server.getHostname(), this->_client.getNick(), this->_nick), this->_server);
             break;
         default:
-/*             for(std::map<std::string, Channel*>::iterator it = this->_Channels.begin(); it != this->_Channels.end(); ++it){
-            if(it->second->isClient(fd) || it->second->isOperator(fd))
-                it->second->sendMessage(QUIT(this->_Clients[fd]->getNick(), this->_Clients[fd]->getUsername(), this->_Clients[fd]->getIpaddr(), reason), fd); */
-            if(!this->_client.getNick().empty())
-                Message::sendMessage(this->_client.getSocketFD(), NICK_MESSAGE(this->_client.getNick(), this->_client.getUsername(), 
-                    this->_client.getIpaddr(), this->_nick), this->_server);
+            Message::sendMessage(this->_client.getSocketFD(), NICK_MESSAGE(this->_client.getNick(), this->_client.getUsername(), 
+                this->_client.getIpaddr(), this->_nick), this->_server);
+            if(this->_client.getRegistration()){
+                std::map<int, Client*> clientsOnSameChannel = this->_server.getClientsOnSameChannel(this->_client.getSocketFD());
+                this->_server.sendMsg(clientsOnSameChannel, NICK_MESSAGE(this->_client.getNick(), this->_client.getUsername(), 
+                    this->_client.getIpaddr(), this->_nick));
+                clientsOnSameChannel.clear();
+
+            }
             this->_client.setNick(this->_nick);
             break;
     }

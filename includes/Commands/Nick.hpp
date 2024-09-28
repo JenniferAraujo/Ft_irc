@@ -28,6 +28,12 @@ inline std::string ERR_NICKNAMEINUSE(const std::string& source, const std::strin
 //? :<OldNick>!<User>@<Host> NICK <NewNick> 
 //:dan-!d@localhost NICK Mamoped
 inline std::string NICK_MESSAGE(const std::string& old_nick, const std::string& user, const std::string& host, const std::string& new_nick) {
+    if(old_nick.empty() && user.empty())
+        return ":*!*@" + host + " NICK "  + new_nick + "\r\n";
+    if(old_nick.empty())
+        return ":*!" + user + "@" + host + " NICK "  + new_nick + "\r\n";
+    if(user.empty())
+        return ":" + old_nick + "!*@" + host + " NICK "  + new_nick + "\r\n";
     return ":" + old_nick + "!" + user + "@" + host + " NICK "  + new_nick + "\r\n";
 }
 
