@@ -43,11 +43,7 @@ bool ACommand::findInQueue(std::queue<std::string> q, const std::string& target)
 }
 
 bool ACommand::existentClientOnChannel(const std::string &nickname, const std::string &channelName) {
-    std::map<std::string, Channel *> channels = this->_server.getChannels();
-    std::map<std::string, Channel *>::iterator it = channels.find(channelName);
-    if (it == channels.end())
-        return false;
-    Channel *ch = it->second;
+    Channel* ch = this->_server.getChannelLower(channelName);
     std::map<int, Client *> clients = ch->getClients();
     for (std::map<int, Client *>::iterator clientIt = clients.begin(); clientIt != clients.end(); ++clientIt) {
         if (toLowerCase(clientIt->second->getNick()) == toLowerCase(nickname))

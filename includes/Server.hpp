@@ -53,12 +53,17 @@ public:
 
     //aux
     void    removeClient(int fd, std::string error);
+    void    removeChannel(std::string chName);
     void    getServerInfo();
     int    addInChannel(std::string channelName, std::string password, Client &client);
     Client  *findClient(std::string nick, int skipFd);
     int     getClientByNick(std::string nick);
     void    display() const;
-    void    printChannelInfo(std::string channelName); //!SECTION
+    void    printChannelInfo(std::string channelName);
+    void	signals();
+    void    stopCompilation(int signal);
+
+    static Server*                      _instance;
 
 private:
 	Server();

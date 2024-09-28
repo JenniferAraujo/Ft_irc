@@ -138,6 +138,11 @@ void trimChar(std::string& str, char ch) {
         str = str.substr(first, last - first + 1);
 }
 
+void signalHandler(int signal) {
+    if (Server::_instance != NULL)
+        Server::_instance->stopCompilation(signal);
+}
+
 // Function to convert a string to lowercase
 std::string toLowerCase(const std::string& str) {
     std::string result = str;

@@ -4,8 +4,8 @@
 # include "Includes.hpp"
 
 # define UNKNOWNERROR       400
-# define NOSUCHNICK         401 
-# define NOSUCHCHANNEL      403 
+# define NOSUCHNICK         401
+# define NOSUCHCHANNEL      403
 # define TOOMANYTARGETS     407
 # define NORECIPIENT        411
 # define NOTEXTTOSEND       412
@@ -64,6 +64,7 @@ inline std::string ERR_UNKNOWNCOMMAND(const std::string& source, const std::stri
 inline std::string ERR_USERNOTINCHANNEL(const std::string& source, const std::string& target, const std::string& nick, const std::string& channel) {
     return ":" + source + " 441 " + target + " " + nick + " " + channel + " :is not on that channel\r\n";
 }
+
 inline std::string ERR_NOTONCHANNEL(const std::string& source, const std::string& target, const std::string& channel) {
     return ":" + source + " 442 " + target  + " " + channel + " :You're not on that channel\r\n";
 }

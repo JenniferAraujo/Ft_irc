@@ -25,6 +25,15 @@ void Server::removeClient(int fd, std::string reason){
     }
 }
 
+void Server::removeChannel(std::string chName) {
+    Channel* ch = getChannelLower(chName);
+    if(ch != NULL) {
+        std::string realChName = ch->getName();
+        delete this->_Channels[realChName];
+        this->_Channels.erase(realChName);
+    }
+}
+
 void Server::getServerInfo() {
     char hostbuffer[256];
     struct hostent *host_entry;
@@ -44,20 +53,29 @@ void Server::getServerInfo() {
     if (IPbuffer == NULL) {
         throw IRCException("[ERROR] inet_ntoa went wrong");
     }
-    char *temp = strdup(host_entry->h_name);
-    this->_hostName = temp;
-    free(temp);
+    this->_hostName = host_entry->h_name;
     this->_hostIP = IPbuffer;
 }
 
 int Server::addInChannel(std::string channelName, std::string password, Client &client) {
     int aux;
-    if (this->_Channels.find(channelName) != this->_Channels.end()) {
-        if ((aux = this->_Channels[channelName]->canJoin(client, password)) != 0)
+    Channel* ch = getChannelLower(channelName);
+    if (ch != NULL) {
+        if ((aux = ch->canJoin(client, password)) != 0)
 			return aux;
-		this->_Channels[channelName]->addClient(client);
-        std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0, "") << GREEN << "[" << client.getNick() << "]" << RESET << " entered Channel " << BOLD_YELLOW << channelName << RESET << std::endl;
-        this->printChannelInfo(channelName);
+		ch->addClient(client);
+        std::vector<int> vec = ch->getInvited();
+        for (std::vector<int>::iterator it = vec.begin(); it != vec.end(); ) {
+            std::cout << "it: " << *it << std::endl;
+            if (*it == client.getSocketFD()) {
+                ch->removeInvited(client.getSocketFD());
+                break;
+            }
+            else
+                ++it;
+        }
+        std::cout << formatServerMessage(BOLD_YELLOW, "JOINED", 0, "") << GREEN << "[" << client.getNick() << "]" << RESET << " entered Channel " << BOLD_YELLOW << ch->getName() << RESET << std::endl;
+        this->printChannelInfo(ch->getName());
     }
     else {
         Channel *channel = new Channel(channelName);
@@ -74,7 +92,7 @@ void    Server::printChannelInfo(std::string channelName) {
     showMap(this->_Channels[channelName]->getOperators());
     std::cout << "] [";
     showMap(this->_Channels[channelName]->getClients());
-    std::cout << "] i[";
+    std::cout << "] I[";
     std::vector<int> fds = this->_Channels[channelName]->getInvited();
     if (fds.empty())
         std::cout << "-";
@@ -90,8 +108,17 @@ void    Server::printChannelInfo(std::string channelName) {
     else
         std::cout << this->_Channels[channelName]->getUserLimit();
     std::cout << "] k[" << (this->_Channels[channelName]->getPassword().empty() ? "-" : this->_Channels[channelName]->getPassword());
+    std::cout << "] i[";
+    if (!this->_Channels[channelName]->isInviteOnly())
+        std::cout << "-";
+    else
+        std::cout << "X";
+    std::cout << "] t[";
+    if (!this->_Channels[channelName]->isTopicLocked())
+        std::cout << "-";
+    else
+        std::cout << "X";
     std::cout << "]" << std::endl;
-
 }
 
 Client    *Server::findClient(std::string nick, int skipFd){
@@ -111,13 +138,13 @@ int     Server::getClientByNick(std::string nick) {
 }
 
 Channel * Server::getChannelLower(std::string channelName) { 
-        std::map<std::string, Channel *>::iterator it;
-        for (it = _Channels.begin(); it != _Channels.end(); it++) {
-        std::string chName = it->second->getName();
-        if (toLowerCase(channelName) == toLowerCase(chName))
-            return it->second;
-        }
-        return NULL;
+    std::map<std::string, Channel *>::iterator it;
+    for (it = _Channels.begin(); it != _Channels.end(); it++) {
+    std::string chName = it->second->getName();
+    if (toLowerCase(channelName) == toLowerCase(chName))
+        return it->second;
+    }
+    return NULL;
 }
 
 void    Server::display() const {
@@ -128,4 +155,24 @@ void    Server::display() const {
     std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0, "") << "Hostname: " << this->_hostName << std::endl;
     std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0, "") << "Host IP: " << this->_hostIP << "\n" << std::endl;
 
+}
+
+void Server::stopCompilation(int signal) {
+    std::cout << "Compilation stopped due to signal: " << signal << std::endl;
+    for(std::map<std::string, Channel*>::iterator it = this->_Channels.begin(); it != this->_Channels.end(); ++it){
+        delete it->second;
+    }
+    this->_Channels.clear();
+    for(std::map<int, Client*>::iterator it = this->_Clients.begin(); it != this->_Clients.end(); ++it){
+        delete it->second;
+    }
+    this->_Clients.clear();
+    std::vector<pollfd>().swap(this->_NFDs);
+    std::string().swap(this->_hostName);
+    std::string().swap(this->_creationTime);
+    std::exit(EXIT_SUCCESS);
+}
+
+void Server::signals() {
+    signal(SIGINT, signalHandler);
 }

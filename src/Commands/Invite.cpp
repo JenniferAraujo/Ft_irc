@@ -29,6 +29,10 @@ void Invite::parsing(std::istringstream &input) {
                     this->_error = NOSUCHCHANNEL;   //CANAL NÃO EXISTE || INVITE dinoguei a
                     return ;
                 }
+                if (!this->existentClientOnChannel(this->_client.getNick(), this->_channel)) {
+                    this->_error = NOTONCHANNEL;        //NÃO ESTIVER NO CANAL
+                    return;
+                }
                 break;
         }
         n++;
@@ -60,6 +64,9 @@ void Invite::execute() {
         case NOSUCHCHANNEL:
             Message::sendMessage(this->_client.getSocketFD(), ERR_NOSUCHCHANNEL(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
             break;
+        case NOTONCHANNEL:
+            Message::sendMessage(this->_client.getSocketFD(), ERR_NOTONCHANNEL(this->_server.getHostname(), this->_client.getNick(), this->_channel), this->_server);
+            break;
         case USERONCHANNEL:
             Message::sendMessage(this->_client.getSocketFD(), ERR_USERONCHANNEL(this->_server.getHostname(), this->_client.getNick(), this->_nickname, this->_channel), this->_server);
             break;
@@ -72,8 +79,8 @@ void Invite::execute() {
         default:
             Channel* ch = this->_server.getChannelLower(this->_channel);
             Client*     c = this->_server.getClients()[this->_server.getClientByNick(this->_nickname)];
-            Message::sendMessage(this->_client.getSocketFD(), RPL_INVITING(this->_server.getHostname(), this->_client.getNick(), this->_nickname, this->_channel), this->_server);
-            Message::sendMessage(c->getSocketFD(), INVITE(this->_client.getNick(), this->_channel, this->_nickname), this->_server);
+            Message::sendMessage(this->_client.getSocketFD(), RPL_INVITING(this->_server.getHostname(), this->_client.getNick(), this->_nickname, ch->getName()), this->_server);
+            Message::sendMessage(c->getSocketFD(), INVITE(this->_client.getNick(), ch->getName(), this->_nickname), this->_server);
             ch->addInviteFD(c->getSocketFD());
             break;
     }

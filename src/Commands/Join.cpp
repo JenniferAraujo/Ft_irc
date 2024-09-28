@@ -41,8 +41,6 @@ void Join::parsing(std::istringstream &input){
 		this->_error = NEEDMOREPARAMS;
 }
 
-//TODO - Tratamento de Erros
-//TODO - Lógica de remover do invited caso tenha entrado (ou confirmar se o invite é efetivamente removido ou permanente)
 void Join::execute() {
 	std::cout << formatServerMessage(BOLD_WHITE, "CMD   ", 0, "") << this->_name;
 	this->print();
@@ -54,13 +52,13 @@ void Join::execute() {
 			while(!this->_channels.empty()) {
 				int	aux = 0;
 				if ((aux = this->_server.addInChannel(this->_channels.front(),(this->_password.empty() ? "" : this->_password.front()), const_cast<Client&>(this->_client))) == 0) {
-					Channel* ch = this->_server.getChannels()[this->_channels.front()];
-					ch->sendMessage(JOIN_CHANNEL(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channels.front()), 0);
-					this->_client.setJustJoined(true);
+					Channel* ch = this->_server.getChannelLower(this->_channels.front());
+					ch->sendMessage(JOIN_CHANNEL(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), ch->getName()), 0);
+					this->_client.setJustJoined(true, ch->getName());
 					if (ch->getTopic().empty())
-						Message::sendMessage(this->_client.getSocketFD(), RPL_NOTOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick()), this->_server);
+						Message::sendMessage(this->_client.getSocketFD(), RPL_NOTOPIC(this->_server.getHostname(), ch->getName(), this->_client.getNick()), this->_server);
 					else
-						Message::sendMessage(this->_client.getSocketFD(), RPL_TOPIC(this->_server.getHostname(), this->_channels.front(), this->_client.getNick(), ch->getTopic()), this->_server);
+						Message::sendMessage(this->_client.getSocketFD(), RPL_TOPIC(this->_server.getHostname(), ch->getName(), this->_client.getNick(), ch->getTopic()), this->_server);
 					this->_channels.pop();
 					if (!this->_password.empty())
 						this->_password.pop();
@@ -70,22 +68,19 @@ void Join::execute() {
             				Message::sendMessage(this->_client.getSocketFD(), ERR_CHANNELISFULL(this->_server.getHostname(), this->_client.getNick(), this->_channels.front()), this->_server);
             			break;
         				case INVITEONLYCHAN:
-						Message::sendMessage(this->_client.getSocketFD(), ERR_INVITEONLYCHAN(this->_server.getHostname(), this->_client.getNick(), this->_channels.front()), this->_server);
-						break;
+							Message::sendMessage(this->_client.getSocketFD(), ERR_INVITEONLYCHAN(this->_server.getHostname(), this->_client.getNick(), this->_channels.front()), this->_server);
+							break;
 						case BADCHANNELKEY:
 							Message::sendMessage(this->_client.getSocketFD(), ERR_BADCHANNELKEY(this->_server.getHostname(), this->_client.getNick(), this->_channels.front()), this->_server);
 							break; }
 					return ;
 				}
-			}	
+			}
 			break;
 	}
 }
 
 void Join::print() const{
-	//std::cout << "Command: " << this->_name <<  " | Error: " << this->_error << std::endl;
-	//std::cout << "Channels queue\t| Passwords queue" << std::endl;
-	//showdoublestringq(this->_channels, this->_password);
 	if (this->_error != 0)
 		std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
 	else {

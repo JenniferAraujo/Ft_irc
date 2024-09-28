@@ -1,6 +1,6 @@
 #include "Includes.hpp"
 
-/*Client::Client(): _socketFD(0),
+Client::Client(): _socketFD(0),
                     _regError(0),
                     _registration(0),
                     _ipAddr(""),
@@ -9,20 +9,17 @@
                     _nick(""),
                     _username(""),
                     _realname(""),
+                    _server(*Server::_instance),
                     _lastActivityTime(0),
                     _connectTime(0),
-                    _justJoined(false) {
-                        Server a;
-                        _server = a;
-                    }*/
+                    _justJoined() { }
 
 Client::Client(Server &server, time_t time)
     :   _regError(0),
         _registration(false),
         _server(server),
         _lastActivityTime(time),
-        _connectTime(time),
-        _justJoined(false) {}
+        _connectTime(time){}
 
 
 Client::Client(const Client &cpy)
@@ -34,8 +31,7 @@ Client::Client(const Client &cpy)
         _nick(cpy.getNick()),
         _username(cpy.getUsername()),
         _realname(cpy.getRealname()),
-        _server(cpy.getServer()),
-        _justJoined(cpy.getJustJoined()) {}
+        _server(cpy.getServer()){}
 
 ACommand* Client::createCap(std::istringstream &input) {
     ACommand *command = new Cap(this->_server, *this);
@@ -122,14 +118,12 @@ ACommand* Client::createNotice(std::istringstream &input){
 }
 
 ACommand* Client::createQuit(std::istringstream &input){
-     std::cout << "Create cmd\n";
     ACommand *command = new Quit(this->_server, *this);
     command->parsing(input);
     return command;
 }
 
 std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
-    std::cout << "Create cmd\n";
     std::string str(buf.begin(), buf.end());;
     std::istringstream input(str);
     std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING", "KICK", "PART", "INVITE", "TOPIC", "PRIVMSG", "NOTICE", "QUIT"};
@@ -232,9 +226,7 @@ void Client::verifyConnection(Server &server, const pollfd &pfd) {
         } catch(const std::exception &e) {
             std::cerr << RED << e.what() << RESET << std::endl;
         }
-
         std::cout << formatServerMessage(BOLD_GREEN, "CLIENT", client->_socketFD, GREEN) << "Connected from " << BOLD_GREEN << client->getIpaddr() << RESET << std::endl;
-
         server.updateNFDs(client->_socketFD);
         server.updateClients(client, client->_socketFD);
     }

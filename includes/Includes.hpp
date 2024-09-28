@@ -22,6 +22,7 @@
 # include <fstream>
 # include <sstream>
 # include <queue>
+# include <csignal>
 
 //RPL_ISUPPORT
 # define PREFIX             "(o)@"
@@ -33,7 +34,7 @@
 # define MAX_TARGETS        10
 # define MAX_MESSAGE_SIZE   512
 # define MAXCHARS           30
-# define CONNECTIONTIMEOUT  60 //2 minuts in seconds
+# define CONNECTIONTIMEOUT  120 //2 minuts in seconds
 # define TIMEOUT            300 //5 minuts in seconds
 # define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 
@@ -93,6 +94,7 @@ void showMap(std::map<int, Client*> m);
 void showdoublestringq(std::queue<std::string> gq, std::queue<std::string> gq2);
 std::string formatServerMessage(const std::string& color, const std::string& label, int clients, const std::string& fdColor);
 void trimChar(std::string& str, char ch);
+void signalHandler(int signal);
 std::string toLowerCase(const std::string& str);
 
 #endif // INCLUDES_HPP

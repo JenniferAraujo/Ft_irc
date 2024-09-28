@@ -35,8 +35,9 @@ void Kick::parsing(std::istringstream &input) {
                     return;
                 }
                 //NOTE - Verificar a condição de não deixar kickar operadores
+                //FIXME - Condição não está a funcionar, deixa kickar os operatores, confirmar se o UNKNOWNERROR está a ser ativado aqui ou se pode-se retirar esta confirmação e deixar dar kick a operadores
                 if (!this->existentClientOnChannel(token, this->_channel)) {
-                    Channel*    ch = this->_server.getChannels()[this->_channel];
+                    Channel* ch = this->_server.getChannelLower(this->_channel);
                     Client*     c = this->_server.findClient(this->_cliente, 0);
                     this->_error = ch->isOperator(c->getSocketFD()) ? UNKNOWNERROR : USERNOTINCHANNEL; //NÃO PODE KICKAR OPERADORES || CLIENTE NÃO ESTÁ NO CANAL
                     return ;
@@ -59,7 +60,7 @@ void Kick::parsing(std::istringstream &input) {
         if (this->_channel.empty() || this->_cliente.empty())
             this->_error = NEEDMOREPARAMS;
         else {
-            Channel* ch = this->_server.getChannels()[this->_channel];
+            Channel* ch = this->_server.getChannelLower(this->_channel);
             if (!ch->isOperator(this->_client.getSocketFD()))
                 this->_error = CHANOPRIVSNEEDED;
         }
@@ -92,11 +93,11 @@ void Kick::execute() {
             Message::sendMessage(this->_client.getSocketFD(), ERR_UNKNOWNERROR(this->_server.getHostname(), this->_client.getNick(), this->_name, "You can't kick yourself, or kick channel operators"), this->_server);
             break;
         default:
-            Channel*    ch = this->_server.getChannels()[this->_channel];
+            Channel* ch = this->_server.getChannelLower(this->_channel);
             Client*     c = this->_server.findClient(this->_cliente, 0);
-            ch->sendMessage(KICK(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_cliente, this->_reason.empty() ? KICKDEFAULTMSG : this->_reason), 0);
-            ch->removeClient(c->getSocketFD());
-            this->_server.printChannelInfo(this->_channel);
+            ch->sendMessage(KICK(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), ch->getName(), this->_cliente, this->_reason.empty() ? KICKDEFAULTMSG : this->_reason), 0);
+            ch->isClient(c->getSocketFD()) ? ch->removeClient(c->getSocketFD()) : ch->removeOperator(c->getSocketFD());
+            this->_server.printChannelInfo(ch->getName());
             break;
     }
 }
