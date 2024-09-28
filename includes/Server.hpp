@@ -47,7 +47,8 @@ public:
     sockaddr_in6 getSocketInfo() const { return this->_socketInfo; };
     std::vector<pollfd> getNFD() const { return this->_NFDs; };
     std::map<int, Client*> getClients() const { return this->_Clients; };
-    std::map<std::string, Channel*> getChannels() const {return this->_Channels; };
+    std::map<std::string, Channel*> getChannels() const {return this->_Channels; }
+    Channel * getChannelLower(std::string channelName);
     std::map <int, std::string>  getToRemove() const { return this->_toRemove; };
 
     //aux

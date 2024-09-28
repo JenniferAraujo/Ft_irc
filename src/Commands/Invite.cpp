@@ -37,7 +37,7 @@ void Invite::parsing(std::istringstream &input) {
         if (this->_nickname.empty() || this->_channel.empty())
 	    	this->_error = NEEDMOREPARAMS;
         else {
-            Channel* ch = this->_server.getChannels()[this->_channel];
+            Channel* ch = this->_server.getChannelLower(this->_channel);
             Client*     c = this->_server.getClients()[this->_server.getClientByNick(this->_nickname)];
             if (ch->isInviteOnly() && !ch->isOperator(this->_client.getSocketFD()))
                 this->_error = CHANOPRIVSNEEDED;
@@ -70,7 +70,7 @@ void Invite::execute() {
             Message::sendMessage(this->_client.getSocketFD(), ERR_UNKNOWNERROR(this->_server.getHostname(), this->_client.getNick(), this->_name, "You can't invite yourself to the channel"), this->_server);
             break;
         default:
-            Channel*    ch = this->_server.getChannels()[this->_channel];
+            Channel* ch = this->_server.getChannelLower(this->_channel);
             Client*     c = this->_server.getClients()[this->_server.getClientByNick(this->_nickname)];
             Message::sendMessage(this->_client.getSocketFD(), RPL_INVITING(this->_server.getHostname(), this->_client.getNick(), this->_nickname, this->_channel), this->_server);
             Message::sendMessage(c->getSocketFD(), INVITE(this->_client.getNick(), this->_channel, this->_nickname), this->_server);

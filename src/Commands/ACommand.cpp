@@ -10,15 +10,13 @@ bool ACommand::isRegistration(){
 }
 
 bool ACommand::existentChannel(std::string channelName) {
-    //std::cout << "Checking channelName: '" << channelName << "'" << std::endl;
     std::map<std::string, Channel *> channels = this->_server.getChannels();
-    //std::cout << "Total channels in map: " << channels.size() << std::endl;
-    std::map<std::string, Channel *>::iterator it = channels.find(channelName);
-    if (it != channels.end()) {
-    //std::cout << "Found channel: " << it->first << std::endl;
-        return true;
+    std::map<std::string, Channel *>::iterator it;
+    for (it = channels.begin(); it != channels.end(); it++) {
+        std::string chName = it->second->getName();
+        if (toLowerCase(channelName) == toLowerCase(chName))
+            return true;
     }
-    //std::cout << "Channel not found: " << channelName << std::endl;
     return false;
 }
 

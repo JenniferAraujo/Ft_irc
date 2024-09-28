@@ -110,6 +110,16 @@ int     Server::getClientByNick(std::string nick) {
     return -1;
 }
 
+Channel * Server::getChannelLower(std::string channelName) { 
+        std::map<std::string, Channel *>::iterator it;
+        for (it = _Channels.begin(); it != _Channels.end(); it++) {
+        std::string chName = it->second->getName();
+        if (toLowerCase(channelName) == toLowerCase(chName))
+            return it->second;
+        }
+        return NULL;
+}
+
 void    Server::display() const {
     std::cout << formatServerMessage(BOLD_CYAN, "SERVER", 0, "") << "Socket with fd " << CYAN "[" << this->_socketFD << "]" << RESET
               << " bound on port " << CYAN << this->_port << RESET << std::endl;
