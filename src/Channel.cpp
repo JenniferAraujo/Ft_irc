@@ -60,9 +60,8 @@ void Channel::applyMode(const Mode& modeObj, char modeChar, bool adding) {
 			case 'l':
 				if (adding)
 					setUserLimit(modeObj.getLimit().front());
-				else {
+				else
 					setUserLimit(-1);
-				}
 				break;
 			case 'o':
 				if (adding) {
@@ -96,9 +95,8 @@ void	Channel::sendMessageToClients(std::string msg, int skipFD) {
 	std::map<int, Client*> clients = this->getClients();
 	for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
 		Client* client = it->second;
-		if (client->getSocketFD() != skipFD){
+		if (client->getSocketFD() != skipFD)
 			Message::sendMessage(client->getSocketFD(), msg, client->getServer());
-		}
 	}
 }
 

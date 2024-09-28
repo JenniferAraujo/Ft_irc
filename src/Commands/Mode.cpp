@@ -8,7 +8,7 @@ template <typename T>
 void	showQueue(const std::queue<T>& q) {
 	std::queue<T> tempQueue = q;
 	if (tempQueue.empty()) {
-		std::cout << "UPS IM EMPTY\n";
+		std::cout << "";
 	} else {
 		while (!tempQueue.empty()) {
 			std::cout << tempQueue.front() << " ";
@@ -41,12 +41,8 @@ void Mode::extractParameters() {
 				if (spacePos != std::string::npos) {
 					this->_password.push(aux.substr(0, spacePos));
 					aux.erase(0, spacePos + 1);
-				} else{
-					//if(!aux.empty())
-						this->_password.push(aux);
- 					std::cout << "SETTING PASS: " << aux << "."<< std::endl;
-					showQueue(this->_password);
-				}
+				} else
+					this->_password.push(aux);
 				break ;
 			case 'l':
 				spacePos = aux.find(' ');
@@ -57,12 +53,7 @@ void Mode::extractParameters() {
 						int limit;
 						ss >> limit;
 						this->_userLimit.push(limit);
-						std::cout << "a queue com limit valido: ";
-						showQueue(this->_userLimit);
-						std::cout << std::endl;
 					}
-					else
-						std::cout << "invalid number!!!" << std::endl;
 					aux.erase(0, spacePos + 1);
 				} else {
 					std::string limitStr = aux;
@@ -71,19 +62,12 @@ void Mode::extractParameters() {
 						int limit;
 						ss >> limit;
 						this->_userLimit.push(limit);
-						std::cout << "a queue com limit valido: ";
-						showQueue(this->_userLimit);
-						std::cout << std::endl;
 					}
-					else
-						std::cout << "invalid number!!!" << std::endl;
 				}
 				break ;
 			case 'o':
 				spacePos = aux.find(' ');
 				if (spacePos != std::string::npos) {
-					std::cout << "SETTING OP: " << aux << "."<< std::endl;
-					showQueue(this->_clientNick);
 					this->_clientNick.push(aux.substr(0, spacePos));
 					aux.erase(0, spacePos + 1);
 				} else
@@ -113,7 +97,7 @@ void Mode::parsing(std::istringstream &input) {
 					return ;
 				}
 				if (!this->existentClientOnChannel(this->_client.getNick(), this->_channel)) {
-					this->_error = NOTONCHANNEL;        //cliente nao esta no canal
+					this->_error = NOTONCHANNEL;
 					return;
 				}
 				break ;
@@ -158,7 +142,7 @@ void Mode::parsing(std::istringstream &input) {
 		this->_error = NEEDMOREPARAMS;
 	else {
 		Channel* ch = this->_server.getChannels()[this->_channel];
-		if (!ch->isOperator(this->_client.getSocketFD()))
+		if (!ch->isOperator(this->_client.getSocketFD()) && !this->_mode.empty())
 			this->_error = CHANOPRIVSNEEDED;
 	}	
 }
@@ -173,15 +157,14 @@ std::string Mode::validParameter(Channel *channel){
 			while(this->_mode[i] != '+' && this->_mode[i] != '-' && this->_mode[i] != '\0'){
 				if (this->_mode[i] == 'l') {
 					if(this->_userLimit.empty()) //|| this->_userLimit.front().empty())
-						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "+l", "You must specify a valid parameter for the limit mode EMPTY"), this->_server);
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "+l", "You must specify a valid parameter for the limit mode"), this->_server);
 					else if (this->_userLimit.front() != channel->getUserLimit() && this->_userLimit.front() > 0) {
 						plus += this->_mode[i];
 						channel->applyMode(*this, _mode[i], true);
 						this->_msgUserLimit.push(this->_userLimit.front());
 					}
- 					else if (this->_userLimit.front() <= 0){
+ 					else if (this->_userLimit.front() <= 0)
 						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "+l", "You must specify a valid parameter for the limit mode"), this->_server);
-					}
 					if(!this->_userLimit.empty())
 						this->_userLimit.pop();
 				}
@@ -193,19 +176,15 @@ std::string Mode::validParameter(Channel *channel){
 						channel->applyMode(*this, _mode[i], true);
 						this->_msgclientNick.push(this->_clientNick.front());
 					} 
-					else if (channel->getClientByNick(_clientNick.front()) == NULL && channel->getOperatorByNick(_clientNick.front()) == NULL) {
+					else if (channel->getClientByNick(_clientNick.front()) == NULL && channel->getOperatorByNick(_clientNick.front()) == NULL)
 						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "+o", "No such nick" ), this->_server);
-					}
 					if(!this->_clientNick.empty())
 						this->_clientNick.pop();
 				}
 				else if (this->_mode[i] == 'k'){
-					//std::cout << "APPLY MODE +K\n";
 					if(this->_password.empty() || this->_password.front().empty())
 						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "+k", "You must specify a parameter for the key mode"), this->_server);
 					else if (this->_password.front() != channel->getPassword()) {
-						/* std::cout << "KKKK:::\n";
-						showQueue(_password); */
 						plus += this->_mode[i];
 						channel->applyMode(*this, _mode[i], true);
 						this->_msgPassword.push(this->_password.front());
@@ -291,9 +270,8 @@ void Mode::execute() {
 			Channel* channelObj = this->_server.getChannels()[this->_channel];
 			if (!this->_mode.empty()) {
 				std::string msg = validParameter(channelObj);
-				if (!msg.empty()) {
+				if (!msg.empty())
 					channelObj->sendMessage(RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, msg, queueIntToString(_msgUserLimit), queueStrToString(_msgPassword), queueStrToString(_msgclientNick)), 0);
-				}
 			} else {
 				std::string msg;
 				if (!channelObj->getPassword().empty())
@@ -321,7 +299,6 @@ std::string Mode::queueIntToString(std::queue<int> q) {
 			oss << " ";
 		}
 	}
-	std::cout << "INT TO STRING: " << oss.str() << std::endl;
 	return oss.str();
 }
 
@@ -334,19 +311,11 @@ std::string	Mode::queueStrToString(std::queue<std::string> q) {
 			oss << " ";
 		}
 	}
-	std::cout << "STR TO STRING: " << oss.str() << std::endl;
 	return oss.str();
 }
 
 void Mode::print() const{	
 	if (this->_error != 0)
 		std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
-	std::cout << "\nUser limit: ";
-	showQueue(this->_userLimit);
-	std::cout << " | Nick: "; 
-	showQueue(this->_clientNick);
-	std::cout << " | Password: ";
-	showQueue(this->_password);
-	std::cout << " | Parameters: " << this->_parameters << " | Mode: " << this->_mode << std::endl;
 }
 

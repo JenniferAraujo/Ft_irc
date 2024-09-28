@@ -23,7 +23,6 @@ inline std::string RPL_ONLYMODE(const std::string& nick, const std::string& sour
 	return msg;
 }
 
-
 inline std::string RPL_MODE(const std::string& nick, const std::string& user, const std::string& host, const std::string& channel, std::string mode, const std::string& userLimit, const std::string& password, const std::string& op) {
 	std::string	msg = ":" + nick + "!" + user + "@" + host + " MODE " + channel;
 
@@ -37,31 +36,21 @@ inline std::string RPL_MODE(const std::string& nick, const std::string& user, co
 		msg.append(mode).append("\r\n");
 	}
 	else {
-/*  		if (mode[0] == '+' || mode[0] == '-')
-			msg.append(" ");
-		else
-			msg.append(" +"); */
 		msg.append(" ").append(mode).append(" ");
 		bool	flagUserLim = false;
 		bool	flagOp = false;
 		bool	flagPass = false;
 		for (size_t i = 1; i < mode.length(); i++) {
-/* 			if (i + 1 >= mode.length())
-				msg.append(":"); */
-			std::cout << "IM HERE BITCH: " << mode[i] << "\n";
 			if (mode[i] == 'l' && !flagUserLim) {
 				msg.append(userLimit).append(" ");
-				std::cout << "Entra l da msg\n";
 				flagUserLim = true;
 			}
 			else if (mode[i] == 'o' && !flagOp) {
 				msg.append(op).append(" ");
-				std::cout << "Entra o da msg\n";
 				flagOp = true;
 			}
 			else if (mode[i] == 'k' && !flagPass) {
 				msg.append(password).append(" ");
-				std::cout << "Entra k da msg\n";
 				flagPass = true;
 			}
 		}
