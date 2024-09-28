@@ -15,6 +15,7 @@ void	showQueue(const std::queue<T>& q) {
 			tempQueue.pop();
 		}
 	}
+	std::cout << "\n";
 }
 
 bool Mode::isValidMode(char mode) {
@@ -43,21 +44,14 @@ void Mode::extractParameters() {
 				} else{
 					//if(!aux.empty())
 						this->_password.push(aux);
-/* 					std::cout << "SETTING PASS: " << aux << "."<< std::endl;
-					showQueue(this->_password); */
+ 					std::cout << "SETTING PASS: " << aux << "."<< std::endl;
+					showQueue(this->_password);
 				}
 				break ;
 			case 'l':
 				spacePos = aux.find(' ');
 				if (spacePos != std::string::npos) {
 					std::string limitStr = aux.substr(0, spacePos);
-/* 					bool isValid = true;
-					for (std::string::size_type j = 0; j < limitStr.length(); ++j) {
-						if (!isdigit(limitStr[j])) {
-							isValid = false;
-							break ;
-						}
-					}*/
 					if (isInt(limitStr)) {
 						std::stringstream ss(limitStr);						
 						int limit;
@@ -72,13 +66,6 @@ void Mode::extractParameters() {
 					aux.erase(0, spacePos + 1);
 				} else {
 					std::string limitStr = aux;
-/* 					bool isValid = true;
-					for (std::string::size_type j = 0; j < limitStr.length(); ++j) {
-						if (!isdigit(limitStr[j])) {
-							isValid = false;
-							break ;
-						}
-					}*/
 					if (isInt(limitStr)) {
 						std::stringstream ss(limitStr);						
 						int limit;
@@ -95,6 +82,8 @@ void Mode::extractParameters() {
 			case 'o':
 				spacePos = aux.find(' ');
 				if (spacePos != std::string::npos) {
+					std::cout << "SETTING OP: " << aux << "."<< std::endl;
+					showQueue(this->_clientNick);
 					this->_clientNick.push(aux.substr(0, spacePos));
 					aux.erase(0, spacePos + 1);
 				} else
@@ -149,7 +138,7 @@ void Mode::parsing(std::istringstream &input) {
 				break ;
 			default:
 				if (modeFlag) {
-					if (token[0] == '+' || token[0] == '-')
+					if ((token[0] == '+' || token[0] == '-') && isValidMode(token[1]))
 						this->_mode += token;
 					else
 						collectedParameters.push_back(token);
@@ -183,38 +172,46 @@ std::string Mode::validParameter(Channel *channel){
 				i++;
 			while(this->_mode[i] != '+' && this->_mode[i] != '-' && this->_mode[i] != '\0'){
 				if (this->_mode[i] == 'l') {
-					if (this->_userLimit.front() != channel->getUserLimit() && this->_userLimit.front() > 0) {
+					if(this->_userLimit.empty()) //|| this->_userLimit.front().empty())
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "+l", "You must specify a valid parameter for the limit mode EMPTY"), this->_server);
+					else if (this->_userLimit.front() != channel->getUserLimit() && this->_userLimit.front() > 0) {
 						plus += this->_mode[i];
 						channel->applyMode(*this, _mode[i], true);
 						this->_msgUserLimit.push(this->_userLimit.front());
 					}
-					if (this->_userLimit.front() < 0){
-						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-l"), this->_server);
+ 					else if (this->_userLimit.front() <= 0){
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "+l", "You must specify a valid parameter for the limit mode"), this->_server);
 					}
-					this->_userLimit.pop();
+					if(!this->_userLimit.empty())
+						this->_userLimit.pop();
 				}
 				else if (this->_mode[i] == 'o') {
-					if (channel->getOperatorByNick(_clientNick.front()) == NULL && channel->getClientByNick(_clientNick.front()) != NULL) {
+					if(this->_clientNick.empty() || this->_clientNick.front().empty())
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "+o", "You must specify a parameter for the operator mode" ), this->_server);
+					else if (channel->getOperatorByNick(_clientNick.front()) == NULL && channel->getClientByNick(_clientNick.front()) != NULL) {
 						plus += this->_mode[i];
 						channel->applyMode(*this, _mode[i], true);
 						this->_msgclientNick.push(this->_clientNick.front());
 					} 
-					if (channel->getClientByNick(_clientNick.front()) == NULL) {
-						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-o"), this->_server);
+					else if (channel->getClientByNick(_clientNick.front()) == NULL && channel->getOperatorByNick(_clientNick.front()) == NULL) {
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "+o", "No such nick" ), this->_server);
 					}
-					this->_clientNick.pop();
+					if(!this->_clientNick.empty())
+						this->_clientNick.pop();
 				}
 				else if (this->_mode[i] == 'k'){
-					if(_password.empty())
-						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-k"), this->_server);
+					//std::cout << "APPLY MODE +K\n";
+					if(this->_password.empty() || this->_password.front().empty())
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "+k", "You must specify a parameter for the key mode"), this->_server);
 					else if (this->_password.front() != channel->getPassword()) {
-						std::cout << "KKKK:::\n";
-						showQueue(_password);
+						/* std::cout << "KKKK:::\n";
+						showQueue(_password); */
 						plus += this->_mode[i];
 						channel->applyMode(*this, _mode[i], true);
 						this->_msgPassword.push(this->_password.front());
-						this->_password.pop();
 					}
+					if(!this->_password.empty())
+						this->_password.pop();
 				}
 				else if (this->_mode[i] == 'i') {
 					if (!channel->getInviteOnly()) {
@@ -236,17 +233,22 @@ std::string Mode::validParameter(Channel *channel){
 			while (this->_mode[i] != '+' && this->_mode[i] != '-' && this->_mode[i] != '\0'){
 				if (this->_mode[i] == 'l' && channel->getUserLimit() > 0){
 					minus += this->_mode[i];
-					channel->applyMode(*this, _mode[i], true);
+					channel->applyMode(*this, _mode[i], false);
 				}
 				else if (this->_mode[i] == 'o') {
-					if (channel->getOperatorByNick(_clientNick.front())) {
+					if (this->_clientNick.empty() || this->_clientNick.front().empty())
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-o", "You must specify a parameter for the operator mode" ), this->_server);
+					else if (channel->getOperatorByNick(_clientNick.front())) {
 						minus += this->_mode[i];
 						channel->applyMode(*this, _mode[i], false);
 						this->_msgclientNick.push(this->_clientNick.front());
 					}
+					else if(!channel->getClientByNick(_clientNick.front()))
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-o", "No such nick" ), this->_server);
 					else
-						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-o"), this->_server);
-					this->_clientNick.pop();
+						Message::sendMessage(this->_client.getSocketFD(), ERR_INVALIDMODEPARAM(this->_server.getHostname(), this->_client.getNick(), this->_channel, "-o", _clientNick.front() + " is not a operator"), this->_server);
+					if (!this->_clientNick.empty())
+						this->_clientNick.pop();
 				} else if (this->_mode[i] == 'k' && !channel->getPassword().empty()) {
 					minus += this->_mode[i];
 					channel->applyMode(*this, _mode[i], false);

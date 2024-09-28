@@ -148,6 +148,8 @@ bool  hasNonNumericChar(std::string str)
 }
 
 bool isInt(std::string str){
+    if(str.empty())
+        return false;
     if(hasNonNumericChar(str))
         return false;
     long long int lnum = std::atoll(str.c_str());

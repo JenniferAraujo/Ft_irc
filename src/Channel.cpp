@@ -60,8 +60,9 @@ void Channel::applyMode(const Mode& modeObj, char modeChar, bool adding) {
 			case 'l':
 				if (adding)
 					setUserLimit(modeObj.getLimit().front());
-				else
+				else {
 					setUserLimit(-1);
+				}
 				break;
 			case 'o':
 				if (adding) {
