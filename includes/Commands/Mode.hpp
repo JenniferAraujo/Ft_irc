@@ -27,7 +27,6 @@ inline std::string RPL_MODE(const std::string& nick, const std::string& user, co
 	std::string	msg = ":" + nick + "!" + user + "@" + host + " MODE " + channel;
 
 	if (userLimit.empty() && password.empty() && op.empty()) {
-		std::cout << "Entra aqui no args to print\n";
 		msg.append(" :");
  		if (mode[0] == '+' || mode[0] == '-')
 			msg.append("");
@@ -41,15 +40,15 @@ inline std::string RPL_MODE(const std::string& nick, const std::string& user, co
 		bool	flagOp = false;
 		bool	flagPass = false;
 		for (size_t i = 1; i < mode.length(); i++) {
-			if (mode[i] == 'l' && !flagUserLim) {
+			if (mode[i] == 'l' && !flagUserLim && !userLimit.empty()) {
 				msg.append(userLimit).append(" ");
 				flagUserLim = true;
 			}
-			else if (mode[i] == 'o' && !flagOp) {
+			else if (mode[i] == 'o' && !flagOp && !op.empty()) {
 				msg.append(op).append(" ");
 				flagOp = true;
 			}
-			else if (mode[i] == 'k' && !flagPass) {
+			else if (mode[i] == 'k' && !flagPass && !password.empty()) {
 				msg.append(password).append(" ");
 				flagPass = true;
 			}
