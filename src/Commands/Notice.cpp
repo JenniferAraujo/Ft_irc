@@ -55,7 +55,7 @@ void Notice::sendToChannels(){
     while (!this->_channels.empty()) {
         std::string channelName = this->_channels.front();
         if(existentChannel(channelName)){
-            Channel *channel = this->_server.getChannels()[channelName];
+            Channel* channel = this->_server.getChannelLower(channelName);
             if(channel->isClient(this->_client.getSocketFD()) || channel->isOperator(this->_client.getSocketFD()))
                 channel->sendMessage(NOTICE(this->_client.getNick(), this->_client.getUsername(), 
                     this->_client.getIpaddr(), channelName, this->_message), this->_client.getSocketFD());
@@ -68,7 +68,7 @@ void Notice::sendToOpChannels(){
     while (!this->_opChannels.empty()) {
         std::string channelName = this->_opChannels.front().substr(1, this->_opChannels.front().length() - 1);
         if(existentChannel(channelName)){
-            Channel *channel = this->_server.getChannels()[channelName];
+            Channel* channel = this->_server.getChannelLower(channelName);
             if(channel->isClient(this->_client.getSocketFD()) || channel->isOperator(this->_client.getSocketFD()))
                 channel->sendMessageToOperators(NOTICE(this->_client.getNick(), this->_client.getUsername(), 
                     this->_client.getIpaddr(), channelName, this->_message), this->_client.getSocketFD());

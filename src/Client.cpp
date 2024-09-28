@@ -118,14 +118,12 @@ ACommand* Client::createNotice(std::istringstream &input){
 }
 
 ACommand* Client::createQuit(std::istringstream &input){
-     std::cout << "Create cmd\n";
     ACommand *command = new Quit(this->_server, *this);
     command->parsing(input);
     return command;
 }
 
 std::queue<ACommand* >  Client::createCommand(std::vector<char> buf){
-    std::cout << "Create cmd\n";
     std::string str(buf.begin(), buf.end());;
     std::istringstream input(str);
     std::string commands[] = {"CAP", "PASS", "NICK", "USER", "JOIN", "MODE", "WHO", "PING", "KICK", "PART", "INVITE", "TOPIC", "PRIVMSG", "NOTICE", "QUIT"};

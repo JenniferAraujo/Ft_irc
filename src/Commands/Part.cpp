@@ -73,13 +73,13 @@ void Part::execute() {
             break;
         default:
             while (!this->_channels.empty()) {
-                Channel* ch = this->_server.getChannels()[this->_channels.front()];
-                ch->sendMessage(PART(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channels.front(), this->_message), 0);
+                Channel* ch = this->_server.getChannelLower(this->_channels.front());
+                ch->sendMessage(PART(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), ch->getName(), this->_message), 0);
                 ch->isClient(this->_client.getSocketFD()) ? ch->removeClient(this->_client.getSocketFD()) : ch->removeOperator(this->_client.getSocketFD());
                 if (ch->getClients().empty() && ch->getOperators().empty())
-                    this->_server.removeChannel(this->_channels.front());
+                    this->_server.removeChannel(ch->getName());
                 else
-                    this->_server.printChannelInfo(this->_channels.front());
+                    this->_server.printChannelInfo(ch->getName());
                 this->_channels.pop();
             }
             break;

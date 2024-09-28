@@ -25,16 +25,7 @@ public:
 	void	setMode(const std::string &mode) { _mode = mode; }
 	void	setPassword(const std::string& password) { _password = password; }
 	void	setUserLimit(int limit) { _userLimit = limit; }
-	void	setTopic(std::string topic, int clientFD) {
-		if (isTopicLocked() && !isOperator(clientFD)) {
-			std::cout << "Client " << clientFD << " cannot change the topic: not an operator.\n";
-			Message::sendMessage(clientFD, "Error(482): You're not a channel operator\n", _Clients[clientFD]->getServer());
-			return ;
-		}
-		_topic = topic;
-		std::cout << "Topic changed to: " << _topic << std::endl;
-   		std::string notification = ":" + _Clients[clientFD]->getNick() + " TOPIC " + _name + " :" + _topic + "\r\n";
-		sendMessageToClients(notification, clientFD); };
+	void	setTopic(std::string topic) {	_topic = topic; };
 
 	//channel management
 	void	applyMode(const Mode& modeObj);

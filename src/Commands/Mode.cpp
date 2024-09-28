@@ -91,7 +91,7 @@ void Mode::parsing(std::istringstream &input) {
 		if (this->_channel.empty())
 			this->_error = NEEDMOREPARAMS;
 		else {
-			Channel* ch = this->_server.getChannels()[this->_channel];
+			Channel* ch = this->_server.getChannelLower(this->_channel);
 			if (!ch->isOperator(this->_client.getSocketFD()))
 				this->_error = CHANOPRIVSNEEDED;
 		}
@@ -191,8 +191,8 @@ void Mode::execute() {
 		default:
 			Channel* channelObj = this->_server.getChannels()[this->_channel];
 			channelObj->applyMode(*this);
-			this->_server.printChannelInfo(this->_channel);
-			channelObj->sendMessage(RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), this->_channel, this->_mode, intToString(this->_userLimit), this->_password, this->_clientNick), 0);
+			this->_server.printChannelInfo(channelObj->getName());
+			channelObj->sendMessage(RPL_MODE(this->_client.getNick(), this->_client.getUsername(), this->_client.getIpaddr(), channelObj->getName(), this->_mode, intToString(this->_userLimit), this->_password, this->_clientNick), 0);
 	}
 }
 

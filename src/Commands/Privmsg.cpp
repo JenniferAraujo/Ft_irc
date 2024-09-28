@@ -55,13 +55,13 @@ void Privmsg::sendToChannels(){
     while (!this->_channels.empty()) {
         std::string channelName = this->_channels.front();
         if(existentChannel(channelName)){
-            Channel *channel = this->_server.getChannels()[channelName];
+            Channel *channel = this->_server.getChannelLower(channelName);
             if(channel->isClient(this->_client.getSocketFD()) || channel->isOperator(this->_client.getSocketFD())){
                 channel->sendMessage(PRIV_MESSAGE(this->_client.getNick(), this->_client.getUsername(), 
-                    this->_client.getIpaddr(), channelName, this->_message), this->_client.getSocketFD());
+                    this->_client.getIpaddr(), channel->getName(), this->_message), this->_client.getSocketFD());
             }
             else
-                Message::sendMessage(this->_client.getSocketFD(), ERR_CANNOTSENDTOCHAN(this->_server.getHostname(), this->_client.getNick(), channelName), this->_server);
+                Message::sendMessage(this->_client.getSocketFD(), ERR_CANNOTSENDTOCHAN(this->_server.getHostname(), this->_client.getNick(), channel->getName()), this->_server);
         }
         else{
             Message::sendMessage(this->_client.getSocketFD(), ERR_NOSUCHCHANNEL(this->_server.getHostname(), this->_client.getNick(), channelName), this->_server);
@@ -74,13 +74,13 @@ void Privmsg::sendToOpChannels(){
     while (!this->_opChannels.empty()) {
         std::string channelName = this->_opChannels.front().substr(1, this->_opChannels.front().length() - 1);
         if(existentChannel(channelName)){
-            Channel *channel = this->_server.getChannels()[channelName];
+            Channel *channel = this->_server.getChannelLower(channelName);
             if(channel->isClient(this->_client.getSocketFD()) || channel->isOperator(this->_client.getSocketFD())){
                 channel->sendMessageToOperators( PRIV_MESSAGE(this->_client.getNick(), this->_client.getUsername(), 
-                    this->_client.getIpaddr(), channelName, this->_message), this->_client.getSocketFD());
+                    this->_client.getIpaddr(), channel->getName(), this->_message), this->_client.getSocketFD());
             }
             else
-                Message::sendMessage(this->_client.getSocketFD(), ERR_CANNOTSENDTOCHAN(this->_server.getHostname(), this->_client.getNick(), channelName), this->_server);
+                Message::sendMessage(this->_client.getSocketFD(), ERR_CANNOTSENDTOCHAN(this->_server.getHostname(), this->_client.getNick(), channel->getName()), this->_server);
         }
         else
             Message::sendMessage(this->_client.getSocketFD(), ERR_NOSUCHCHANNEL(this->_server.getHostname(), this->_client.getNick(), channelName), this->_server);
