@@ -199,5 +199,6 @@ void Mode::execute() {
 void Mode::print() const{
 	if (this->_error != 0)
 		std::cout << " " << RED << "[" << this->_error << "]" << std::endl;
-	std::cout << "\nUser limit: " << this->_userLimit <<  " | Nick: " << this->_clientNick << " | Password: " << this->_password << " | Parameters: " << this->_parameters << " | Mode: " << this->_mode << std::endl;
+	else
+		std::cout << "\nUser limit: " << this->_userLimit <<  " | Nick: " << this->_clientNick << " | Password: " << this->_password << " | Parameters: " << this->_parameters << " | Mode: " << this->_mode << std::endl;
 }

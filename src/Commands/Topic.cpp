@@ -72,16 +72,15 @@ void Topic::execute() {
             Channel* ch = this->_server.getChannelLower(this->_channel);
             if (!this->_msg.empty()) {
                 ch->setTopic(this->_msg);
-                Message::sendMessage(this->_client.getSocketFD(), RPL_TOPIC(this->_server.getHostname(), ch->getName(), this->_client.getNick(), ch->getTopic()), this->_server);
+                ch->sendMessage(RPL_TOPIC(this->_server.getHostname(), ch->getName(), this->_client.getNick(), ch->getTopic()), 0);
             } else if (this->_removeTopic) {
                 ch->setTopic("");
-                // Confirmar se tenho de enviar isto
-                Message::sendMessage(this->_client.getSocketFD(), RPL_NOTOPIC(this->_server.getHostname(), ch->getName(), this->_client.getNick()), this->_server);
+                ch->sendMessage(RPL_NOTOPIC(this->_server.getHostname(), ch->getName(), this->_client.getNick()), 0);
             } else {
                 if (ch->getTopic().empty())
-                    Message::sendMessage(this->_client.getSocketFD(), RPL_NOTOPIC(this->_server.getHostname(), ch->getName(), this->_client.getNick()), this->_server);
+                    Message::sendMessage(this->_client.getSocketFD(), RPL_NOTOPIC(this->_server.getHostname(), this->_channel, this->_client.getNick()), this->_server);
                 else
-                    Message::sendMessage(this->_client.getSocketFD(), RPL_TOPIC(this->_server.getHostname(), ch->getName(), this->_client.getNick(), ch->getTopic()), this->_server);
+                    Message::sendMessage(this->_client.getSocketFD(), RPL_TOPIC(this->_server.getHostname(), this->_channel, this->_client.getNick(), ch->getTopic()), this->_server);
             }
             break;
     }

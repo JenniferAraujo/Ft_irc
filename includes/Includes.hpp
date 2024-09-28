@@ -34,7 +34,7 @@
 # define MAX_TARGETS        10
 # define MAX_MESSAGE_SIZE   512
 # define MAXCHARS           30
-# define CONNECTIONTIMEOUT  60 //2 minuts in seconds
+# define CONNECTIONTIMEOUT  120 //2 minuts in seconds
 # define TIMEOUT            300 //5 minuts in seconds
 # define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 
